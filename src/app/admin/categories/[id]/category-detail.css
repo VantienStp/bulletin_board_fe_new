@@ -1,0 +1,185 @@
+
+.category-detail {
+  padding: 24px;
+  background: #f9fafb;
+  min-height: 100vh;
+  font-family: 'Roboto', sans-serif;
+}
+
+/* Header */
+.category-detail .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.category-detail .page-header h2 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1f2937;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-detail .page-header .btn-secondary {
+  background: #e5e7eb;
+  color: #374151;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.category-detail .page-header .btn-secondary:hover {
+  background: #d1d5db;
+  transform: translateY(-1px);
+}
+
+/* Khung thông tin danh mục */
+.category-info {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  padding: 20px 24px;
+  margin-bottom: 30px;
+}
+
+.category-info h3 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.category-info p {
+  margin: 6px 0;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.category-info b {
+  color: #1f2937;
+}
+
+/* Phần thêm card */
+.add-card-section {
+  background: white;
+  padding: 20px 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  margin-bottom: 30px;
+}
+
+.add-card-section h4 {
+  margin-bottom: 14px;
+  font-size: 1.2rem;
+  color: #111827;
+  font-weight: 600;
+}
+
+.add-card-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.add-card-controls select {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.add-card-controls .btn-primary {
+  background: #2563eb;
+  color: white;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.add-card-controls .btn-primary:hover {
+  background: #1d4ed8;
+}
+
+/* Bảng danh sách card */
+.cards-list {
+  background: white;
+  padding: 20px 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.cards-list h4 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 16px;
+}
+
+/* Table chung */
+.cards-list .admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cards-list .admin-table th,
+.cards-list .admin-table td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 10px 8px;
+  text-align: left;
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+.cards-list .admin-table th {
+  background: #f3f4f6;
+  color: #111827;
+  font-weight: 600;
+}
+
+.cards-list .admin-table tr:hover td {
+  background: #f9fafb;
+}
+
+/* Nút hành động */
+.btn-view {
+  background: #eef2ff;
+  color: #3730a3;
+  padding: 5px 10px;
+  border-radius: 6px;
+  margin-right: 6px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.btn-view:hover {
+  background: #c7d2fe;
+}
+
+.btn-delete {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-delete:hover {
+  background: #fecaca;
+}
