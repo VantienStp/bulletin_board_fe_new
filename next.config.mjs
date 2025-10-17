@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 
-import { API_BASE_URL } from '@/lib/api';
+import { API_BASE_URL } from './src/lib/api.js';
 
 const nextConfig = {
   async rewrites() {

@@ -1,0 +1,155 @@
+/* --- Override cho AnimatePresence --- */
+
+.card {
+    display: flex;
+    flex-direction: column;
+}
+
+.image-container img,
+.image-container video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1; /* hiển thị mặc định */
+  transition: none !important; /* Framer Motion tự điều khiển animation */
+}
+
+.image-container iframe.media-pdf {
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 1vw;
+  position: absolute;
+  top: 0;
+  left: 0;
+  object-fit: contain;  
+  overflow: hidden;
+  z-index: 2;
+}
+
+
+.image-container {
+    flex: 1; 
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    border-radius: 1vw;
+}
+
+
+/* 
+.image-container iframe.media-pdf::-webkit-scrollbar {
+  display: none;
+}
+
+.image-container img,
+.image-container video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+    position: absolute;
+    top: 100%;
+    opacity: 0;
+    transition: all 0.7s ease-in-out;
+    
+}
+
+.image-container img.active,
+.image-container video.active {
+    top: 0;
+    opacity: 1;
+    z-index: 2;
+}
+
+.image-container img.exit,
+.image-container video.exit  {
+    top: -100%;
+    opacity: 0;
+    z-index: 1;
+} */
+
+.image-and-qr-wrapper {
+    position: relative; 
+    flex: 1; 
+    display: flex;
+    flex-direction: column;
+}
+
+.image-and-qr-wrapper .card-actions {
+    position: absolute;
+    top: 2%;
+    right: 2%;
+    display: flex;
+    z-index: 20;
+}
+
+.image-and-qr-wrapper .card-actions i {
+    color: #fff;
+    opacity: 0.7;
+    font-size: 1vw;
+    padding: 0.5vw;
+    cursor: pointer;
+    text-shadow: 0 0 0.5vw rgba(0, 0, 0, 0.5);
+}
+
+.image-and-qr-wrapper .card-actions i:hover {
+    transform: scale(1.1);
+}
+
+.content-in-bottom {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 15%;    
+    
+    min-height: 10vh;   
+    max-height: 18vh;    
+
+    background: var(--overlay-bg);
+    display: flex;
+    align-items: flex-start;
+    padding: 1vw;
+    box-sizing: border-box;
+    border-radius: 0 0 1vw 1vw;
+    z-index: 10;
+    gap: 1vw;
+}
+
+.qr-overlay {
+    display: flex;
+    align-items: center;
+    aspect-ratio: 1 / 1;
+    height: 100%;
+}
+
+.qr-code-img {
+    width: auto;            
+    height: 100%; 
+    max-width: 100%;
+    max-height: 100%; 
+    min-height: 100%;  
+        
+    margin-top: auto;
+    border-radius: 0.5vw;
+    opacity: 0.9;
+}
+
+.qr-text {
+    font-size: 0.8vw;
+    font-weight: 600;
+    color: white;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow: hidden;
+}
+
+/* .qr-text.truncated {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    text-overflow: ellipsis;
+} */
