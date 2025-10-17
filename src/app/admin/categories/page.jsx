@@ -14,7 +14,7 @@ export default function CategoriesPage() {
   const [showForm, setShowForm] = useState(false);
   const [layouts, setLayouts] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(3);
+  const [itemsPerPage] = useState(5);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -50,7 +50,9 @@ export default function CategoriesPage() {
     e.preventDefault();
     const token = localStorage.getItem('jwt_token');
 
-    const method = editingCategory ? 'PATCH' : 'POST';
+    // const method = editingCategory ? 'PATCH' : 'POST';
+    const method = 'PUT';
+
     const url = editingCategory
       ? `${API_BASE_URL}/categories/${editingCategory._id}`
       : `${API_BASE_URL}/categories`;
@@ -214,11 +216,13 @@ export default function CategoriesPage() {
               onChange={(e) => setFormData({ ...formData, gridLayoutId: e.target.value })}
             >
               <option value="">-- Chọn layout --</option>
-              {layouts.map((layout) => (
-                <option key={layout._id} value={layout._id}>
-                  {layout.name}
-                </option>
-              ))}
+              {(() => {
+                return layouts.map((layout) => (
+                  <option key={layout._id} value={layout._id}>
+                    {layout.name || layout.title || JSON.stringify(layout)}
+                  </option>
+                ));
+              })()}
             </select>
 
             <div className="modal-actions">

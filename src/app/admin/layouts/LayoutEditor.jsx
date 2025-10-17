@@ -73,6 +73,8 @@ export default function LayoutEditor({ layoutId, initialConfig }) {
       })),
     };
 
+    console.log("Updated layout config:", updatedConfig);
+
     try {
       const res = await fetch(`${API_BASE_URL}/gridLayouts/${layoutId}`, {
         method: "PUT",

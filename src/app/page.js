@@ -82,7 +82,6 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="main-content">
         <div
           className="grid"
@@ -99,27 +98,38 @@ export default function HomePage() {
           }}
         >
           {categories
-            .filter((cat) => selectedCategory === cat._id)
-            .flatMap((cat) =>
-              cat.mappings.map((map, index) => {
-                if (!map.cardId) return null;
+  .filter((cat) => selectedCategory === cat._id)
+  .flatMap((cat) => {
+    // 🧩 Ưu tiên số lượng card do layout quy định
+    const layoutCardCount = layoutConfig?.positions?.length || 0;
+    console.log("layoutCardCount:", layoutCardCount);
+    // 🧩 Nếu layout.cards có giá trị > 0 → dùng nó
+    // ngược lại → fallback sang rows * columns
+    console.log("cat:", cat);
+    const maxCards =
+      layoutCardCount > 0
+        ? layoutCardCount
+        : (layoutConfig?.rows || 1) * (layoutConfig?.columns?.length || 1);
 
-                const pos = layoutConfig?.positions?.[index];
-                const style = pos
-                  ? {
-                      gridColumn: `${(pos.x || 0) + 1} / span ${pos.w || 1}`,
-                      gridRow: `${(pos.y || 0) + 1} / span ${pos.h || 1}`,
-                    }
-                  : {};
-                return (
-                  <Card
-                    key={map.cardId._id}
-                    {...map.cardId}
-                    style={style}
-                  />
-                );
-              })
-            )}
+    // 🧩 Lấy đúng số lượng card được phép hiển thị
+    const visibleMappings = cat.mappings.slice(0, maxCards);
+    console.log("visibleMappings:", visibleMappings);
+
+    return visibleMappings.map((map, index) => {
+      if (!map.cardId) return null;
+
+      const pos = layoutConfig?.positions?.[index];
+      const style = pos
+        ? {
+            gridColumn: `${(pos.x || 0) + 1} / span ${pos.w || 1}`,
+            gridRow: `${(pos.y || 0) + 1} / span ${pos.h || 1}`,
+          }
+        : {};
+
+      return <Card key={map.cardId._id} {...map.cardId} style={style} />;
+    });
+  })}
+
         </div>
       </main>
     </>
