@@ -5,3 +5,70 @@
 .table-cards td:nth-child(2) { width: 45%; }
 .table-cards th:nth-child(3),
 .table-cards td:nth-child(3) { width: 25%; }
+
+.qr-img {
+  width: 80px;
+  margin-top: 6px;
+}
+
+.preview-img {
+  width: 100%;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.contents-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.content-box {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px;
+  background: #f9fafb;
+}
+
+.admin-detail {
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+}
+
+
+.content-item {
+  background: #fafafa;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: relative;
+}
+
+.content-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 4px;
+}
+
+.content-item .btn-delete {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.content-item .btn-delete:hover {
+  background: #dc2626;
+}

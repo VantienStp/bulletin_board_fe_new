@@ -3,12 +3,10 @@ import { useState, useEffect, useCallback } from "react";
 export function useSlideshow(contents) {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Hàm đổi ảnh thủ công
   const nextSlide = useCallback(() => {
     setActiveIndex((prev) => (prev + 1) % contents.length);
   }, [contents]);
 
-  // Tự động đổi ảnh sau khoảng ngẫu nhiên
   useEffect(() => {
     if (!contents || contents.length === 0) return;
 

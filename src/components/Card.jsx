@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import "./card.css"; // ✅ dùng file CSS em vừa tách
+import "./card.css"; 
 
 export default function Card({ title, contents = [], style = {} }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -15,7 +15,6 @@ export default function Card({ title, contents = [], style = {} }) {
   const timerRef = useRef(null);
   const activeFile = contents[activeIndex];
 
-  // 🕒 Auto đổi ảnh/video/pdf
   useEffect(() => {
     if (!contents || contents.length === 0) return;
 
@@ -38,7 +37,6 @@ export default function Card({ title, contents = [], style = {} }) {
     return () => clearTimeout(timerRef.current);
   }, [activeIndex, contents]);
 
-  // 📏 Dynamic QR sizing
   useEffect(() => {
     setDynamicSizes();
     window.addEventListener("resize", setDynamicSizes);
@@ -67,7 +65,6 @@ export default function Card({ title, contents = [], style = {} }) {
     qrText.style.fontSize = `${fontSize}px`;
   };
 
-  // 👆 Click đổi ảnh (khóa 7s)
   const handleClick = () => {
     if (!canClick) return;
     setActiveIndex((prev) => (prev + 1) % contents.length);
@@ -94,91 +91,40 @@ export default function Card({ title, contents = [], style = {} }) {
                   duration: 0.9,
                   ease: [0.45, 0, 0.55, 1], // ease mượt hơn cubic-bezier
                 }}
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  width: "100%",
-                  height: "100%",
-                  zIndex: 1,
-                }}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 1,}}
               >
                 {activeFile?.type === "image" && (
-                  <img
-                    src={activeFile.url}
-                    alt={title}
-                    className="media-image"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
+                  <img src={activeFile.url} alt={title} className="media-image"
+                    style={{ width: "100%", height: "100%", objectFit: "cover",
                     }}
                   />
                 )}
 
                 {activeFile?.type === "video" && (
-                  <video
-                    src={activeFile.url}
-                    muted
-                    loop
-                    autoPlay
-                    playsInline
-                    controls
-                    className="media-video"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                      backgroundColor: "#000",
-                    }}
+                  <video src={activeFile.url} muted loop autoPlay playsInline controls className="media-video"
+                    style={{ width: "100%", height: "100%", objectFit: "cover", backgroundColor: "#000",}}
                   />
                 )}
 
                 {activeFile?.type === "pdf" && (
-                  <iframe
-                    src={activeFile.url}
-                    title="PDF Viewer"
-                    className="media-pdf"
-                    frameBorder="0"
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      border: "none",
-                    }}
+                  <iframe src={activeFile.url} title="PDF Viewer" className="media-pdf" frameBorder="0"
+                    style={{ width: "100%", height: "100%", border: "none"}}
                   />
                 )}
               </motion.div>
             </AnimatePresence>
-
           ) : (
             <span>❌ Không có dữ liệu</span>
           )}
         </div>
 
-        <div
-          className="card-actions"
-          style={
-            activeFile?.type === "pdf"
-              ? { paddingRight: "7.4vw", paddingTop: "0.3vw" }
-              : {}
-          }
-        >
-          <i
-            className="fas fa-eye toggle-title-icon"
-            onClick={() => setShowTitle(!showTitle)}
-          ></i>
+        <div className="card-actions" style={ activeFile?.type === "pdf" ? { paddingRight: "7.4vw", paddingTop: "0.3vw" }: {}}>
+          <i className="fas fa-eye toggle-title-icon" onClick={() => setShowTitle(!showTitle)}></i>
           {activeFile?.type !== "video" && activeFile?.type !== "pdf" && (
             <>
-              <i
-                className="fas fa-redo reload-icon"
-                onClick={() => setActiveIndex(0)}
-              ></i>
-              <i
-                className="fas fa-expand expand-icon"
-                onClick={() =>
-                  window.dispatchEvent(
-                    new CustomEvent("openLightbox", { detail: activeFile })
-                  )
-                }
+              <i className="fas fa-redo reload-icon" onClick={() => setActiveIndex(0)}></i>
+              <i className="fas fa-expand expand-icon"
+                onClick={() => window.dispatchEvent( new CustomEvent("openLightbox", { detail: activeFile }) )}
               ></i>
             </>
           )}
@@ -187,12 +133,7 @@ export default function Card({ title, contents = [], style = {} }) {
         {showTitle && activeFile?.qrCode && (
           <div className="content-in-bottom" ref={contentBottomRef}>
             <div className="qr-overlay">
-              <img
-                ref={qrImgRef}
-                src={activeFile.qrCode}
-                alt="QR Code"
-                className="qr-code-img"
-              />
+              <img ref={qrImgRef} src={activeFile.qrCode} alt="QR Code" className="qr-code-img"/>
             </div>
             <div className="text-right">
               <span className="qr-text" ref={qrTextRef}>

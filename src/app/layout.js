@@ -1,8 +1,4 @@
-// src/app/layout.js
-import "@fortawesome/fontawesome-free/css/all.min.css";
-
-import { AuthProvider } from '../context/AuthContext';
-import { CartProvider } from '../context/CartContext';
+  import { AuthProvider } from '../context/AuthContext';
 
 export const metadata = {
   title: 'Bản tin',
@@ -14,9 +10,7 @@ export default function RootLayout({ children }) {
     <html lang="en">
       <body className="app-grid">
         <AuthProvider>
-          <CartProvider>
-            {children}
-          </CartProvider>
+          {children}
         </AuthProvider>
       </body>
     </html>

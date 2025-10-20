@@ -4,8 +4,8 @@
 import React from 'react';
 
 /**
- * @param {string} variant - Kiểu thông báo ('info', 'success', 'danger', 'warning'). Mặc định là 'info'.
- * @param {React.ReactNode} children - Nội dung thông báo.
+ * @param {string} variant 
+ * @param {React.ReactNode} children
  */
 const Message = ({ variant = 'info', children }) => {
   let baseClasses = 'p-3 rounded-lg text-sm ';

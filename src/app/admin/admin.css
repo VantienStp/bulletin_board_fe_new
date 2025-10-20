@@ -25,11 +25,12 @@ body, html {
   height: 100%;
 }
 
-/* ================= Sidebar ================= */
 .admin-container {
   display: flex;
   min-height: 100vh;
 }
+
+/* #region ================= Sidebar ================= */
 
 .sidebar {
   width: 12vw;
@@ -42,6 +43,46 @@ body, html {
   box-shadow: inset -2px 0 6px rgba(0, 0, 0, 0.2);
 }
 
+.sidebar ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+
+}
+
+.sidebar ul li a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  text-decoration: none;
+  color: #bfc3d2;
+  transition: all 0.3s ease;
+}
+
+.sidebar ul li.setting {
+  margin-top: auto;   /* đẩy xuống cuối cùng */
+  padding-bottom: 2vw;
+}
+
+.sidebar ul li a:hover,
+.sidebar ul li a.active {
+  background: linear-gradient(90deg, var(--highlight), var(--accent));
+  color: #fff;
+  font-weight: 500;
+  transform: translateX(4px);
+}
+
+.sidebar .icon {
+  font-size: 18px;
+}
+
+/* #endregion */
+
+/* #region ================= Logo ================= */
 .logo {
   display: flex;
   flex-direction: column; /* logo trên, chữ dưới */
@@ -61,46 +102,9 @@ body, html {
   font-size: 2vw;
 }
 
+/* #endregion */
 
-.sidebar ul {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sidebar ul li a {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: var(--radius);
-  text-decoration: none;
-  color: #bfc3d2;
-  transition: all 0.3s ease;
-}
-
-.sidebar ul li a:hover,
-.sidebar ul li a.active {
-  background: linear-gradient(90deg, var(--highlight), var(--accent));
-  color: #fff;
-  font-weight: 500;
-  transform: translateX(4px);
-}
-
-.sidebar .icon {
-  font-size: 18px;
-}
-
-.help-box {
-  text-align: center;
-  background: rgba(255, 255, 255, 0.08);
-  padding: 15px;
-  border-radius: var(--radius);
-  font-size: 14px;
-}
-
-/* ================= Main Content ================= */
+/* #region ================= Main Content ================= */
 .main-content {
   flex: 1;
   padding: 40px;
@@ -115,7 +119,6 @@ body, html {
   color: var(--primary);
 }
 
-/* Stats Grid */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -150,58 +153,9 @@ body, html {
   color: var(--primary);
 }
 
-/* Recent table */
-.recent-table {
-  background: #fff;
-  border-radius: var(--radius);
-  padding: 20px;
-  box-shadow: var(--shadow);
-}
+/* #endregion */
 
-.recent-table h2 {
-  font-size: 18px;
-  margin-bottom: 15px;
-  color: var(--accent);
-}
-
-.recent-table table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.recent-table th,
-.recent-table td {
-  padding: 10px 12px;
-  border-bottom: 1px solid #eee;
-  font-size: 14px;
-}
-
-.recent-table th {
-  text-align: left;
-  color: #555;
-  font-weight: 600;
-  background: #f3f4f6;
-}
-
-.status {
-  display: inline-block;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 12px;
-}
-
-.status.active {
-  background: #dcfce7;
-  color: #166534;
-}
-.status.inactive {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-
-/* =================== PAGE HEADER =================== */
+/* #region =================== PAGE HEADER =================== */
 .page-header {
   display: flex;
   justify-content: space-between;
@@ -237,8 +191,9 @@ body, html {
   background: linear-gradient(135deg, #4f6b94, var(--primary));
   transform: translateY(-2px);
 }
+/* #endregion */
 
-/* =================== TABLE STYLES =================== */
+/* #region =================== TABLE STYLES =================== */
 
 .admin-table {
   width: 100%;
@@ -263,6 +218,16 @@ body, html {
   color: #2d3748;
 }
 
+.admin-table thead th:first-child, td:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.admin-table thead th:last-child, td:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
 .admin-table tbody tr {
   background: #fff;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
@@ -274,8 +239,18 @@ body, html {
   box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 
-/* =================== PAGINATION =================== */
+.admin-table tbody:empty::after {
+  content: "Không có dữ liệu hiển thị";
+  display: block;
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+  font-style: italic;
+}
 
+/* #endregion */
+
+/* #region =================== PAGINATION =================== */
 .pagination {
   display: flex;
   justify-content: center;
@@ -303,59 +278,9 @@ body, html {
   color: white;
 }
 
-/* =================== ACTION BUTTONS =================== */
-.btn-edit, .btn-delete {
-  display: inline-block;
-  padding: 6px 12px;
-  margin-right: 6px;
-  border-radius: 6px;
-  border: none;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
+/* #endregion */
 
-.btn-edit {
-  background: #dbeafe;
-  color: #1e3a8a;
-}
-.btn-edit:hover {
-  background: #bfdbfe;
-}
-
-.btn-delete {
-  background: #fee2e2;
-  color: #991b1b;
-}
-.btn-delete:hover {
-  background: #fecaca;
-}
-
-/* =================== EMPTY STATE =================== */
-.admin-table tbody:empty::after {
-  content: "Không có dữ liệu hiển thị";
-  display: block;
-  text-align: center;
-  padding: 40px;
-  color: #94a3b8;
-  font-style: italic;
-}
-
-/* =================== RESPONSIVE =================== */
-@media (max-width: 768px) {
-  .admin-table th:nth-child(3),
-  .admin-table td:nth-child(3) {
-    display: none;
-  }
-
-  .page-header h2 {
-    font-size: 18px;
-  }
-}
-
-
-/* Modal Overlay */
+/* #region  =================== Modal Overlay ===================*/
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -373,11 +298,6 @@ body, html {
   width: 400px;
   box-shadow: 0 10px 25px rgba(0,0,0,0.15);
   animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .modal h3 {
@@ -411,21 +331,6 @@ body, html {
   margin-top: 10px;
 }
 
-.btn-cancel {
-  background: #e5e7eb;
-  color: #374151;
-  border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn-cancel:hover {
-  background: #d1d5db;
-}
-
-
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -443,14 +348,6 @@ body, html {
   padding: 0 25px 20px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; } to { opacity: 1; }
-}
-@keyframes slideUp {
-  from { transform: translateY(40px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
 }
 
 .modal-header {
@@ -498,104 +395,38 @@ body, html {
   margin-top: 10px;
 }
 
+/* #endregion */
 
-.content-item {
-  background: #fafafa;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  position: relative;
-}
-
-.content-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 4px;
-}
-
-.content-item .btn-delete {
-  background: #ef4444;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 4px 8px;
-  cursor: pointer;
-  font-size: 13px;
-}
-
-.content-item .btn-delete:hover {
-  background: #dc2626;
-}
-
-.btn-secondary {
-  background: #e0e7ff;
-  color: #1e3a8a;
-  border: none;
-  border-radius: 6px;
+/* #region =================== ACTION BUTTONS =================== */
+.btn-edit, .btn-delete {
+  display: inline-block;
   padding: 6px 12px;
+  margin-right: 6px;
+  border-radius: 6px;
+  border: none;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: 0.2s;
-  margin-top: 5px;
-}
-.btn-secondary:hover {
-  background: #c7d2fe;
+  transition: all 0.2s ease;
 }
 
-
-.upload-row {
-  display: flex;
-  gap: 10px;
-  align-items: center;
+.btn-edit {
+  background: #dbeafe;
+  color: #1e3a8a;
 }
 
-.upload-row input[type="file"] {
-  flex-shrink: 0;
-  width: 160px;
-  background: #f3f4f6;
-  padding: 4px;
-  border-radius: 6px;
+.btn-edit:hover {
+  background: #bfdbfe;
 }
 
-
-.admin-detail {
-  padding: 20px;
-  background: white;
-  border-radius: 10px;
+.btn-delete {
+  background: #fee2e2;
+  color: #991b1b;
 }
 
-.contents-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 15px;
-  margin-top: 20px;
+.btn-delete:hover {
+  background: #fecaca;
 }
-
-.content-box {
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 10px;
-  background: #f9fafb;
-}
-
-.preview-img {
-  width: 100%;
-  border-radius: 6px;
-  margin-bottom: 8px;
-}
-
-.qr-img {
-  width: 80px;
-  margin-top: 6px;
-}
-
-
 
 .btn-view {
   background: #f3f6ff;
@@ -611,3 +442,71 @@ body, html {
   background: #e0e7ff;
 }
 
+.btn-cancel {
+  background: #e5e7eb;
+  color: #374151;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-cancel:hover {
+  background: #d1d5db;
+}
+
+/* #endregion */
+
+.help-box {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 15px;
+  border-radius: var(--radius);
+  font-size: 14px;
+}
+
+/* ===== GRID LAYOUT ===== */
+.admin-grid {
+  display: grid;
+  grid-template-columns: 12vw 1fr;
+  grid-template-rows: auto 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main-content";
+  height: 100vh;
+}
+
+.sidebar {
+  grid-area: sidebar;
+}
+
+.main-header {
+  grid-area: header;
+  background: #f0f2f5;
+  color: #0d1b2a;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1vw 2vw;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.header-title {
+  font-size: 1.5vw;
+  font-weight: 700;
+}
+
+.header-info {
+  display: flex;
+  gap: 1.5vw;
+  font-size: 0.9vw;
+  color: #555;
+}
+
+.main-content {
+  grid-area: main-content;
+  background: #f9fafc;
+  padding: 2vw;
+  overflow-y: auto;
+}

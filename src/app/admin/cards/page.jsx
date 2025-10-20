@@ -111,11 +111,9 @@ export default function CardsPage() {
     const token = localStorage.getItem('jwt_token');
     const finalData = JSON.parse(JSON.stringify(formData));
 
-    // 🔄 Upload từng file (url + qrCode)
     for (let i = 0; i < formData.contents.length; i++) {
       const c = formData.contents[i];
 
-      // Upload file chính (ảnh/video/pdf)
       if (c.url instanceof File) {
         const fd = new FormData();
         fd.append('file', c.url);
@@ -130,7 +128,6 @@ export default function CardsPage() {
         }
       }
 
-      // Upload QR code
       if (c.qrCode instanceof File) {
         const fd = new FormData();
         fd.append('file', c.qrCode);
@@ -145,7 +142,6 @@ export default function CardsPage() {
       }
     }
 
-    // Gửi dữ liệu lưu card
     const method = editingCard ? 'PUT' : 'POST';
     const url = editingCard
       ? `${API_BASE_URL}/cards/${editingCard._id}`
@@ -250,7 +246,6 @@ export default function CardsPage() {
         </button>
       </div>
 
-      {/* Form Modal */}
       {showForm && (
         <Modal
           title={editingCard ? 'Sửa thẻ nội dung' : 'Thêm thẻ mới'}

@@ -5,7 +5,7 @@ import "./layout-detail.css";
 import { API_BASE_URL } from "@/lib/api";
 
 export default function LayoutDetailPage({ params }) {
-  const id = React.use(params).id; // ✅ Sửa theo Next.js 15
+  const id = React.use(params).id; // 
   const [layout, setLayout] = useState(null);
 
   useEffect(() => {

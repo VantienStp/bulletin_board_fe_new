@@ -15,7 +15,7 @@ export default function useWeather() {
       async (pos) => {
         try {
           const { latitude, longitude } = pos.coords;
-          const apiKey = "b405235d32a7ca53648989fc7b145c87"; // API key
+          const apiKey = "b405235d32a7ca53648989fc7b145c87";
           const res = await fetch(
             `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&lang=vi&appid=${apiKey}`
           );

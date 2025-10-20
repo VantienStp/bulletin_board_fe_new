@@ -24,7 +24,6 @@ export default function CategoryDetailPage() {
   const currentCards = cards.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(cards.length / itemsPerPage);
 
-  // Khi load trang → lấy thông tin category và các card liên quan
   useEffect(() => {
     if (!id) return;
     fetchCategoryDetail();
@@ -176,72 +175,71 @@ export default function CategoryDetailPage() {
 
       {/* Danh sách card trong category */}
       <div className="cards-list">
-  <h4>📋 Danh sách thẻ trong danh mục</h4>
+        <h4>📋 Danh sách thẻ trong danh mục</h4>
 
-  {cards.length === 0 ? (
-    <p>Danh mục này hiện chưa có thẻ nào.</p>
-  ) : (
-    <>
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>Tiêu đề</th>
-            <th>Số nội dung</th>
-            <th>Hành động</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentCards.map((card) => (
-            <tr key={card._id}>
-              <td>{card.title}</td>
-              <td>{card.contents?.length || 0}</td>
-              <td>
-                <Link href={`/admin/cards/${card._id}`} className="btn-view">
-                  👁 Xem chi tiết
-                </Link>
+        {cards.length === 0 ? (
+          <p>Danh mục này hiện chưa có thẻ nào.</p>
+        ) : (
+          <>
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>Tiêu đề</th>
+                  <th>Số nội dung</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {currentCards.map((card) => (
+                  <tr key={card._id}>
+                    <td>{card.title}</td>
+                    <td>{card.contents?.length || 0}</td>
+                    <td>
+                      <Link href={`/admin/cards/${card._id}`} className="btn-view">
+                        👁 Xem chi tiết
+                      </Link>
+                      <button
+                        className="btn-delete"
+                        onClick={() => handleRemoveCard(card._id)}
+                      >
+                        <FaTrashAlt /> Gỡ
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="pagination">
+              <button
+                className="page-btn"
+                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                disabled={currentPage === 1}
+              >
+                ◀
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => (
                 <button
-                  className="btn-delete"
-                  onClick={() => handleRemoveCard(card._id)}
+                  key={i}
+                  className={`page-btn ${currentPage === i + 1 ? 'active' : ''}`}
+                  onClick={() => setCurrentPage(i + 1)}
                 >
-                  <FaTrashAlt /> Gỡ
+                  {i + 1}
                 </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              ))}
 
-      {/* PHÂN TRANG */}
-      <div className="pagination">
-        <button
-          className="page-btn"
-          onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-          disabled={currentPage === 1}
-        >
-          ◀
-        </button>
-
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            className={`page-btn ${currentPage === i + 1 ? 'active' : ''}`}
-            onClick={() => setCurrentPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-
-        <button
-          className="page-btn"
-          onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-          disabled={currentPage === totalPages}
-        >
-          ▶
-        </button>
+              <button
+                className="page-btn"
+                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                disabled={currentPage === totalPages}
+              >
+                ▶
+              </button>
+            </div>
+          </>
+        )}
       </div>
-    </>
-  )}
-</div>
 
     </div>
   );

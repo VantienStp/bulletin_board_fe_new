@@ -1,17 +1,9 @@
-
 "use client";
 import "./admin.css";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  FaTachometerAlt,
-  FaList,
-  FaClone,
-  FaThLarge,
-  FaUsers,
-  FaCogs,
-  FaGavel,
-} from "react-icons/fa";
+import { FaTachometerAlt, FaList, FaClone, FaThLarge, FaUsers} from "react-icons/fa";
+import { BASE_URL } from "@/lib/api";
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
@@ -22,40 +14,59 @@ export default function AdminLayout({ children }) {
     { href: "/admin/cards", label: "Cards", icon: <FaClone /> },
     { href: "/admin/layouts", label: "Layouts", icon: <FaThLarge /> },
     { href: "/admin/users", label: "Users", icon: <FaUsers /> },
-    // { href: "/admin/settings", label: "Settings", icon: <FaCogs /> },
+    { href: "/admin/users", label: "Settings", icon: <FaUsers /> },
+    
   ];
 
   return (
-    <div className="admin-container">
+    <div className="admin-grid">
+      {/* SIDEBAR */}
       <aside className="sidebar">
         <div className="logo">
-          <a href="#" className="nav-logo">
-            <img src="/logo.png" alt="Dashboard Logo" />
+          <a href="#">
+            <img src={`${BASE_URL}/uploads/logo2.png`} alt="Dashboard Logo" />
           </a>
-          {/* <span>Toà Án Admin</span> */}
         </div>
-
         <ul>
-          {menu.map((item) => (
-            <li key={item.href}>
-              <Link
-                href={item.href}
-                className={pathname === item.href ? "active" : ""}
-              >
-                <span className="icon">{item.icon}</span>
-                {item.label}
-              </Link>
-            </li>
-          ))}
-        </ul>
+          {menu
+            .filter((item) => item.label !== "Settings") // các item bình thường
+            .map((item) => (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={pathname === item.href ? "active" : ""}
+                >
+                  <span className="icon">{item.icon}</span>
+                  <span>{item.label}</span>
+                </Link>
+              </li>
+            ))}
 
-        <div className="help-box">
-          <p>Hỗ trợ</p>
-          <small>Vui lòng xem tài liệu hướng dẫn</small>
-          <button>Documentation</button>
-        </div>
+          {/* SETTINGS nằm dưới cùng */}
+          <li className="setting">
+            <Link
+              href="/admin/settings"
+              className={pathname === "/admin/settings" ? "active" : ""}
+            >
+              <span className="icon"><FaUsers /></span>
+              <span>Settings</span>
+            </Link>
+          </li>
+        </ul>
       </aside>
 
+      {/* HEADER */}
+      <header className="main-header">
+        <div className="header-content">
+          <h1 className="header-title">Trang Quản Trị Toà Án</h1>
+          <div className="header-info">
+            <span>{new Date().toLocaleDateString("vi-VN")}</span>
+            <span className="admin-role">Admin</span>
+          </div>
+        </div>
+      </header>
+
+      {/* MAIN CONTENT */}
       <main className="main-content">{children}</main>
     </div>
   );

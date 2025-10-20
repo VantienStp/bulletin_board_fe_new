@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+@import "@fortawesome/fontawesome-free/css/all.min.css";
     
 :root {
   --primary-color: #0D47A1;
@@ -33,269 +34,7 @@ body {
         "sidebar main-content";
 }
 
-.main-header {
-    font-size: var(--font-size-header);
-    font-weight: 500;
-    color: black;
-    margin: 1vh 1vh 0 0;   
-    background: #F0F2F5;
-    border-radius: 1vw 1vw 0 0;
-}
-
-.main-title .highlight {
-    font-weight: 600; 
-}
-
-.header-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.3vw 2.5vw;
-}
-
-.header-left {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.1em;
-    width: 70%;
-}
-
-.header-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.1em;
-    text-align: right;
-    font-size: var(--font-size-body);
-    color: #333;
-    font-size: var(--font-size-small);
-    width: 30%
-}
-
-.header-right #weather {
-    width: 100%;
-}
-
-.header-right .weather-icon {
-    width: 10%;
-    height: auto; 
-    vertical-align: middle; 
-    filter: drop-shadow(0.5vw 0.2vw 0.3vw rgba(0, 0, 0, 0.4));
-}
-
-#clock {
-    font-weight: bold;
-    font-size: 1em;
-}
-
-.header-content .date-line {
-    text-align: left;
-    font-weight: bold;
-    align-self: flex-start;
-    font-size: 0.5em;
-    color: #555;
-}
-
-.grid {
-    gap: 2.5vw;
-    padding: 1vw 2vw 2vw 2.5vw;
-    flex-grow: 1;
-    background: #F0F2F5;
-    border-radius: 0 0 1vw 1vw;
-}
-
-.main-content.layout-2-col .carousel-btn {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.carousel-btn {
-    position: absolute;
-    top: 50%;
-    border: none;
-
-    color: #ffffff;
-    border-radius: 50%;
-    cursor: pointer;
-    display: none;
-
-    background: rgb(115, 110, 110);
-    color: #ffffff;
-    font-size: 2vw;
-    width: 3.5vw;
-    height: 3.5vw;
-    opacity: 0.7;
-}
-
-.carousel-btn.prev {
-    left: 0.5vw;
-}
-
-.carousel-btn.next {
-    right: 0.5vw;
-}
-
-.title {
-    font-weight: bold;
-    color: rgb(111, 111, 111);
-    padding: 0.5vh 0 0.5vh 0;
-    font-size: var(--font-size-title);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.title i {
-    color: black;
-    font-size: 1em;          
-    padding-right: 0.7vw;     
-}
-
-.title span {
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    flex-grow: 1;
-}
-
-.fade-item {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  opacity: 50;
-  transition: opacity 0.8s ease-in-out;
-}
-
-.fade-item.active {
-  opacity: 1;
-  z-index: 2;
-}
-
-#lightbox-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(146, 141, 141, 0.9);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-}
-
-#lightbox-content {
-    position: relative;
-}
-
-#lightbox-media-container{
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-}
-
-#lightbox-pdf-container .lightbox-image {
-    width: 100%; 
-    height: 100%; 
-    object-fit: contain; 
-    max-width: 100%;
-    max-height: 85vh;
-    border-radius: 1vw;
-}
-
-#lightbox-image,
-#lightbox-video,
-#lightbox-pdf-container {
-    max-width: 100%;
-    height: 80vh;
-    border-radius: 1vw;
-}
-
-#lightbox-overlay .pdf-prev,
-#lightbox-overlay .pdf-next {
-  background: var(--overlay-bg);
-  background: none;
-  border: none;
-  color: #ffffff;
-  font-size: 2vw;
-  width: 3.5vw;
-  height: 3.5vw;
-  border-radius: 50%;
-  opacity: 0.7;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}   
-
-
-#lightbox-overlay .pdf-prev:hover,
-#lightbox-overlay .pdf-next:hover {
-  transform: scale(1.6);
-  opacity: 1;
-}
-
-#lightbox-close {
-    top: 1vh;
-    right: 1vw;
-    position: absolute;
-    color: #BBB;
-    font-size: 3vw;
-    font-weight: bold;
-    cursor: pointer;
-    z-index: 10;
-    transition: color 0.3s ease;
-}
-
-#lightbox-close:hover {
-    color: #fff;
-    text-shadow: 0 0 0.5vw rgba(0, 0, 0, 0.5);
-
-}
-
-.text-right {
-    flex: 1;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    line-height: 1.4;
-    overflow: hidden;
-}
-
-.title .icon-pdf,
-.title .icon-image,
-.title .icon-video {
-    display: none !important;
-    opacity: 0;
-}
-
-.hidden {
-    visibility: hidden;
-}
-
-.main-content {
-    grid-area: main-content;
-    display: flex;
-    position: relative;
-    overflow-x: hidden;
-    flex-direction: column;
-    background: #F0F2F5;
-
-    gap: 2vw;
-    margin: 0 0.5vw 0.5vw 0;
-    flex-grow: 1;
-    background: #F0F2F5;
-    border-radius: 0 0 1vw 1vw;
-}
-
+/* #region ================= SIDE BAR ================= */
 
 .sidebar {
     grid-area: sidebar;
@@ -423,15 +162,163 @@ body {
     border-top-right-radius: 1vw;
 }
 
-.nav-logo {
-    display: block;
-    width: 60px;
-    height: 60px;
+/* #region ================= TITLE ================= */
+.title {
+    font-weight: bold;
+    color: rgb(111, 111, 111);
+    padding: 0.5vh 0 0.5vh 0;
+    font-size: var(--font-size-title);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
-.nav-logo img {
+.title i {
+    color: black;
+    font-size: 1em;          
+    padding-right: 0.7vw;     
+}
+
+.title span {
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    flex-grow: 1;
+}
+
+.title .icon-pdf,
+.title .icon-image,
+.title .icon-video {
+    display: none !important;
+    opacity: 0;
+}
+/* #endregion */
+
+/* #endregion */
+
+/* #region ================= MAIN HEADER ================= */
+
+.main-header {
+    font-size: var(--font-size-header);
+    font-weight: 500;
+    color: black;
+    margin: 1vh 1vh 0 0;   
+    background: #F0F2F5;
+    border-radius: 1vw 1vw 0 0;
+}
+
+.main-title .highlight {
+    font-weight: 600; 
+}
+
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.3vw 2.5vw;
+}
+
+.header-content .date-line {
+    text-align: left;
+    font-weight: bold;
+    align-self: flex-start;
+    font-size: 0.5em;
+    color: #555;
+}
+
+.header-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.1em;
+    width: 70%;
+}
+
+.header-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.1em;
+    text-align: right;
+    font-size: var(--font-size-body);
+    color: #333;
+    font-size: var(--font-size-small);
+    width: 30%
+}
+
+.header-right #weather {
     width: 100%;
-    height: 100%;
-    object-fit: contain;
 }
 
+.header-right .weather-icon {
+    width: 10%;
+    height: auto; 
+    vertical-align: middle; 
+    filter: drop-shadow(0.5vw 0.2vw 0.3vw rgba(0, 0, 0, 0.4));
+}
+
+/* #endregion */
+
+/* #region ================= MAIN CONTENT ================= */
+.main-content {
+    grid-area: main-content;
+    display: flex;
+    position: relative;
+    overflow-x: hidden;
+    flex-direction: column;
+    background: #F0F2F5;
+
+    gap: 2vw;
+    margin: 0 0.5vw 0.5vw 0;
+    flex-grow: 1;
+    background: #F0F2F5;
+    border-radius: 0 0 1vw 1vw;
+}
+
+.main-content.layout-2-col .carousel-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.grid {
+    gap: 2vw;
+    padding: 1vw 2vw 2vw 2.5vw;
+    flex-grow: 1;
+    background: #F0F2F5;
+    border-radius: 0 0 1vw 1vw;
+}
+
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    border: none;
+
+    color: #ffffff;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+
+    background: rgb(115, 110, 110);
+    color: #ffffff;
+    font-size: 2vw;
+    width: 3.5vw;
+    height: 3.5vw;
+    opacity: 0.7;
+}
+
+.carousel-btn.prev {
+    left: 0.5vw;
+}
+
+.carousel-btn.next {
+    right: 0.5vw;
+}
+
+/* #endregion */
+
+#clock {
+    font-weight: bold;
+    font-size: 1em;
+}
