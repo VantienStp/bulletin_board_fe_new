@@ -122,3 +122,61 @@
   min-width: 45px;
   text-align: left;
 }
+
+
+
+/* #region ========== SETTINGS TABS ========== */
+
+.settings-tabs {
+  display: flex;
+  gap: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.4rem;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  outline: none;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  position: relative;
+  padding: 0.4rem 0.8rem;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--highlight, #415A77);
+  transform: translateY(-1px);
+}
+
+.tab-btn.active {
+  color: var(--primary, #0d1b2a);
+  font-weight: 700;
+}
+
+.tab-btn.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -0.4rem;
+  width: 100%;
+  height: 3px;
+  background: var(--highlight, #415A77);
+  border-radius: 3px;
+  animation: tabSlide 0.3s ease;
+}
+
+@keyframes tabSlide {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* #endregion */

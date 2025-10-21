@@ -55,32 +55,26 @@
 
   /* ======= SHADOW TOKENS ======= */
 
-    /* Bóng nổi nhẹ (Soft elevation) */
+    --shadow-hover:
+    0.15vw 0.15vw 0.3vw rgba(22, 27, 29, 0.15),
+    -0.15vw -0.15vw 0.3vw rgba(250, 251, 255, 1);
+
   --shadow-soft: 
     0.3vw 0.3vw 0.6vw rgba(22, 27, 29, 0.23),
     -0.3vw -0.3vw 0.6vw rgba(250, 251, 255, 1);
 
-  /* Bóng nổi trung bình */
   --shadow-medium: 
     0.6vw 0.6vw 1.2vw rgba(22, 27, 29, 0.23),
     -0.6vw -0.6vw 1.2vw rgba(250, 251, 255, 1);
 
-  /* Bóng nổi mạnh (Deep elevation) */
   --shadow-strong:
     1.2vw 1.2vw 2.4vw rgba(22, 27, 29, 0.23),
     -1.2vw -1.2vw 2.4vw rgba(250, 251, 255, 1);
 
-  /* Bóng lõm (Inner shadow – ấn xuống) */
   --shadow-inner:
     inset 0.3vw 0.3vw 0.6vw rgba(22, 27, 29, 0.23),
     inset -0.3vw -0.3vw 0.6vw rgba(250, 251, 255, 1);
 
-  /* Bóng siêu nhẹ (Hover state) */
-  --shadow-hover:
-    0.15vw 0.15vw 0.3vw rgba(22, 27, 29, 0.15),
-    -0.15vw -0.15vw 0.3vw rgba(250, 251, 255, 1);
-
-  /* Bóng lồi (Raised shadow – lồi ra) */
   --shadow-raised: 
     0.25vw 0.25vw 0.6vw rgba(0, 0, 0, 0.25),
     -0.25vw -0.25vw 0.6vw rgba(255, 255, 255, 0.1);
