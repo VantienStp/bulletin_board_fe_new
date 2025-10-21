@@ -13,6 +13,12 @@ export default function HomePage() {
   const [layoutConfig, setLayoutConfig] = useState(null);
 
   useEffect(() => {
+    const el = document.getElementById('devtools-indicator');
+    if (el) el.style.display = 'none';
+    console.log("addsadasd", el)
+  }, []);
+
+  useEffect(() => {
     async function fetchCategories() {
       try {
         const res = await fetch(`${API_BASE_URL}/categories`);

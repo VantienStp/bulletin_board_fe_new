@@ -2,8 +2,9 @@
 import "./admin.css";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FaTachometerAlt, FaList, FaClone, FaThLarge, FaUsers} from "react-icons/fa";
+import { FaTachometerAlt, FaList, FaClone, FaThLarge, FaUsers } from "react-icons/fa";
 import { BASE_URL } from "@/lib/api";
+import AdminHeader from "@/components/admin/Header"; 
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
@@ -14,8 +15,6 @@ export default function AdminLayout({ children }) {
     { href: "/admin/cards", label: "Cards", icon: <FaClone /> },
     { href: "/admin/layouts", label: "Layouts", icon: <FaThLarge /> },
     { href: "/admin/users", label: "Users", icon: <FaUsers /> },
-    { href: "/admin/users", label: "Settings", icon: <FaUsers /> },
-    
   ];
 
   return (
@@ -28,21 +27,18 @@ export default function AdminLayout({ children }) {
           </a>
         </div>
         <ul>
-          {menu
-            .filter((item) => item.label !== "Settings") // các item bình thường
-            .map((item) => (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={pathname === item.href ? "active" : ""}
-                >
-                  <span className="icon">{item.icon}</span>
-                  <span>{item.label}</span>
-                </Link>
-              </li>
-            ))}
+          {menu.map((item) => (
+            <li key={item.href}>
+              <Link
+                href={item.href}
+                className={pathname === item.href ? "active" : ""}
+              >
+                <span className="icon">{item.icon}</span>
+                <span>{item.label}</span>
+              </Link>
+            </li>
+          ))}
 
-          {/* SETTINGS nằm dưới cùng */}
           <li className="setting">
             <Link
               href="/admin/settings"
@@ -55,16 +51,8 @@ export default function AdminLayout({ children }) {
         </ul>
       </aside>
 
-      {/* HEADER */}
-      <header className="main-header">
-        <div className="header-content">
-          <h1 className="header-title">Trang Quản Trị Toà Án</h1>
-          <div className="header-info">
-            <span>{new Date().toLocaleDateString("vi-VN")}</span>
-            <span className="admin-role">Admin</span>
-          </div>
-        </div>
-      </header>
+      {/* HEADER (import từ component riêng) */}
+      <AdminHeader />
 
       {/* MAIN CONTENT */}
       <main className="main-content">{children}</main>

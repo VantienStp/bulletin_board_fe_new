@@ -23,8 +23,6 @@ export default function CardsPage() {
   const currentItems = cards.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(cards.length / itemsPerPage);
 
-
-
   // 🧠 Lấy danh sách card khi load trang
   useEffect(() => {
     fetchCards();
@@ -45,10 +43,10 @@ export default function CardsPage() {
     setEditingCard(card);
     setFormData({
       title: card.title,
-      contents:
-        card.contents && card.contents.length > 0
-          ? card.contents
-          : [{ type: 'image', url: '', description: '', qrCode: '' }],
+      // contents:
+      //   card.contents && card.contents.length > 0
+      //     ? card.contents
+      //     : [{ type: 'image', url: '', description: '', qrCode: '' }],
     });
     setShowForm(true);
   }
@@ -261,9 +259,9 @@ export default function CardsPage() {
               required
             />
 
-            <h4 style={{ marginTop: '10px', marginBottom: '5px' }}>Danh sách nội dung</h4>
+            {/* <h4 style={{ marginTop: '10px', marginBottom: '5px' }}>Danh sách nội dung</h4> */}
 
-            {formData.contents.map((c, i) => (
+            {/* {formData.contents.map((c, i) => (
               <div key={i} className="content-item">
                 <div className="content-item-header">
                   <span>Nội dung {i + 1}</span>
@@ -329,11 +327,7 @@ export default function CardsPage() {
                   />
                 </div>
               </div>
-            ))}
-
-            <button type="button" className="btn-secondary" onClick={handleAddContent}>
-              ➕ Thêm nội dung
-            </button>
+            ))} */}
 
             <div className="modal-actions">
               <button type="submit" className="btn-primary">Lưu</button>

@@ -111,12 +111,15 @@
 }
 
 .qr-text {
+    max-height: 5vh;  
     font-size: 0.8vw;
     font-weight: 600;
     color: white;
     white-space: normal;
     word-wrap: break-word;
     overflow: hidden;
+    line-height: 1.3em;
+    /* line-height: 1.3em;  */
 }
 
 /* #endregion */

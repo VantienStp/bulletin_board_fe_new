@@ -51,25 +51,25 @@ export default function AdminDashboard() {
       <h1 className="dashboard-title">Bảng điều khiển quản trị</h1>
       <div className="stats-grid">
         <div className="stat-card">
-          <FaList size={30} color="#415A77" />
+          <FaList/>
           <h2>Danh mục</h2>
           <p>{stats.categories}</p>
         </div>
 
         <div className="stat-card">
-          <FaClone size={30} color="#415A77" />
+          <FaClone/>
           <h2>Thẻ nội dung</h2>
           <p>{stats.cards}</p>
         </div>
 
         <div className="stat-card">
-          <FaThLarge size={30} color="#415A77" />
+          <FaThLarge/>
           <h2>Bố cục</h2>
           <p>{stats.layouts}</p>
         </div>
 
         <div className="stat-card">
-          <FaUsers size={30} color="#415A77" />
+          <FaUsers/>
           <h2>Người dùng</h2>
           <p>{stats.users}</p>
         </div>
