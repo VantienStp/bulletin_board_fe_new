@@ -5,6 +5,7 @@ import Modal from '@/components/admin/Modal';
 import Link from 'next/link';
 import "./categories.css";
 import { API_BASE_URL } from '@/lib/api';
+import { getToken } from '@/lib/auth';
 
 
 export default function CategoriesPage() {
@@ -48,11 +49,9 @@ export default function CategoriesPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
 
-    // const method = editingCategory ? 'PATCH' : 'POST';
-    const method = 'PUT';
-
+    const method = editingCategory ? "PUT" : "POST";
     const url = editingCategory
       ? `${API_BASE_URL}/categories/${editingCategory._id}`
       : `${API_BASE_URL}/categories`;
@@ -61,27 +60,28 @@ export default function CategoriesPage() {
       const res = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });
 
       if (res.ok) {
-        alert(editingCategory ? '✅ Đã cập nhật danh mục' : '✅ Đã tạo danh mục mới');
+        alert(editingCategory ? "✅ Đã cập nhật danh mục" : "✅ Đã tạo danh mục mới");
         setShowForm(false);
         setEditingCategory(null);
         fetchCategories();
       } else {
         const err = await res.json();
-        console.error('❌ Phản hồi lỗi:', err);
-        alert('Cập nhật thất bại');
+        console.error("❌ Phản hồi lỗi:", err);
+        alert(err.message || "Cập nhật thất bại");
       }
     } catch (err) {
-      console.error('❌ Lỗi khi lưu danh mục:', err);
-      alert('Lỗi kết nối server');
+      console.error("❌ Lỗi khi lưu danh mục:", err);
+      alert("Lỗi kết nối server");
     }
   }
+
 
   function handleEdit(category) {
     setEditingCategory(category);
@@ -95,8 +95,7 @@ export default function CategoriesPage() {
 
   async function handleDelete(id) {
     if (!confirm('Bạn có chắc muốn xóa danh mục này?')) return;
-    const token = localStorage.getItem('jwt_token');
-
+    const token = getToken();
     try {
       const res = await fetch(`${API_BASE_URL}/categories/${id}`, {
         method: 'DELETE',

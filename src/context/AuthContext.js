@@ -1,10 +1,10 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
+import { API_BASE_URL } from "@/lib/api";
 
 const AuthContext = createContext();
 export const useAuth = () => useContext(AuthContext);
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:5000/api";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -16,17 +16,17 @@ export const AuthProvider = ({ children }) => {
     return match ? decodeURIComponent(match[1]) : null;
   };
 
-  // 🧱 Check đăng nhập khi load FE
   useEffect(() => {
     async function fetchUser() {
       try {
+        const token = localStorage.getItem("accessToken");
         const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
           method: "POST",
-          credentials: "include", // ⚠️ cần thiết để gửi cookie
+          credentials: "include",
+          headers: { Authorization: `Bearer ${token}`},
         });
         if (res.ok) {
           const data = await res.json();
-          console.log("🔄 Token refreshed:", data);
           setUser(data.user || { role: "user" });
         }
       } catch (err) {

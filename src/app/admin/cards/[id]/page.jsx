@@ -6,6 +6,7 @@ import Modal from '@/components/admin/Modal';
 import { API_BASE_URL } from '@/lib/api';
 import { useParams } from 'next/navigation';
 import "./card-detail.css";
+import { getToken } from '@/lib/auth';
 
 export default function CardDetailPage() {
   const [card, setCard] = useState(null);
@@ -30,7 +31,7 @@ export default function CardDetailPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const token = localStorage.getItem("jwt_token");
+    const token = getToken();
     if (!card) return;
 
     const finalData = JSON.parse(JSON.stringify(formData));
@@ -39,28 +40,39 @@ export default function CardDetailPage() {
     if (formData.url instanceof File) {
       const fd = new FormData();
       fd.append("file", formData.url);
-      const res = await fetch(`${API_BASE_URL}/upload`, {
+      const uploadRes = await fetch(`${API_BASE_URL}/upload`, {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
         body: fd,
       });
-      const data = await res.json();
-      if (data.url) {
-        finalData.url = data.url;
-        finalData.type = data.type || formData.type;
+
+      const uploadData = await uploadRes.json();
+
+      if (uploadRes.ok && uploadData.url) {
+        finalData.url = uploadData.url;
+        finalData.type = uploadData.type || formData.type;
+      } else {
+        console.error("❌ Upload URL thất bại:", uploadData);
+        finalData.url = "";
       }
     }
 
-    // 🧠 Nếu người dùng chọn file mới cho QR code → upload trước
     if (formData.qrCode instanceof File) {
       const fd = new FormData();
       fd.append("file", formData.qrCode);
-      const res = await fetch(`${API_BASE_URL}/upload`, {
+      const uploadRes = await fetch(`${API_BASE_URL}/upload`, {
         method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
         body: fd,
       });
-      const data = await res.json();
-      if (data.url) {
-        finalData.qrCode = data.url;
+
+      const uploadData = await uploadRes.json();
+
+      if (uploadRes.ok && uploadData.url) {
+        finalData.qrCode = uploadData.url;
+      } else {
+        console.error("❌ Upload QR thất bại:", uploadData);
+        finalData.qrCode = "";
       }
     }
 
@@ -97,7 +109,7 @@ export default function CardDetailPage() {
   
   async function handleDeleteContent(index) {
     if (!confirm('Bạn có chắc muốn xóa nội dung này?')) return;
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
     try {
       const res = await fetch(`${API_BASE_URL}/cards/${id}/contents/${index}`, {
         method: 'DELETE',

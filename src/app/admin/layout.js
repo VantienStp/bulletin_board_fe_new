@@ -1,13 +1,16 @@
 "use client";
+import { useEffect, useState } from "react";
 import "./admin.css";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { FaTachometerAlt, FaList, FaClone, FaThLarge, FaUsers } from "react-icons/fa";
-import { BASE_URL } from "@/lib/api";
-import AdminHeader from "@/components/admin/Header"; 
+import { API_BASE_URL, BASE_URL } from "@/lib/api";
+import { getToken } from "@/lib/auth";
+import AdminHeader from "@/components/admin/Header";
 
 export default function AdminLayout({ children }) {
   const pathname = usePathname();
+  const router = useRouter();
 
   const menu = [
     { href: "/admin", label: "Dashboard", icon: <FaTachometerAlt /> },
@@ -16,6 +19,19 @@ export default function AdminLayout({ children }) {
     { href: "/admin/layouts", label: "Layouts", icon: <FaThLarge /> },
     { href: "/admin/users", label: "Users", icon: <FaUsers /> },
   ];
+
+  useEffect(() => {
+    async function verifyAuth() {
+      const token = getToken();
+      if (!token) {
+        console.warn("⚠️ No token found → redirecting to login");
+        router.push("/login");
+        return;
+      }
+    }
+
+    verifyAuth();
+  }, [router]);
 
   return (
     <div className="admin-grid">
@@ -38,7 +54,6 @@ export default function AdminLayout({ children }) {
               </Link>
             </li>
           ))}
-
           <li className="setting">
             <Link
               href="/admin/settings"
@@ -51,7 +66,7 @@ export default function AdminLayout({ children }) {
         </ul>
       </aside>
 
-      {/* HEADER (import từ component riêng) */}
+      {/* HEADER */}
       <AdminHeader />
 
       {/* MAIN CONTENT */}

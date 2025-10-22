@@ -1,9 +1,12 @@
+// admin/page.jsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaList, FaClone, FaThLarge, FaUsers } from "react-icons/fa";
 import { API_BASE_URL } from "@/lib/api";
+
+import { getToken } from "@/lib/auth";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -18,9 +21,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const token = localStorage.getItem("jwt_token");
-
+        const token = getToken()
         if (!token) {
+          console.warn("⚠️ No token found → redirecting to login");
           router.push("/login");
           return;
         }
@@ -30,7 +33,8 @@ export default function AdminDashboard() {
         });
 
         if (res.status === 401 || res.status === 403) {
-          localStorage.removeItem("jwt_token");
+          console.warn("❌ Token expired or invalid");
+          localStorage.removeItem("accessToken");
           router.push("/login");
           return;
         }
@@ -38,7 +42,7 @@ export default function AdminDashboard() {
         const data = await res.json();
         setStats(data);
       } catch (err) {
-        console.error("Lỗi khi lấy dữ liệu:", err);
+        console.error("🔥 Error fetching dashboard:", err);
         router.push("/login");
       }
     }

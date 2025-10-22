@@ -5,6 +5,7 @@ import Modal from '@/components/admin/Modal';
 import { API_BASE_URL } from '@/lib/api';
 import "./users.css";
 import Link from 'next/link';
+import { getToken } from '@/lib/auth';
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -22,7 +23,7 @@ export default function UsersPage() {
   useEffect(() => { fetchUsers(); }, []);
 
   async function fetchUsers() {
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
     const res = await fetch(`${API_BASE_URL}/users`, {
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -38,7 +39,7 @@ export default function UsersPage() {
 
   async function handleDelete(id) {
     if (!confirm('Bạn có chắc muốn xóa người dùng này?')) return;
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
     const res = await fetch(`${API_BASE_URL}/users/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
@@ -51,11 +52,11 @@ export default function UsersPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
     const method = editingUser ? 'PUT' : 'POST';
     const url = editingUser
       ? `${API_BASE_URL}/users/${editingUser._id}`
-      : '${API_BASE_URL}/users';
+      : `${API_BASE_URL}/users`;
 
     const res = await fetch(url, {
       method,

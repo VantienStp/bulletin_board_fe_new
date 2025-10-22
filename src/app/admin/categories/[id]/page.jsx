@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { FaArrowLeft, FaPlusCircle, FaTrashAlt } from 'react-icons/fa';
 import './category-detail.css';
 import { API_BASE_URL } from '@/lib/api';
+import { getToken } from '@/lib/auth';
 
 
 export default function CategoryDetailPage() {
@@ -68,7 +69,7 @@ export default function CategoryDetailPage() {
 
   async function handleAddCard() {
     if (!selectedCardId) return alert('Vui lòng chọn thẻ để thêm.');
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
 
     try {
       const res = await fetch(`${API_BASE_URL}/categories/${id}/add-card`, {
@@ -97,7 +98,7 @@ export default function CategoryDetailPage() {
 
   async function handleRemoveCard(cardId) {
     if (!confirm('Bạn có chắc muốn gỡ thẻ này khỏi danh mục?')) return;
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
 
     try {
       const res = await fetch(

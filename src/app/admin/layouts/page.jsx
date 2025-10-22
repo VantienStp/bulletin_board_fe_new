@@ -5,6 +5,7 @@ import Modal from '@/components/admin/Modal';
 import "./layouts.css";
 import Link from 'next/link';
 import { API_BASE_URL } from '@/lib/api';
+import { getToken } from '@/lib/auth';
 
 
 export default function LayoutsPage() {
@@ -22,8 +23,6 @@ export default function LayoutsPage() {
 
   const totalPages = Math.ceil(layouts.length / itemsPerPage);
 
-
-
   useEffect(() => { fetchLayouts(); }, []);
 
   async function fetchLayouts() {
@@ -40,7 +39,7 @@ export default function LayoutsPage() {
 
   async function handleDelete(id) {
     if (!confirm('Bạn có chắc muốn xóa bố cục này?')) return;
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
     const res = await fetch(`${API_BASE_URL}/gridlayouts/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
@@ -53,7 +52,7 @@ export default function LayoutsPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
     const method = editingLayout ? 'PUT' : 'POST';
     const url = editingLayout
       ? `${API_BASE_URL}/gridlayouts/${editingLayout._id}`
@@ -64,6 +63,7 @@ export default function LayoutsPage() {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify(formData),
     });
+    console.log("📤 Form data gửi đi:", formData);
 
     if (res.ok) {
       setShowForm(false);

@@ -5,6 +5,7 @@ import Modal from '@/components/admin/Modal';
 import Link from 'next/link';
 import "./cards.css";
 import { API_BASE_URL, BASE_URL } from '@/lib/api';
+import { getToken } from '@/lib/auth';
 
 export default function CardsPage() {
   const [cards, setCards] = useState([]);
@@ -54,7 +55,7 @@ export default function CardsPage() {
   // 🗑 Xóa card
   async function handleDelete(id) {
     if (!confirm('Bạn có chắc muốn xóa thẻ này?')) return;
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
 
     try {
       const res = await fetch(`${API_BASE_URL}/cards/${id}`, {
@@ -106,7 +107,7 @@ export default function CardsPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const token = localStorage.getItem('jwt_token');
+    const token = getToken();
     const finalData = JSON.parse(JSON.stringify(formData));
 
     for (let i = 0; i < formData.contents.length; i++) {
