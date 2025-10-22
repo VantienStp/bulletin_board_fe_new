@@ -43,6 +43,20 @@ export default function Card({ title, contents = [], style = {} }) {
     return () => window.removeEventListener("resize", setDynamicSizes);
   }, [activeFile]);
 
+  useEffect(() => {
+  if (activeFile?.type === "pdf" && activeFile?.url) {
+    // 🧾 Gửi request để lấy header response của PDF
+    fetch(activeFile.url, { method: "HEAD" })
+      .then((res) => {
+        console.log("📄 PDF Headers for:", activeFile.url);
+        for (const [key, value] of res.headers.entries()) {
+          console.log(`   ${key}: ${value}`);
+        }
+      })
+      .catch((err) => console.error("❌ Error fetching PDF headers:", err));
+  }
+}, [activeFile]);
+
   const setDynamicSizes = () => {
     const imageAndQRWrapper = wrapperRef.current;
     const contentInBottom = contentBottomRef.current;
@@ -107,7 +121,7 @@ export default function Card({ title, contents = [], style = {} }) {
                 )}
 
                 {activeFile?.type === "pdf" && (
-                  <iframe src={activeFile.url} title="PDF Viewer" className="media-pdf" frameBorder="0"
+                  <iframe src={encodeURI(activeFile.url)} title="PDF Viewer" className="media-pdf" frameBorder="0"
                     style={{ width: "100%", height: "100%", border: "none"}}
                   />
                 )}
