@@ -103,6 +103,8 @@ body {
     text-align: center;
     align-items: center;
     padding: 0.7vw calc(var(--sidebar-width) * var(--padding-ratio) / 2) 0.7vw 0;
+        transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .sidebar ul li a i,
@@ -128,6 +130,7 @@ body {
     border-top-left-radius: 1vw;   
     border-bottom-left-radius: 1vw;
     z-index: 1;
+    width: 110%;
 }
 
 .sidebar ul li a.active::before {
@@ -135,18 +138,19 @@ body {
     position: absolute;
     top: -1vw;    
     right: 0;
-    width: 1.2vw;    
+    width: 2vw;    
     height: 1.2vw;  
     background: #F0F2F5;
+
 }
 
 .sidebar ul li a.active::after {
     content: "";
     position: absolute;
-    top: -1vw;
-    right: 0vw;
-    width: 1.2vw;
-    height: 1vw;
+    top: -2vw;
+    right: 0.5vw;
+    width: 2vw;
+    height: 2vw;
     background: #0D1B2A;
     border-bottom-right-radius: 1vw;
 }
@@ -154,10 +158,10 @@ body {
 .sidebar ul li a.active .corner-bottom {
     content: "";
     position: absolute;
-    bottom: -1vw;
+    bottom: -1.2vw;
     right: 0;
-    width: 1.2vw;
-    height: 1vw;
+    width: 2vw;
+    height: 1.5vw;
     background: #F0F2F5;
 }
 
@@ -165,9 +169,11 @@ body {
     content: "";
     position: absolute;
     right: 0vw;
-    width: 1.2vw;
-    height: 1vw;
+    width: 5vw;
+    height: 1.5vw;
+    top: 0.2vw;
     background: #0D1B2A;
+    right: 0.5vw;
     border-top-right-radius: 1vw;
 }
 
@@ -295,6 +301,8 @@ body {
     flex-grow: 1;
     background: #F0F2F5;
     border-radius: 0 0 1vw 1vw;
+    transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .carousel-btn {
