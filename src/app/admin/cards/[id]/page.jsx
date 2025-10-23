@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { FaClone, FaEye, FaPlusSquare, FaEdit, FaTrash } from 'react-icons/fa';
 import Link from 'next/link';
 import Modal from '@/components/admin/Modal';
-import { API_BASE_URL } from '@/lib/api';
+import { API_BASE_URL, BASE_URL } from '@/lib/api';
 import { useParams } from 'next/navigation';
 import "./card-detail.css";
 import { getToken } from '@/lib/auth';
