@@ -108,20 +108,20 @@ export default function Card({ title, contents = [], style = {} }) {
                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 1,}}
               >
                 {activeFile?.type === "image" && (
-                  <img src={activeFile.url} alt={title} className="media-image"
+                  <img src={encodeURI(`${BASE_URL}/${activeFile.url}`)} alt={title} className="media-image"
                     style={{ width: "100%", height: "100%", objectFit: "cover",
                     }}
                   />
                 )}
 
                 {activeFile?.type === "video" && (
-                  <video src={activeFile.url} muted loop autoPlay playsInline controls className="media-video"
+                  <video src={encodeURI(`${BASE_URL}/${activeFile.url}`)} muted loop autoPlay playsInline controls className="media-video"
                     style={{ width: "100%", height: "100%", objectFit: "cover", backgroundColor: "#000",}}
                   />
                 )}
 
                 {activeFile?.type === "pdf" && (
-                  <iframe src={encodeURI(activeFile.url)} title="PDF Viewer" className="media-pdf" frameBorder="0"
+                  <iframe src={encodeURI(`${BASE_URL}/${activeFile.url}`)} title="PDF Viewer" className="media-pdf" frameBorder="0"
                     style={{ width: "100%", height: "100%", border: "none"}}
                   />
                 )}
