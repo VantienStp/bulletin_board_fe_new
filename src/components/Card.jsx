@@ -125,6 +125,7 @@ export default function Card({ title, contents = [], style = {} }) {
                     style={{ width: "100%", height: "100%", border: "none"}}
                   />
                 )}
+                
               </motion.div>
             </AnimatePresence>
           ) : (
