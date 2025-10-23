@@ -1,13 +1,12 @@
 /** @type {import('next').NextConfig} */
 
-import { API_BASE_URL } from './src/lib/api.js';
-
 const nextConfig = {
   async rewrites() {
+    const backendUrl = process.env.BASE_URL || "http://localhost:5000";
     return [
       {
         source: "/uploads/:path*",
-        destination: `${API_BASE_URL}/uploads/:path*`, // backend
+        destination: `${backendUrl}/uploads/:path*`,
       },
     ];
   },
