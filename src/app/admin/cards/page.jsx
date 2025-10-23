@@ -44,10 +44,6 @@ export default function CardsPage() {
     setEditingCard(card);
     setFormData({
       title: card.title,
-      // contents:
-      //   card.contents && card.contents.length > 0
-      //     ? card.contents
-      //     : [{ type: 'image', url: '', description: '', qrCode: '' }],
     });
     setShowForm(true);
   }
@@ -74,36 +70,34 @@ export default function CardsPage() {
     }
   }
 
-  // ✍️ Thay đổi nội dung trong form
-  function handleContentChange(index, field, value) {
-    const newContents = [...formData.contents];
-    newContents[index][field] = value;
-    setFormData({ ...formData, contents: newContents });
-  }
+  // function handleContentChange(index, field, value) {
+  //   const newContents = [...formData.contents];
+  //   newContents[index][field] = value;
+  //   setFormData({ ...formData, contents: newContents });
+  // }
 
-  // 🖼 Khi chọn file ảnh / video / pdf / QR code
-  function handleFileSelect(e, index, field) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const newContents = [...formData.contents];
-    newContents[index][field] = file; // Lưu file object tạm
-    setFormData({ ...formData, contents: newContents });
-  }
+  // function handleFileSelect(e, index, field) {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
+  //   const newContents = [...formData.contents];
+  //   newContents[index][field] = file; // Lưu file object tạm
+  //   setFormData({ ...formData, contents: newContents });
+  // }
 
-  function handleAddContent() {
-    setFormData({
-      ...formData,
-      contents: [
-        ...formData.contents,
-        { type: 'image', url: '', description: '', qrCode: '' },
-      ],
-    });
-  }
+  // function handleAddContent() {
+  //   setFormData({
+  //     ...formData,
+  //     contents: [
+  //       ...formData.contents,
+  //       { type: 'image', url: '', description: '', qrCode: '' },
+  //     ],
+  //   });
+  // }
 
-  function handleRemoveContent(index) {
-    const newContents = formData.contents.filter((_, i) => i !== index);
-    setFormData({ ...formData, contents: newContents });
-  }
+  // function handleRemoveContent(index) {
+  //   const newContents = formData.contents.filter((_, i) => i !== index);
+  //   setFormData({ ...formData, contents: newContents });
+  // }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -259,77 +253,6 @@ export default function CardsPage() {
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
             />
-
-            {/* <h4 style={{ marginTop: '10px', marginBottom: '5px' }}>Danh sách nội dung</h4> */}
-
-            {/* {formData.contents.map((c, i) => (
-              <div key={i} className="content-item">
-                <div className="content-item-header">
-                  <span>Nội dung {i + 1}</span>
-                  <button
-                    type="button"
-                    className="btn-delete"
-                    onClick={() => handleRemoveContent(i)}
-                  >
-                    🗑
-                  </button>
-                </div>
-
-                <label>Loại nội dung</label>
-                <select
-                  value={c.type}
-                  onChange={(e) => handleContentChange(i, 'type', e.target.value)}
-                >
-                  <option value="image">Hình ảnh</option>
-                  <option value="video">Video</option>
-                  <option value="pdf">Tệp PDF</option>
-                </select>
-
-                <label>URL hình ảnh / file</label>
-                <div className="upload-row">
-                  <input
-                    type="text"
-                    placeholder={`${BASE_URL}/uploads/...`}
-                    value={c.url instanceof File ? c.url.name : c.url}
-                    onChange={(e) => handleContentChange(i, 'url', e.target.value)}
-                  />
-                  <input
-                    type="file"
-                    accept={
-                      c.type === 'video'
-                        ? 'video/*'
-                        : c.type === 'pdf'
-                        ? 'application/pdf'
-                        : 'image/*'
-                    }
-                    onChange={(e) => handleFileSelect(e, i, 'url')}
-                  />
-                </div>
-
-                <label>Mô tả</label>
-                <textarea
-                  placeholder="Mô tả ngắn..."
-                  value={c.description}
-                  onChange={(e) => handleContentChange(i, 'description', e.target.value)}
-                />
-
-                <label>QR Code (URL)</label>
-                <div className="upload-row">
-                  <input
-                    type="text"
-                    placeholder={`${BASE_URL}/uploads/qrcode.png`}
-                    value={c.qrCode instanceof File ? c.qrCode.name : c.qrCode}
-                    onChange={(e) => handleContentChange(i, 'qrCode', e.target.value)}
-                  />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => handleFileSelect(e, i, 'qrCode')}
-                  />
-                </div>
-              </div>
-            ))} */}
-
             <div className="modal-actions">
               <button type="submit" className="btn-primary">Lưu</button>
               <button type="button" className="btn-cancel" onClick={() => setShowForm(false)}>
