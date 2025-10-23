@@ -128,11 +128,11 @@ export default function CardDetailPage() {
     }
   }
 
-  const getFullUrl = (path) => {
+  function getFullUrl(path) {
     if (!path) return "";
     if (path.startsWith("http")) return path;
     return `${BASE_URL}/${path.replace(/^\/+/, "")}`;
-  };
+  }
 
   function handleEditContent(index) {
     const content = card.contents[index];
@@ -180,14 +180,13 @@ export default function CardDetailPage() {
             <tr key={i}>
               <td>{c.type}</td>
               <td>
-                {c.type === 'image' && <img src={`/${c.url}`} alt="" width="100" />}
-                {c.type === 'video' && <video src={`/${c.url}`} controls width="150" />}
-                {c.type === 'pdf' && <iframe src={`/${c.url}`} width="150" height="100" />}
+                {c.type === 'image' && <img src={getFullUrl(c.url)} alt="" width="100" />}
+                {c.type === 'video' && <video src={getFullUrl(c.url)} controls width="150" />}
+                {c.type === 'pdf' && <iframe src={getFullUrl(c.url)} width="150" height="100" />}
               </td>
               <td>{c.description || '—'}</td>
               <td>
-                {/* {c.qrCode ? <img src={`/${c.qrCode}`} alt="QR" width="80" /> : '—'} */}
-                <img src={getFullUrl(c.qrCode)} alt="QR" width="80" />
+                {c.qrCode ? <img src={getFullUrl(c.qrCode)} alt="QR" width="80" /> : '—'}
               </td>
               <td>
                 <Link href={c.url} target="_blank" className="btn-view" title="Xem chi tiết">
