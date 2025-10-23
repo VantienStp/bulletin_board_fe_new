@@ -148,7 +148,7 @@ body {
     content: "";
     position: absolute;
     top: -2vw;
-    right: 0.5vw;
+    right: 0.55vw;
     width: 2vw;
     height: 2vw;
     background: #0D1B2A;
@@ -173,7 +173,7 @@ body {
     height: 1.5vw;
     top: 0.2vw;
     background: #0D1B2A;
-    right: 0.5vw;
+    right: 0.55vw;
     border-top-right-radius: 1vw;
 }
 
