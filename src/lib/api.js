@@ -1,6 +1,8 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
-export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
+// export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+// export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
+export const BASE_URL = "https://bulletin-board-be-new.onrender.com";
+export const API_BASE_URL = `${BASE_URL}/api`;
 
 export async function loginUser(username, password) {
     const response = await fetch(`${API_BASE_URL}/users/login`, { // ⭐ Thay đổi endpoint
