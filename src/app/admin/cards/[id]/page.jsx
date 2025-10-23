@@ -129,10 +129,10 @@ export default function CardDetailPage() {
   }
 
   function getFullUrl(path) {
-    if (!path) return "";
-    if (path.startsWith("http")) return path;
-    return `${BASE_URL}/${path.replace(/^\/+/, "")}`;
-  }
+  if (!path) return "";
+  if (path.startsWith("http")) return path;
+  return `${BASE_URL.replace(/\/$/, "")}/${path.replace(/^\/+/, "")}`;
+}
 
   function handleEditContent(index) {
     const content = card.contents[index];
