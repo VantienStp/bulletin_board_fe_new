@@ -1,83 +1,94 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 import { API_BASE_URL } from "@/lib/api";
+import { getToken, setToken, clearToken } from "@/lib/auth";
 
 const AuthContext = createContext();
-export const useAuth = () => useContext(AuthContext);
+export function useAuth() {
+  return useContext(AuthContext);
+}
 
-
-export const AuthProvider = ({ children }) => {
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [checked, setChecked] = useState(false); // để tránh gọi refresh liên tục
 
-  // 🧠 Lấy CSRF token từ cookie
-  const getCsrfToken = () => {
-    const match = document.cookie.match(/(?:^|; )csrf_token=([^;]*)/);
-    return match ? decodeURIComponent(match[1]) : null;
+  // ✅ Hàm kiểm tra có cookie refresh_token hay không
+  const hasRefreshCookie = () => {
+    try {
+      return document.cookie.split(";").some((c) => c.trim().startsWith("refresh_token="));
+    } catch {
+      return false;
+    }
   };
 
   useEffect(() => {
     async function fetchUser() {
       try {
-        const token = localStorage.getItem("accessToken");
+        const token = getToken();
+        const hasCookie = hasRefreshCookie();
+
+        // 🧠 Nếu không có token và cũng không có cookie → chưa đăng nhập
+        if (!token && !hasCookie) {
+          console.log("🟡 [Auth] Chưa có accessToken & cookie, bỏ qua refresh");
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        // ⚠️ Tránh gọi lại nhiều lần nếu cookie hết hạn
+        if (checked && !hasCookie) {
+          console.log("⚠️ [Auth] Cookie refresh_token không còn, bỏ qua gọi lại");
+          setUser(null);
+          setLoading(false);
+          return;
+        }
+
+        console.log("🔄 [Auth] Đang kiểm tra refresh token...");
         const res = await fetch(`${API_BASE_URL}/auth/refresh`, {
           method: "POST",
-          credentials: "include",
-          headers: { Authorization: `Bearer ${token}`},
+          credentials: "include", // gửi cookie
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
+
         if (res.ok) {
           const data = await res.json();
+          console.log("✅ [Auth] Refresh thành công, cấp lại access token");
+          setToken(data.token, data.expiresAt);
           setUser(data.user || { role: "user" });
+        } else {
+          console.warn("❌ [Auth] Refresh token không hợp lệ hoặc hết hạn");
+          clearToken();
+          setUser(null);
         }
       } catch (err) {
-        console.error("❌ Refresh token failed:", err);
+        console.error("🔥 [Auth] Lỗi khi gọi refresh:", err);
+        clearToken();
+        setUser(null);
       } finally {
         setLoading(false);
+        setChecked(true);
       }
     }
+
     fetchUser();
   }, []);
 
-  // 🧱 Hàm đăng nhập
-  const login = async (email, password) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setUser(data.user);
-        return { success: true };
-      } else {
-        return { success: false, message: data.message };
-      }
-    } catch (err) {
-      console.error("❌ Login error:", err);
-      return { success: false, message: "Lỗi mạng" };
-    }
-  };
-
-  // 🧱 Hàm logout
-  const logout = async () => {
-    try {
-      const csrf = getCsrfToken();
-      await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "X-CSRF-Token": csrf },
-      });
+  const value = {
+    user,
+    loading,
+    setUser,
+    clearAuth: () => {
+      clearToken();
       setUser(null);
-    } catch (err) {
-      console.error("❌ Logout error:", err);
-    }
+    },
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, isAuthenticated: !!user }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
-};
+}

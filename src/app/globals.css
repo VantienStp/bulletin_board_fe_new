@@ -9,10 +9,9 @@
   --overlay-bg-hover: rgba(12, 12, 12, 0.6);
 
   --font-size-header: 2vw;
-  --font-size-title: 1.1vw;
+  --font-size-title: 1.3vw;
   --font-size-normal: 1.2vw;
   --font-size-small: 1vw;
-  --font-size-body: 1em;
 
   --sidebar-width: 6vw;
   --padding-ratio: 0.2;
@@ -68,10 +67,11 @@ body {
 }
 
 .sidebar .nav-logo img {
-    width: 100%;              
+    width: 4.5vw;              
     height: auto;            
     object-fit: contain;       
-    display: block;            
+    display: block;   
+    margin-top: 0.6vw;
 }
 
 .sidebar ul {
@@ -130,7 +130,7 @@ body {
     border-top-left-radius: 1vw;   
     border-bottom-left-radius: 1vw;
     z-index: 1;
-    width: 110%;
+    /* width: 110%; */
 }
 
 .sidebar ul li a.active::before {
@@ -148,7 +148,7 @@ body {
     content: "";
     position: absolute;
     top: -2vw;
-    right: 0.55vw;
+    right: -0vw;
     width: 2vw;
     height: 2vw;
     background: #0D1B2A;
@@ -159,7 +159,7 @@ body {
     content: "";
     position: absolute;
     bottom: -1.2vw;
-    right: 0;
+    right: -0.55vw;
     width: 2vw;
     height: 1.5vw;
     background: #F0F2F5;
@@ -171,7 +171,7 @@ body {
     right: 0vw;
     width: 5vw;
     height: 1.5vw;
-    top: 0.2vw;
+    top: 0.3vw;
     background: #0D1B2A;
     right: 0.55vw;
     border-top-right-radius: 1vw;
@@ -226,12 +226,11 @@ body {
     font-weight: 600; 
 }
 
-
 .header-content {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 0.3vw 2.5vw;
+    padding: 1vw 2vw 0vw 2vw;
+    text-align: start;
 }
 
 .header-content .date-line {
@@ -257,15 +256,16 @@ body {
     font-size: var(--font-size-body);
     color: #333;
     font-size: var(--font-size-small);
-    width: 30%
+    width: 30%;
 }
 
 .header-right #weather {
-    width: 100%;
+    width: 100%;    
+    font-size: var(--font-size-normal);
 }
 
 .header-right .weather-icon {
-    width: 10%;
+    width: 8%;
     height: auto; 
     vertical-align: middle; 
     filter: drop-shadow(0.5vw 0.2vw 0.3vw rgba(0, 0, 0, 0.4));
@@ -297,7 +297,7 @@ body {
 
 .grid {
     gap: 2vw;
-    padding: 1vw 2vw 2vw 2.5vw;
+    padding: 1vw 2vw 2vw 2vw;
     flex-grow: 1;
     background: #F0F2F5;
     border-radius: 0 0 1vw 1vw;
@@ -335,7 +335,7 @@ body {
 
 #clock {
     font-weight: bold;
-    font-size: 1em;
+    font-size: var(--font-size-body);
 }
 
 #devtools-indicator{

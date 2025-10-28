@@ -4,8 +4,9 @@ import "./admin.css";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { FaTachometerAlt, FaList, FaClone, FaThLarge, FaUsers } from "react-icons/fa";
-import { API_BASE_URL, BASE_URL } from "@/lib/api";
+import { BASE_URL } from "@/lib/api";
 import { getToken } from "@/lib/auth";
+import { getValidToken, clearToken } from "@/lib/auth";
 import AdminHeader from "@/components/admin/Header";
 
 export default function AdminLayout({ children }) {
@@ -13,7 +14,7 @@ export default function AdminLayout({ children }) {
   const router = useRouter();
 
   const menu = [
-    { href: "/admin", label: "Dashboard", icon: <FaTachometerAlt /> },
+    { href: "/admin/dashboard", label: "Dashboard", icon: <FaTachometerAlt /> },
     { href: "/admin/categories", label: "Categories", icon: <FaList /> },
     { href: "/admin/cards", label: "Cards", icon: <FaClone /> },
     { href: "/admin/layouts", label: "Layouts", icon: <FaThLarge /> },
@@ -21,17 +22,15 @@ export default function AdminLayout({ children }) {
   ];
 
   useEffect(() => {
-    async function verifyAuth() {
-      const token = getToken();
+    (async () => {
+      const token = await getValidToken();
       if (!token) {
-        console.warn("⚠️ No token found → redirecting to login");
+        clearToken();
         router.push("/login");
-        return;
       }
-    }
+    })();
+  }, [pathname, router]);
 
-    verifyAuth();
-  }, [router]);
 
   return (
     <div className="admin-grid">

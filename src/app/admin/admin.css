@@ -1,19 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
 
 :root {
-  --bg: #EFF2F9;
-  --bg-alt: #E4EBF1;
-  --primary: #0d1b2a;
+  --bg: #ffffff;
+  --bg-2: #0d1b2a;
+  --bg-3: #ffffff;
+  --card-bg: #e7ecf7;
+
+
   --text-dark: #161B1D;
   --text-light: #FAFBFF;
-  --accent: #1B263B;
-  --highlight: #415A77;
 
-  --shadow-light: -5px -5px 10px #FAFBFF;
-  --shadow-dark: 5px 5px 10px rgba(22, 27, 29, 0.23);
-  --shadow-strong: 10px 10px 20px rgba(22, 27, 29, 0.23), -10px -10px 20px #FAFBFF;
-
-  /* Padding scale */
+  /* #region ======================= Padding/Margin ====================== */
   --padding-tiny: 0.2vw;
   --padding-small: 0.5vw;
   --padding-medium: 1vw;
@@ -21,22 +18,21 @@
   --padding-xlarge: 2vw;
   --padding-xxlarge: 2.5vw;
 
-  /* ===== Margin Scale ===== */
   --margin-tiny: 0.2vw;
   --margin-small: 0.5vw;
   --margin-medium: 1vw;
   --margin-large: 1.5vw;
   --margin-xlarge: 2vw;
   --margin-xxlarge: 2.5vw;
+  /* #endregion */
 
-  /* Gap scale */
+   /* #region ======================= Gap/Radius ====================== */
   --gap-tiny: 0.2vw;
   --gap-small: 0.5vw;
   --gap-medium: 1vw;
   --gap-large: 1.5vw;
   --gap-xlarge: 2vw;
 
-  /* ===== Radius Scale ===== */
   --radius-none: 0;
   --radius-tiny: 0.2vw;
   --radius-small: 0.4vw;
@@ -44,18 +40,24 @@
   --radius-large: 1.2vw;
   --radius-xlarge: 2vw;
   --radius-round: 50%;
+  /* #endregion */
 
-  /* ===== Font Size Scale (vw-based) ===== */
+  /* #region ======================= Font Size Scale ====================== */
   --font-size-tiny: 0.6vw;      
   --font-size-small: 0.8vw;  
   --font-size-medium: 1vw; 
   --font-size-large: 1.4vw;
   --font-size-xlarge: 1.6vw;
   --font-size-xxlarge: 2vw;
+  /* #endregion */
 
-  /* ======= SHADOW TOKENS ======= */
+  /* #region ======================= SHADOW TOKENS ====================== */
 
-    --shadow-hover:
+  --shadow-light: -5px -5px 10px #FAFBFF;
+  --shadow-dark: 5px 5px 10px rgba(22, 27, 29, 0.23);
+  --shadow-strong: 10px 10px 20px rgba(22, 27, 29, 0.23), -10px -10px 20px #FAFBFF;
+
+  --shadow-hover:
     0.15vw 0.15vw 0.3vw rgba(22, 27, 29, 0.15),
     -0.15vw -0.15vw 0.3vw rgba(250, 251, 255, 1);
 
@@ -117,18 +119,74 @@
   /* 🩰 Hiệu ứng bật nảy */
   --transition-bounce: 
     transform var(--transition-slow) var(--ease-bounce);
- 
+  /* #endregion */
+
+  --color-bg-app: #FFFFFF; 
+  --color-bg-sidebar: #FFFFFF; 
+  --color-bg-content: #F3F3F3; 
+  --color-bg-button: #2a4260; 
+  --color-bg-button-hover: #39587e;
+
+  
+  --color-text-primary: #000000;
+  --color-text-secondary: rgb(62, 61, 61);
+  
+  --color-text-active: #000000;
+
+  --color-accent: #d5dff5;
+  --color-highlight: #e7ecf7;
+  
+  --color-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+  /* ---- PRIMARY COLORS (Light Theme Default) ---- */
+  --clr-background-light: #F3F3F3; /* Nền chính */
+  --clr-surface-light: #FFFFFF;    /* Bề mặt (Card, Box) */
+  
+  /* ---- PRIMARY COLORS (Dark Theme) ---- */
+  --clr-background-dark: #11121E;  /* Nền chính (Tối) */
+  --clr-surface-dark: #1D1D29;     /* Bề mặt (Card, Box) (Tối) */
+
+  /* ---- SECONDARY/ACCENT COLORS ---- */
+  --clr-accent-yellow: #FFBC11;
+  --clr-accent-blue: #4578F9;
+  --clr-accent-green: #43B430;
+  --clr-accent-purple: #CB3EFF;
+  
+  /* ---- TYPOGRAPHY COLORS ---- */
+  --clr-text-primary-dark: #000000; /* Chữ chính trên nền sáng */
+  --clr-text-primary-light: #FFFFFF; /* Chữ chính trên nền tối */
+  --clr-text-secondary: #7B7B7B;    /* Chữ phụ */
+  
+  /* ---- TYPOGRAPHY FONT-FAMILY ---- */
+  --ff-primary: 'Inter', sans-serif;
 }
 
 [data-theme="dark"] {
-  --bg: #1B263B;
-  --bg-alt: #0D1B2A;
-  --primary: #E4EBF1;
-  --text-dark: #E0E1DD;
-  --text-light: #FAFBFF;
-  --shadow-light: -5px -5px 10px rgba(255, 255, 255, 0.05);
-  --shadow-dark: 5px 5px 10px rgba(0, 0, 0, 0.5);
+
+  --card-bg: #e7ecf7;
+
+  --color-bg-app: #1D1D29;
+  --color-bg-sidebar: #1D1D29; 
+  --color-bg-content: #11121E;
+  --color-bg-button: #470d4c
+
+
+
+
+; 
+  --color-bg-button-hover: #7B7B7B;
+  
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #CBD5E1;
+
+  --color-accent: #470d4c;
+  --color-highlight: #7692b4;
+  
+  --color-text-active: #FFFFFF;
+  
+  --color-shadow: none;
 }
+
 
 * {
   margin: 0;
@@ -151,6 +209,7 @@ body, html {
     "sidebar header"
     "sidebar main-content";
   height: 100vh;
+  background: var(--color-bg-app);
 }
 
 .admin-container {
@@ -158,9 +217,11 @@ body, html {
   min-height: 100vh;
 }
 
+/* #region ================= Sidebar ================= */
+
 .sidebar {
   grid-area: sidebar;
-  background: var(--primary);
+  background: var(--color-bg-sidebar);
   color: var(--text-light);
   padding: 0vw var(--font-size-tiny);
   display: flex;
@@ -184,13 +245,15 @@ body, html {
   padding: var(--padding-medium);
   border-radius: var(--radius-medium);
   text-decoration: none;
-  color: #bfc3d2;
+  color: var(--color-text-primary);
   transition: all 0.3s ease;
+  font-size: var(--font-size-large);
 }
 
-.sidebar ul li a,
 .sidebar ul li a .icon{
-  font-size: var(--font-size-large);
+  height: 100%;
+  display: flex;
+  align-items: center;
 }
 
 .sidebar ul li.setting {
@@ -199,13 +262,12 @@ body, html {
 }
 
 .sidebar ul li a:hover {
-  background: linear-gradient(90deg, var(--highlight), var(--accent));
-  color: #ebe8e8;
+  background: linear-gradient(90deg, var(--color-highlight));
+
 }
 
 .sidebar ul li a.active {
-  background: linear-gradient(90deg, var(--highlight), var(--accent));
-  color: #fff;
+  background: linear-gradient(80deg, var(--color-accent));
 }
 
 /* #endregion */
@@ -221,60 +283,7 @@ body, html {
 }
 
 .logo a img{
-  width: 5vw;
-}
-
-/* #endregion */
-
-/* #region ================= Main Content ================= */
-
-.main-content {
-  background: #f0f2f5;
-  padding: var(--padding-xlarge);
-  overflow-y: auto;
-  border-radius: 0 0 var(--radius-medium) var(--radius-medium);
-  margin: 0 var(--margin-small) var(--margin-small) 0;
-}
-
-.dashboard-title {
-  font-size: var(--font-size-xxlarge);
-  margin-bottom: var(--margin-xxlarge);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: var(--gap-large);
-  margin-bottom: var(--margin-large);
-}
-
-.stat-card {
-  background: var(--card-bg);
-  border-radius: var(--radius-medium);
-  box-shadow: var(--shadow-hover);
-  padding: var(--padding-large);
-  text-align: center;
-  backdrop-filter: blur(10px);
-  transition: transform 0.2s ease, box-shadow 0.3s;
-  font-size: var(--font-size-large);
-}
-
-.stat-card:hover {
-  transform: translateY(-0.5em);
-  box-shadow: var(--shadow-soft);
-}
-
-.stat-card svg {
-  color: #cc3a72;
-}
-
-.stat-card h2 {
-  color: #555;
-}
-
-.stat-card p {
-  font-weight: 700;
-  color: var(--primary);
+  width: 4.5vw;
 }
 
 /* #endregion */
@@ -289,7 +298,6 @@ body, html {
   align-items: center;
   justify-content: space-between;
   padding: 1vw 2vw;
-  border-bottom: 2px solid #e5e7eb;
   border-radius: 1vw 1vw 0 0vw;
   margin: 0.5vw 0.5vw 0 0;
 }
@@ -299,6 +307,7 @@ body, html {
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--margin-large);
+  color: var(--color-text-active);
 }
 
 .page-header h2 {
@@ -314,20 +323,32 @@ body, html {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, var(--highlight), var(--accent));
+  background: var(--color-bg-button);
   color: #fff;
+  border: none;
   border-radius: var(--radius-medium);
   padding: var(--padding-medium) var(--padding-large);
   cursor: pointer;
   transition: 0.25s ease;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   font-size: var(--font-size-medium);
 }
 
 .page-header button.btn-primary:hover {
-  background: linear-gradient(135deg, #4f6b94, var(--primary));
+  background: var(--color-bg-button-hover);
   transform: translateY(-2px);
 }
+/* #endregion */
+
+/* #region ================= Main Content ================= */
+
+.main-content {
+  background: var(--color-bg-content);
+  padding: var(--padding-xlarge);
+  overflow-y: auto;
+  border-radius: 0 0 var(--radius-medium) var(--radius-medium);
+  margin: 0 var(--margin-small) var(--margin-small) 0;
+}
+
 /* #endregion */
 
 /* #region =================== TABLE STYLES =================== */
@@ -339,7 +360,7 @@ body, html {
 }
 
 .admin-table thead th {
-  background: #e7ecf7;
+  background: var(--color-accent);
   color: #1b263b;
   text-align: left;
   padding: var(--padding-medium);
@@ -347,7 +368,12 @@ body, html {
   text-transform: uppercase;
 }
 
+.admin-table td{
+  /* background: var(--color-); */
+}
+
 .admin-table th, .admin-table td {
+
   padding: var(--padding-medium);
   font-size: var(--font-size-medium);
   text-align: left;
@@ -590,6 +616,4 @@ body, html {
 }
 
 /* #endregion */
-
-/* ===== GRID LAYOUT ===== */
 

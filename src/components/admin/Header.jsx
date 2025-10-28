@@ -50,7 +50,7 @@ export default function Header() {
     <header className="main-header">
       {/* LEFT */}
       <div className="header-left">
-        <h2 className="court-name">TÒA ÁN NHÂN DÂN TP.HỒ CHÍ MINH</h2>
+        <span className="court-name">TÒA ÁN NHÂN DÂN TP.HỒ CHÍ MINH</span>
       </div>
 
       {/* CENTER */}

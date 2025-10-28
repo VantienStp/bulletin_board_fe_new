@@ -70,35 +70,6 @@ export default function CardsPage() {
     }
   }
 
-  // function handleContentChange(index, field, value) {
-  //   const newContents = [...formData.contents];
-  //   newContents[index][field] = value;
-  //   setFormData({ ...formData, contents: newContents });
-  // }
-
-  // function handleFileSelect(e, index, field) {
-  //   const file = e.target.files[0];
-  //   if (!file) return;
-  //   const newContents = [...formData.contents];
-  //   newContents[index][field] = file; // Lưu file object tạm
-  //   setFormData({ ...formData, contents: newContents });
-  // }
-
-  // function handleAddContent() {
-  //   setFormData({
-  //     ...formData,
-  //     contents: [
-  //       ...formData.contents,
-  //       { type: 'image', url: '', description: '', qrCode: '' },
-  //     ],
-  //   });
-  // }
-
-  // function handleRemoveContent(index) {
-  //   const newContents = formData.contents.filter((_, i) => i !== index);
-  //   setFormData({ ...formData, contents: newContents });
-  // }
-
   async function handleSubmit(e) {
     e.preventDefault();
     const token = getToken();

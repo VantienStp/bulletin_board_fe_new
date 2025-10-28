@@ -36,10 +36,11 @@ export default function CardDetailPage() {
 
     const finalData = JSON.parse(JSON.stringify(formData));
 
-    // 🧠 Nếu người dùng chọn file mới cho url → upload trước
+    // 🧠 Nếu người dùng chọn file mới cho url → upload lên BE trước
     if (formData.url instanceof File) {
       const fd = new FormData();
       fd.append("file", formData.url);
+
       const uploadRes = await fetch(`${API_BASE_URL}/upload`, {
         method: "POST",
         headers: { Authorization: `Bearer ${token}` },
@@ -49,34 +50,18 @@ export default function CardDetailPage() {
       const uploadData = await uploadRes.json();
 
       if (uploadRes.ok && uploadData.url) {
+        // ✅ Lấy link file + QR tự động từ BE
         finalData.url = uploadData.url;
         finalData.type = uploadData.type || formData.type;
+        finalData.qrCode = uploadData.qrCode || "";
       } else {
-        console.error("❌ Upload URL thất bại:", uploadData);
-        finalData.url = "";
+        console.error("❌ Upload thất bại:", uploadData);
+        alert("❌ Upload thất bại, vui lòng thử lại.");
+        return;
       }
     }
 
-    if (formData.qrCode instanceof File) {
-      const fd = new FormData();
-      fd.append("file", formData.qrCode);
-      const uploadRes = await fetch(`${API_BASE_URL}/upload`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-        body: fd,
-      });
-
-      const uploadData = await uploadRes.json();
-
-      if (uploadRes.ok && uploadData.url) {
-        finalData.qrCode = uploadData.url;
-      } else {
-        console.error("❌ Upload QR thất bại:", uploadData);
-        finalData.qrCode = "";
-      }
-    }
-
-    // 🧩 Sau khi có URL rồi, mới gọi API chính
+    // 🧩 Gửi dữ liệu nội dung (tạo mới hoặc cập nhật)
     const method = editingContent !== null ? "PUT" : "POST";
     const url = editingContent !== null
       ? `${API_BASE_URL}/cards/${id}/contents/${editingContent}`
@@ -104,8 +89,10 @@ export default function CardDetailPage() {
       }
     } catch (err) {
       console.error("❌ Lỗi khi lưu:", err);
+      alert("❌ Lỗi khi gửi dữ liệu lên server");
     }
   }
+
   
   async function handleDeleteContent(index) {
     if (!confirm('Bạn có chắc muốn xóa nội dung này?')) return;
@@ -186,7 +173,8 @@ export default function CardDetailPage() {
               </td>
               <td>{c.description || '—'}</td>
               <td>
-                {c.qrCode ? <img src={getFullUrl(c.qrCode)} alt="QR" width="80" /> : '—'}
+                {/* {c.qrCode ? <img src={getFullUrl(c.qrCode)} alt="QR" width="80" /> : '—'} */}
+                {c.qrCode ? <img src={c.qrCode} alt="QR" width="80" /> : '—'}
               </td>
               <td>
                 <Link href={c.url} target="_blank" className="btn-view" title="Xem chi tiết">
@@ -256,12 +244,13 @@ export default function CardDetailPage() {
 
             <label>QR Code (URL hoặc chọn ảnh)</label>
             <div className="upload-row">
-              <input
-                type="text"
-                placeholder="Đường dẫn QR hoặc chọn ảnh..."
-                value={formData.qrCode instanceof File ? formData.qrCode.name : formData.qrCode}
-                onChange={(e) => setFormData({ ...formData, qrCode: e.target.value })}
-              />
+              <label>QR Code (tự động sinh từ file)</label>
+                <input
+                  type="text"
+                  value={formData.qrCode || ''}
+                  readOnly
+                  placeholder="QR sẽ được tạo tự động sau khi upload"
+                />
 
               <input
                 type="file"
