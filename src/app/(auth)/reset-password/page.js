@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { API_BASE_URL, BASE_URL } from "@/lib/api";
 
@@ -8,10 +8,13 @@ export default function ResetPasswordPage() {
   const [confirm, setConfirm] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userEmail, setUserEmail] = useState(null);
 
   const router = useRouter();
   const params = useSearchParams();
   const email = params.get("email");
+
+
 
   const handleReset = async (e) => {
     e.preventDefault();
@@ -23,10 +26,14 @@ export default function ResetPasswordPage() {
 
     try {
       const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, newPassword }),
-      });
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+            },
+            credentials: "include", 
+            body: JSON.stringify({ email: userEmail, newPassword }),
+        });
+  
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Đặt lại mật khẩu thất bại");
 
@@ -39,6 +46,19 @@ export default function ResetPasswordPage() {
     }
   };
 
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const email = sessionStorage.getItem("userEmailForDisplay"); 
+            if (!email) {
+                setMessage("⚠️ Phiên đặt lại mật khẩu không hợp lệ. Vui lòng bắt đầu lại từ bước 'Quên mật khẩu'.");
+                sessionStorage.removeItem("userEmailForDisplay"); 
+                setTimeout(() => router.replace(`/forgot-password`), 3000); 
+                return;
+            }
+            setUserEmail(email); 
+        }
+    }, [router]);
+
   return (
     <div className="auth-wrapper">
       <img
@@ -49,7 +69,7 @@ export default function ResetPasswordPage() {
 
       <div className="auth-card">
         <h1>Đặt lại mật khẩu</h1>
-        <p>Cho tài khoản: <b>{email}</b></p>
+        <p>Cho tài khoản: <b>{userEmail}</b></p>
 
         {message && <div className="message-box">{message}</div>}
 

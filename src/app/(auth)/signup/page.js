@@ -87,7 +87,7 @@ export default function SignUpPage() {
       hasAt: val.includes("@"),
       hasDot: val.includes("."),
       noSpace: !val.includes(" "),
-      notUsername: !val.includes(username),
+      // notUsername: !val.includes(username),
     });
   };
 
@@ -188,10 +188,10 @@ export default function SignUpPage() {
           <div className={`password-strength-wrapper ${showEmail ? "visible" : "hidden"}`}>
             <p><strong>Email check:</strong></p>
             <ul className="criteria-list">
-              <li className={emailCriteria.hasAt ? "ok" : "fail"}>{criteria.hasAt ? "✔" : "✖"} Contains "@"</li>
+              <li className={emailCriteria.hasAt ? "ok" : "fail"}>{emailCriteria.hasAt ? "✔" : "✖"} Contains "@"</li>
               <li className={emailCriteria.hasDot ? "ok" : "fail"}>{emailCriteria.hasDot ? "✔" : "✖"} Contains a dot after @</li>
               <li className={emailCriteria.noSpace ? "ok" : "fail"}>{emailCriteria.noSpace ? "✔" : "✖"} No spaces</li>
-              <li className={emailCriteria.notUsername ? "ok" : "fail"}>{emailCriteria.notUsername ? "✔" : "✖"} Not same as username</li>
+              {/* <li className={emailCriteria.notUsername ? "ok" : "fail"}>{emailCriteria.notUsername ? "✔" : "✖"} Not same as username</li> */}
             </ul>
           </div>
           {/* {touched.email && emailError && <span className="input-error">{emailError}</span>} */}

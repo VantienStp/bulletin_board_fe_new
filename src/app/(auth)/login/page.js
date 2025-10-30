@@ -35,22 +35,19 @@ export default function LoginPage() {
       setError("Email không hợp lệ.");
       return;
     }
-    if (password.length < 8) {
-      setError("Mật khẩu phải có ít nhất 8 ký tự.");
-      return;
-    }
+    // if (password.length < 8) {
+    //   setError("Mật khẩu phải có ít nhất 8 ký tự.");
+    //   return;
+    // }
 
     setLoading(true);
 
     try {
-      // 🔒 Hash tạm mật khẩu trước khi gửi (tăng an toàn)
-      const hashedPassword = CryptoJS.SHA256(password).toString();
-
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email, password: hashedPassword, rememberMe }),
+        body: JSON.stringify({ email, password, rememberMe }),
       });
 
       const data = await res.json();
