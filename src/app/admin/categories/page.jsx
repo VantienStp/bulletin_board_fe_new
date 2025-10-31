@@ -5,7 +5,7 @@ import Modal from '@/components/admin/Modal';
 import Link from 'next/link';
 import "./categories.css";
 import { API_BASE_URL } from '@/lib/api';
-import { getToken } from '@/lib/auth';
+import { getToken, authFetch } from '@/lib/auth';
 
 
 export default function CategoriesPage() {
@@ -49,7 +49,6 @@ export default function CategoriesPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const token = getToken();
 
     const method = editingCategory ? "PUT" : "POST";
     const url = editingCategory
@@ -57,12 +56,8 @@ export default function CategoriesPage() {
       : `${API_BASE_URL}/categories`;
 
     try {
-      const res = await fetch(url, {
+      const res = await authFetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify(formData),
       });
 
@@ -95,11 +90,9 @@ export default function CategoriesPage() {
 
   async function handleDelete(id) {
     if (!confirm('Bạn có chắc muốn xóa danh mục này?')) return;
-    const token = getToken();
     try {
-      const res = await fetch(`${API_BASE_URL}/categories/${id}`, {
+      const res = await authFetch(`${API_BASE_URL}/categories/${id}`, {
         method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         alert('Đã xóa danh mục');

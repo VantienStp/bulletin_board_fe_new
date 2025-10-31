@@ -5,6 +5,7 @@ import Modal from "@/components/admin/Modal";
 import { API_BASE_URL } from "@/lib/api";
 import "./users.css";
 import { getToken } from "@/lib/auth";
+import { authFetch } from "@/lib/auth";
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -30,10 +31,7 @@ export default function UsersPage() {
 
   async function fetchUsers() {
     try {
-      const token = getToken();
-      const res = await fetch(`${API_BASE_URL}/users`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authFetch(`${API_BASE_URL}/users`);
       const data = await res.json();
       if (Array.isArray(data)) setUsers(data);
       else console.error("Invalid user data:", data);
@@ -42,7 +40,6 @@ export default function UsersPage() {
     }
   }
 
-  // ===== Edit =====
   function handleEdit(user) {
     setEditingUser(user);
     setFormData({
@@ -57,12 +54,11 @@ export default function UsersPage() {
   // ===== Delete =====
   async function handleDelete(id) {
     if (!confirm("Bạn có chắc muốn xóa người dùng này?")) return;
-    const token = getToken();
     try {
-      const res = await fetch(`${API_BASE_URL}/users/${id}`, {
+      const res = await authFetch(`${API_BASE_URL}/users/${id}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
       });
+
       if (res.ok) {
         alert("✅ Đã xóa người dùng");
         fetchUsers();
@@ -90,12 +86,8 @@ export default function UsersPage() {
     if (!payload.password) delete payload.password; // bỏ qua nếu không đổi mật khẩu
 
     try {
-      const res = await fetch(url, {
+      const res = await authFetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify(payload),
       });
 

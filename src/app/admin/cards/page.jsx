@@ -5,7 +5,7 @@ import Modal from '@/components/admin/Modal';
 import Link from 'next/link';
 import "./cards.css";
 import { API_BASE_URL, BASE_URL } from '@/lib/api';
-import { getToken } from '@/lib/auth';
+import { getToken, authFetch } from '@/lib/auth';
 
 export default function CardsPage() {
   const [cards, setCards] = useState([]);
@@ -51,13 +51,9 @@ export default function CardsPage() {
   // 🗑 Xóa card
   async function handleDelete(id) {
     if (!confirm('Bạn có chắc muốn xóa thẻ này?')) return;
-    const token = getToken();
 
     try {
-      const res = await fetch(`${API_BASE_URL}/cards/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await authFetch(`${API_BASE_URL}/cards/${id}`, { method: 'DELETE' });
       if (res.ok) {
         alert('Đã xóa thẻ');
         fetchCards();
@@ -72,56 +68,13 @@ export default function CardsPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const token = getToken();
-    const finalData = JSON.parse(JSON.stringify(formData));
-
-    for (let i = 0; i < formData.contents.length; i++) {
-      const c = formData.contents[i];
-
-      if (c.url instanceof File) {
-        const fd = new FormData();
-        fd.append('file', c.url);
-        const res = await fetch(`${API_BASE_URL}/upload`, {
-          method: 'POST',
-          body: fd,
-        });
-        const data = await res.json();
-        if (data.url) {
-          finalData.contents[i].url = data.url;
-          finalData.contents[i].type = data.type || c.type;
-        }
-      }
-
-      if (c.qrCode instanceof File) {
-        const fd = new FormData();
-        fd.append('file', c.qrCode);
-        const res = await fetch(`${API_BASE_URL}/upload`, {
-          method: 'POST',
-          body: fd,
-        });
-        const data = await res.json();
-        if (data.url) {
-          finalData.contents[i].qrCode = data.url;
-        }
-      }
-    }
-
     const method = editingCard ? 'PUT' : 'POST';
     const url = editingCard
       ? `${API_BASE_URL}/cards/${editingCard._id}`
       : `${API_BASE_URL}/cards`;
 
     try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(finalData),
-      });
-
-      console.log('❌ Lỗi HTTP:', res.status, res.statusText);
+      const res = await authFetch(url, { method, body: JSON.stringify(formData) });
 
       if (res.ok) {
         alert(editingCard ? '✅ Đã cập nhật thẻ' : '✅ Đã tạo thẻ mới');

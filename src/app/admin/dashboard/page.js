@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { FaList, FaClone, FaThLarge, FaUsers } from "react-icons/fa";
 import { API_BASE_URL } from "@/lib/api";
 import "./dashboard.css";
-import { getToken } from "@/lib/auth";
+import { getToken, authFetch } from "@/lib/auth";
 
 
 export default function AdminDashboard() {
@@ -29,7 +29,7 @@ export default function AdminDashboard() {
           return;
         }
 
-        const res = await fetch(`${API_BASE_URL}/dashboard/stats`, {
+        const res = await authFetch(`${API_BASE_URL}/dashboard/stats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
 

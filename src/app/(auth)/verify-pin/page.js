@@ -58,7 +58,7 @@ export default function VerifyPinPage() {
     setPin(currentPinArray.join(""));
   };
   
-  // --- Hàm Hỗ Trợ Focus và Compositon ---
+  // --- Hàm Hỗ Trợ Focus và Composition ---
 
   const focusNextInput = (currentElement, currentIndex) => {
     const nextInput = currentElement.parentElement.querySelector(`.pin-box:nth-child(${currentIndex + 2})`);

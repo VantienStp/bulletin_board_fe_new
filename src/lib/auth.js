@@ -56,11 +56,14 @@ export async function authFetch(url, options = {}) {
   let token = await getValidToken();
   if (!token) throw new Error("No valid token");
 
+  const isFormData = options.body instanceof FormData;
+
   const headers = {
     ...(options.headers || {}),
     Authorization: `Bearer ${token}`,
-    "Content-Type":
-      options.headers?.["Content-Type"] || "application/json",
+    ...(isFormData
+      ? {} // ❌ KHÔNG ép Content-Type nếu là FormData
+      : { "Content-Type": options.headers?.["Content-Type"] || "application/json" }),
   };
 
   let res = await fetch(url, { ...options, headers, credentials: "include" });
