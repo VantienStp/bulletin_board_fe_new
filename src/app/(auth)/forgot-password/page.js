@@ -45,7 +45,7 @@ export default function ForgotPasswordPage() {
 
       <div className="auth-card">
         <h1>Khôi phục mật khẩu</h1>
-        <p>Nhập địa chỉ email của bạn để nhận mã xác minh</p>
+        <p className="a-text">Nhập địa chỉ email của bạn để nhận mã xác minh</p>
 
         {message && <div className="message-box">{message}</div>}
 
@@ -66,7 +66,7 @@ export default function ForgotPasswordPage() {
 
         <p className="redirect-text">
           Nhớ mật khẩu rồi?{" "}
-          <a onClick={() => router.push(`/login`)}>Quay lại đăng nhập</a>
+          <a className="highlight-text a-button" onClick={() => router.push(`/login`)}>Quay lại đăng nhập</a>
         </p>
       </div>
     </div>

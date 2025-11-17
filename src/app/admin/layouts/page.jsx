@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { FaThLarge, FaPlus, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
+import { FaThLarge, FaPlusSquare, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
 import Modal from '@/components/admin/Modal';
 import "./layouts.css";
 import Link from 'next/link';
@@ -15,7 +15,7 @@ export default function LayoutsPage() {
   const [showForm, setShowForm] = useState(false);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5); 
+  const [itemsPerPage] = useState(5);
 
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -75,13 +75,16 @@ export default function LayoutsPage() {
   return (
     <div className="admin-page">
       <div className="page-header">
-        <h2><FaThLarge /> Bố cục hiển thị</h2>
+        <div className="show-header">
+          <span className="icon"><FaThLarge /></span>
+          <span>Bố cục hiển thị</span>
+        </div>
         <button className="btn-primary" onClick={() => {
           setFormData({ title: '', code: '' });
           setEditingLayout(null);
           setShowForm(true);
         }}>
-          <FaPlus /> Thêm bố cục
+          <FaPlusSquare /> Thêm mới
         </button>
       </div>
 
@@ -89,7 +92,7 @@ export default function LayoutsPage() {
         <thead>
           <tr>
             <th>Tên bố cục</th>
-            <th>Mã code</th>
+            <th>Slug</th>
             <th>Số card hiển thị</th>
             <th>Xem nhanh</th>
             <th>Hành động</th>
@@ -100,23 +103,26 @@ export default function LayoutsPage() {
           {currentItems.map((l) => (
             <tr key={l._id}>
               <td>{l.title}</td>
-              <td><code>{l.code}</code></td>
+              <td>{l.code}</td>
               <td>{l.config?.positions?.length || 0}</td>
               <td>
                 <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: l.config.columns.map(() => "16px").join(" "),
-                  gridTemplateRows: `repeat(${l.config.rows}, 16px)`,
-                  gap: "2px",
-                  background: "#f3f4f6",
-                  padding: "2px",
-                  borderRadius: "4px",
-                  width: "fit-content",
-                  margin: "0 auto",
-                  minWidth: `${l.config.columns.length * 16 + (l.config.columns.length - 1) * 2 + 4}px`,
-                  minHeight: `${l.config.rows * 16 + (l.config.rows - 1) * 2 + 4}px`,
-                }}>
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: l.config.columns.map(() => "1.2vw").join(" "), // mỗi ô ~1.2vw
+                    gridTemplateRows: `repeat(${l.config.rows}, 1.2vw)`,
+                    gap: "0.2vw",
+                    background: "var(--color-bg-content)",
+                    padding: "0.3vw",
+                    borderRadius: "0.4vw",
+                    width: "fit-content",
+                    margin: "0 auto",
+                    maxWidth: "15vw",   // tránh to quá trên màn hình rộng
+                    minWidth: `${l.config.columns.length * 1.2 + (l.config.columns.length - 1) * 0.2 + 0.6}vw`,
+                    minHeight: `${l.config.rows * 1.2 + (l.config.rows - 1) * 0.2 + 0.6}vw`,
+                    boxSizing: "border-box",
+                  }}
+                >
                   {Array.isArray(l.config.positions) &&
                     l.config.positions.map((pos, i) => (
                       <div
@@ -126,30 +132,30 @@ export default function LayoutsPage() {
                           gridRow: `${pos.y + 1} / span ${pos.h}`,
                           position: "relative",
                           background: "#2563eb",
-                          borderRadius: "2px",
+                          borderRadius: "0.2vw",
                           width: "100%",
                           height: "100%",
                           opacity: 0.8,
-                          transition: "all 0.2s ease",
                         }}
                         onMouseEnter={(e) => {
                           const tooltip = document.createElement("div");
                           tooltip.innerText = `x:${pos.x}, y:${pos.y}, w:${pos.w}, h:${pos.h}`;
                           tooltip.style.position = "absolute";
-                          tooltip.style.top = "-22px";
+                          tooltip.style.top = "-1.6vw";
                           tooltip.style.left = "50%";
                           tooltip.style.transform = "translateX(-50%)";
-                          tooltip.style.padding = "2px 4px";
+                          tooltip.style.padding = "0.2vw 0.4vw";
                           tooltip.style.background = "rgba(0,0,0,0.75)";
                           tooltip.style.color = "#fff";
-                          tooltip.style.fontSize = "10px";
-                          tooltip.style.borderRadius = "3px";
+                          tooltip.style.fontSize = "1vw";
+                          tooltip.style.borderRadius = "0.2vw";
                           tooltip.style.pointerEvents = "none";
                           tooltip.style.whiteSpace = "nowrap";
                           tooltip.classList.add("tooltip");
+                          tooltip.style.zIndex = "1000";
                           e.currentTarget.appendChild(tooltip);
                           e.currentTarget.style.opacity = 1;
-                          e.currentTarget.style.boxShadow = "0 0 4px rgba(0,0,0,0.5)";
+                          e.currentTarget.style.boxShadow = "0 0 0.4vw rgba(0,0,0,0.5)";
                         }}
                         onMouseLeave={(e) => {
                           const tooltip = e.currentTarget.querySelector(".tooltip");
@@ -160,6 +166,7 @@ export default function LayoutsPage() {
                       />
                     ))}
                 </div>
+
               </td>
               <td>
                 {/* <Link href={`/admin/layouts/${l._id}`} className="btn-view" title="Xem chi tiết">

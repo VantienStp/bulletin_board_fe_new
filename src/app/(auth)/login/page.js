@@ -1,12 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import CryptoJS from "crypto-js";
 import { API_BASE_URL, BASE_URL } from "@/lib/api";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("admin@gmail.com");
+  const [password, setPassword] = useState("123456");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -66,6 +65,7 @@ export default function LoginPage() {
       // 🧱 Lưu token tạm thời
       localStorage.setItem("accessToken", data.token);
       localStorage.setItem("tokenExpiresAt", data.expiresAt);
+      localStorage.setItem("user_name", data.user_name);
 
       // 🕒 Tự xóa token khi hết hạn
       const remaining = data.expiresAt - Date.now();
@@ -95,7 +95,7 @@ export default function LoginPage() {
 
       <div className="auth-card">
         <h1>
-          Welcome to <span>Belissa</span>
+          Welcome to <span>TANDKV1</span>
         </h1>
 
         {error && <div className="error-box">{error}</div>}
@@ -120,22 +120,24 @@ export default function LoginPage() {
           />
 
           <div className="remember-forgot">
-            <span className="remember">
+            <label className="remember">
               <input
                 type="checkbox"
                 id="rememberMe"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
               />
+              <span className="circle"></span>
               Ghi nhớ đăng nhập
-            </span>
-            <a onClick={() => router.push("/forgot-password")}
-              className="forgot"
+            </label>
+
+            <a
+              onClick={() => router.push("/forgot-password")}
+              className="forgot a-button"
             >
               Quên mật khẩu?
             </a>
           </div>
-
           <button type="submit" disabled={loading}>
             {loading ? "Đang đăng nhập..." : "ĐĂNG NHẬP"}
           </button>
@@ -143,7 +145,7 @@ export default function LoginPage() {
 
         <p className="redirect-text">
           Chưa có tài khoản?{" "}
-          <a onClick={() => router.push(`/signup`)}>Đăng ký ngay</a>
+          <a className="highlight-text a-button" onClick={() => router.push(`/signup`)}>Đăng ký ngay</a>
         </p>
       </div>
     </div>

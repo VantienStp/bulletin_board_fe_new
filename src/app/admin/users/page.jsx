@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FaUsers, FaUserPlus, FaEdit, FaTrash } from "react-icons/fa";
+import { FaUsers, FaUserPlus, FaPlusSquare, FaEdit, FaTrash } from "react-icons/fa";
 import Modal from "@/components/admin/Modal";
+import { Select, MenuItem } from "@mui/material";
+
 import { API_BASE_URL } from "@/lib/api";
 import "./users.css";
 import { getToken } from "@/lib/auth";
@@ -109,7 +111,10 @@ export default function UsersPage() {
   return (
     <div className="admin-page">
       <div className="page-header">
-        <h2><FaUsers /> Người dùng</h2>
+        <div className="show-header">
+          <span className="icon"><FaUsers /></span>
+          <span>Người dùng</span>
+        </div>
         <button
           className="btn-primary"
           onClick={() => {
@@ -118,7 +123,7 @@ export default function UsersPage() {
             setShowForm(true);
           }}
         >
-          <FaUserPlus /> Thêm người dùng
+          <FaPlusSquare /> Thêm người dùng
         </button>
       </div>
 
@@ -186,39 +191,49 @@ export default function UsersPage() {
           onClose={() => setShowForm(false)}
         >
           <form onSubmit={handleSubmit}>
-            <label>Tên tài khoản</label>
-            <input
-              type="text"
-              value={formData.username}
-              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-              required
-            />
+            <div>
+              <label>Tên tài khoản</label>
+              <input
+                type="text"
+                value={formData.username}
+                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <label>Email</label>
+              <input
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+              />
+            </div>
 
-            <label>Email</label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              required
-            />
+            <div>
+              <label>Mật khẩu {editingUser ? "(để trống nếu không đổi)" : ""}</label>
+              <input
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              />
+            </div>
 
-            <label>Mật khẩu {editingUser ? "(để trống nếu không đổi)" : ""}</label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-            />
-
-            <label>Quyền</label>
-            <select
-              value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-            >
-              <option value="admin">Admin</option>
-              <option value="editor">Editor</option>
-              <option value="user">User</option>
-              <option value="viewer">Viewer</option>
-            </select>
+            <div>
+              <label>Quyền</label>
+              <Select variant="standard"
+                style={{
+                  border: "0.2vw solid #ccc",
+                  padding: "0.5vw",
+                  borderRadius: "0.5vw",
+                }}
+                disableUnderline value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
+                <MenuItem value="admin">Admin</MenuItem>
+                <MenuItem value="editor">Editor</MenuItem>
+                <MenuItem value="user">User</MenuItem>
+                <MenuItem value="viewer">Viewer</MenuItem>
+              </Select>
+            </div>
 
             <div className="modal-actions">
               <button type="submit" className="btn-primary">

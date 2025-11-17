@@ -11,8 +11,8 @@ import { getToken } from '@/lib/auth';
 export default function CategoryDetailPage() {
   const { id } = useParams();
   const [category, setCategory] = useState(null);
-  
-  const [cards, setCards] = useState([]); 
+
+  const [cards, setCards] = useState([]);
   const [allCards, setAllCards] = useState([]);
   const [selectedCardId, setSelectedCardId] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -47,8 +47,8 @@ export default function CategoryDetailPage() {
       const res = await fetch(`${API_BASE_URL}/categories/${id}/cards`);
       const data = await res.json();
       console.log("res: ", res);
-      
-      
+
+
       setCards(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('❌ Lỗi khi lấy card theo category:', err);
@@ -127,7 +127,7 @@ export default function CategoryDetailPage() {
   return (
     <div className="admin-page category-detail">
       <div className="page-header">
-        <h2>📁 Chi tiết danh mục</h2>
+        <h2>📁 Chi tiết danh mục {category.title}</h2>
         <Link href="/admin/categories" className="btn-secondary">
           <FaArrowLeft /> Quay lại
         </Link>
@@ -137,17 +137,17 @@ export default function CategoryDetailPage() {
         <h3>{category.title}</h3>
         <p><b>Mô tả:</b> {category.description || '(Không có mô tả)'}</p>
         <p>
-            <b>Grid Layout:</b>{' '}
-            {category.gridLayoutId ? (
-                <Link
-                href={`/admin/layouts/${category.gridLayoutId._id}`}
-                className="link-inline"
-                >
-                {category.gridLayoutId.title || '(Không có tên)'}
-                </Link>
-            ) : (
-                '(Chưa gán layout)'
-            )}
+          <b>Grid Layout:</b>{' '}
+          {category.gridLayoutId ? (
+            <Link
+              href={`/admin/layouts/${category.gridLayoutId._id}`}
+              className="link-inline"
+            >
+              {category.gridLayoutId.title || '(Không có tên)'}
+            </Link>
+          ) : (
+            '(Chưa gán layout)'
+          )}
         </p>
       </div>
 
@@ -161,7 +161,7 @@ export default function CategoryDetailPage() {
           >
             <option value="">-- Chọn thẻ cần thêm --</option>
             {allCards
-              .filter(c => !cards.some(cc => cc._id === c._id)) 
+              .filter(c => !cards.some(cc => cc._id === c._id))
               .map(c => (
                 <option key={c._id} value={c._id}>
                   {c.title}

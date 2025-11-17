@@ -9,7 +9,7 @@ export default function VerifyPinPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   // Theo dõi trạng thái của bộ gõ (Composition)
-  const [isComposing, setIsComposing] = useState(false); 
+  const [isComposing, setIsComposing] = useState(false);
 
   const router = useRouter();
   const params = useSearchParams();
@@ -33,7 +33,7 @@ export default function VerifyPinPage() {
         credentials: "include",
         body: JSON.stringify({ email, pin }),
       });
-      
+
       const data = await res.json();
       console.log(data)
       if (!res.ok) throw new Error(data.message || "Mã PIN không hợp lệ");
@@ -57,13 +57,13 @@ export default function VerifyPinPage() {
     currentPinArray[index] = value;
     setPin(currentPinArray.join(""));
   };
-  
+
   // --- Hàm Hỗ Trợ Focus và Composition ---
 
   const focusNextInput = (currentElement, currentIndex) => {
     const nextInput = currentElement.parentElement.querySelector(`.pin-box:nth-child(${currentIndex + 2})`);
     if (nextInput) {
-        nextInput.focus();
+      nextInput.focus();
     }
   };
 
@@ -73,29 +73,29 @@ export default function VerifyPinPage() {
 
   const handleCompositionEnd = (e, i) => {
     setIsComposing(false);
-    
+
     // Sau khi kết thúc Composition, đảm bảo giá trị cuối cùng được cập nhật
     const val = e.target.value.replace(/\D/g, "");
     if (val) {
-        const finalChar = val.substring(0, 1);
-        updatePinAtIndex(i, finalChar);
+      const finalChar = val.substring(0, 1);
+      updatePinAtIndex(i, finalChar);
 
-        // 🔑 FIX LỖI GHOSTING: Dùng setTimeout(..., 0) để đẩy lệnh chuyển focus
-        // vào cuối event loop.
-        setTimeout(() => {
-            focusNextInput(e.target, i);
-        }, 0);
+      // 🔑 FIX LỖI GHOSTING: Dùng setTimeout(..., 0) để đẩy lệnh chuyển focus
+      // vào cuối event loop.
+      setTimeout(() => {
+        focusNextInput(e.target, i);
+      }, 0);
     }
   };
-  
+
   const handleFocus = (e, i) => {
     // Tìm ô đầu tiên trống và chuyển focus đến đó (nếu không phải ô hiện tại)
     const firstEmptyIndex = pin.split('').findIndex(char => !char);
     if (firstEmptyIndex !== -1 && firstEmptyIndex !== i) {
-        e.preventDefault();
-        const targetInput = e.currentTarget.parentNode.querySelector(`.pin-box:nth-child(${firstEmptyIndex + 1})`);
-        if(targetInput) targetInput.focus();
-        return;
+      e.preventDefault();
+      const targetInput = e.currentTarget.parentNode.querySelector(`.pin-box:nth-child(${firstEmptyIndex + 1})`);
+      if (targetInput) targetInput.focus();
+      return;
     }
   }
 
@@ -111,18 +111,18 @@ export default function VerifyPinPage() {
     updatePinAtIndex(i, singleChar);
 
     if (!isComposing) {
-        setTimeout(() => {
-            focusNextInput(e.target, i);
-        }, 0); 
-    } 
+      setTimeout(() => {
+        focusNextInput(e.target, i);
+      }, 0);
+    }
   };
-  
+
   const handlePinKeyDown = (e, i) => {
     // Xử lý phím Backspace
     if (e.key === "Backspace") {
       // 1. Nếu ô hiện tại có ký tự, xóa ký tự đó
       if (pin[i]) {
-        e.preventDefault(); 
+        e.preventDefault();
         updatePinAtIndex(i, "");
       }
       // 2. Nếu ô hiện tại trống VÀ có ô trước đó, chuyển focus về ô trước đó VÀ xóa ký tự ở ô đó
@@ -133,7 +133,7 @@ export default function VerifyPinPage() {
       }
       return;
     }
-    
+
     // Xử lý phím Mũi tên (tùy chọn)
     if (e.key === "ArrowRight" && e.target.nextSibling) {
       e.target.nextSibling.focus();
@@ -152,7 +152,7 @@ export default function VerifyPinPage() {
 
       <div className="auth-card">
         <h1>Xác minh mã PIN</h1>
-        <p>
+        <p className="a-text">
           Nhập mã 6 chữ số đã được gửi đến email: <b>{email}</b>
         </p>
 
@@ -170,25 +170,25 @@ export default function VerifyPinPage() {
                 inputMode="numeric"
                 className="pin-box"
                 value={pin[i] || ""}
-                onChange={(e) => handlePinChange(e, i)} 
+                onChange={(e) => handlePinChange(e, i)}
                 onKeyDown={(e) => handlePinKeyDown(e, i)}
-                onFocus={(e) => handleFocus(e, i)} 
+                onFocus={(e) => handleFocus(e, i)}
                 onCompositionStart={handleCompositionStart}
                 onCompositionEnd={(e) => handleCompositionEnd(e, i)}
                 onPaste={(e) => {
                   e.preventDefault();
                   const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').substring(0, 6);
                   setPin(pastedData);
-                  
+
                   // Tối ưu focus sau khi dán
                   if (pastedData.length > 0) {
-                      const nextIndex = pastedData.length - 1;
-                      const inputElements = e.currentTarget.parentNode.querySelectorAll('.pin-box');
-                      
-                      const focusIndex = Math.min(nextIndex + 1, 5); 
-                      if (inputElements[focusIndex]) {
-                          inputElements[focusIndex].focus();
-                      }
+                    const nextIndex = pastedData.length - 1;
+                    const inputElements = e.currentTarget.parentNode.querySelectorAll('.pin-box');
+
+                    const focusIndex = Math.min(nextIndex + 1, 5);
+                    if (inputElements[focusIndex]) {
+                      inputElements[focusIndex].focus();
+                    }
                   }
                 }}
               />
@@ -202,7 +202,7 @@ export default function VerifyPinPage() {
 
         <p className="redirect-text">
           Chưa nhận được mã?{" "}
-          <a href={`/forgot-password?email=${email}`}>Gửi lại</a>
+          <a className="highlight-text a-button" href={`/forgot-password?email=${email}`}>Gửi lại</a>
         </p>
       </div>
     </div>

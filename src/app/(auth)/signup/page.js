@@ -142,7 +142,7 @@ export default function SignUpPage() {
   };
 
   // ====== Show dynamic helpers ======
-  const showEmail = touched.email && (focus.email );
+  const showEmail = touched.email && (focus.email);
   const showPassword = touched.password && (focus.password);
   const showConfirm = touched.confirm && (focus.confirm);
 
@@ -219,11 +219,11 @@ export default function SignUpPage() {
               <strong>Password strength:</strong>{" "}
               <span className={`strength-${passwordStrength}`}>{passwordStrength}</span>
             </p>
-            <ul className="criteria-list"> 
+            <ul className="criteria-list">
               <li className={criteria.notEmail ? "ok" : "fail"}> {criteria.notEmail ? "✔" : "✖"} Cannot contain your name or email </li>
-              <li className={criteria.length ? "ok" : "fail"}> {criteria.length ? "✔" : "✖"} At least 8 characters </li> 
-              <li className={criteria.numberOrSymbol ? "ok" : "fail"}> {criteria.numberOrSymbol ? "✔" : "✖"} Contains a number or symbol </li> 
-              <li className={criteria.upperCase ? "ok" : "fail"}> {criteria.upperCase ? "✔" : "✖"} Contains an uppercase letter </li> 
+              <li className={criteria.length ? "ok" : "fail"}> {criteria.length ? "✔" : "✖"} At least 8 characters </li>
+              <li className={criteria.numberOrSymbol ? "ok" : "fail"}> {criteria.numberOrSymbol ? "✔" : "✖"} Contains a number or symbol </li>
+              <li className={criteria.upperCase ? "ok" : "fail"}> {criteria.upperCase ? "✔" : "✖"} Contains an uppercase letter </li>
             </ul>
           </div>
           {/* {touched.password && passwordError && <span className="input-error">{passwordError}</span>} */}
@@ -260,7 +260,7 @@ export default function SignUpPage() {
         </form>
 
         <p className="redirect-text">
-          Đã có tài khoản? <a onClick={() => router.push(`/login`)}>Đăng nhập</a>
+          Đã có tài khoản? <a className="highlight-text a-button" onClick={() => router.push(`/login`)}>Đăng nhập</a>
         </p>
       </div>
     </div>

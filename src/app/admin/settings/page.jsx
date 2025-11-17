@@ -10,9 +10,10 @@ export default function SettingsPage() {
   return (
     <div className="admin-page">
       <div className="page-header">
-        <h2>
-          <FaCogs /> Cài đặt hệ thống
-        </h2>
+        <div className="show-header">
+          <span className="icon"><FaCogs /></span>
+          <span>Danh mục</span>
+        </div>
       </div>
 
       {/* ==== Tabs ==== */}
@@ -51,7 +52,7 @@ export default function SettingsPage() {
         )}
 
         {activeTab === "notifications" && (
-          <section className="notification-settings">
+          <section >
             <h3>🔔 Cài đặt thông báo</h3>
             <p className="note">
               Bạn có thể bật / tắt các hình thức nhận thông báo hệ thống.
@@ -89,14 +90,14 @@ export default function SettingsPage() {
         {activeTab === "appearance" && (
           <section>
             <h3>🎨 Tùy chỉnh giao diện</h3>
-            <p>Chọn màu nền, font chữ và bố cục hiển thị cho trang công khai.</p>
+            <p className="note">Chọn màu nền, font chữ và bố cục hiển thị cho trang công khai.</p>
           </section>
         )}
 
         {activeTab === "account" && (
           <section>
             <h3>👤 Tài khoản quản trị</h3>
-            <p>Xem hoặc thay đổi thông tin đăng nhập của bạn.</p>
+            <p className="note">Xem hoặc thay đổi thông tin đăng nhập của bạn.</p>
           </section>
         )}
       </div>

@@ -1,7 +1,8 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import "./card.css"; 
+import "./card.css";
+import { BASE_URL } from "@/lib/api";
 
 export default function Card({ title, contents = [], style = {} }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -44,18 +45,25 @@ export default function Card({ title, contents = [], style = {} }) {
   }, [activeFile]);
 
   useEffect(() => {
-  if (activeFile?.type === "pdf" && activeFile?.url) {
-    // 🧾 Gửi request để lấy header response của PDF
-    fetch(activeFile.url, { method: "HEAD" })
-      .then((res) => {
-        console.log("📄 PDF Headers for:", activeFile.url);
-        for (const [key, value] of res.headers.entries()) {
-          console.log(`   ${key}: ${value}`);
-        }
-      })
-      .catch((err) => console.error("❌ Error fetching PDF headers:", err));
+    if (activeFile?.type === "pdf" && activeFile?.url) {
+      // 🧾 Gửi request để lấy header response của PDF
+      fetch(activeFile.url, { method: "HEAD" })
+        .then((res) => {
+          console.log("📄 PDF Headers for:", activeFile.url);
+          for (const [key, value] of res.headers.entries()) {
+            console.log(`   ${key}: ${value}`);
+          }
+        })
+        .catch((err) => console.error("❌ Error fetching PDF headers:", err));
+    }
+  }, [activeFile]);
+
+  function getFullUrl(path) {
+    if (!path) return null; // tránh cảnh báo khi path rỗng
+    if (path.startsWith("http")) return path;
+    // return `${BASE_URL.replace(/\/$/, "")}/${path.replace(/^\/+/, "")}`;
+    return `${path.replace(/^\/+/, "")}`;
   }
-}, [activeFile]);
 
   const setDynamicSizes = () => {
     const imageAndQRWrapper = wrapperRef.current;
@@ -77,7 +85,21 @@ export default function Card({ title, contents = [], style = {} }) {
     qrCodeImg.style.width = `${qrSize}px`;
     qrCodeImg.style.height = `${qrSize}px`;
     qrText.style.fontSize = `${fontSize}px`;
+
+    // 🧩 Tính số dòng có thể hiển thị
+    const lineHeight = fontSize * 1.4; // cùng tỷ lệ line-height với CSS
+    const maxLines = Math.floor(contentBottomHeight / lineHeight) - 1;
+    console.log("qrSize: ", qrSize)
+    console.log("contentBottomHeight / lineHeight : ", contentBottomHeight, lineHeight)
+    console.log("maxlines: ", maxLines)
+
+    // 🧩 Gán line-clamp động
+    qrText.style.display = "-webkit-box";
+    qrText.style.webkitBoxOrient = "vertical";
+    qrText.style.overflow = "hidden";
+    qrText.style.webkitLineClamp = maxLines;
   };
+
 
   const handleClick = () => {
     if (!canClick) return;
@@ -105,27 +127,28 @@ export default function Card({ title, contents = [], style = {} }) {
                   duration: 0.9,
                   ease: [0.45, 0, 0.55, 1], // ease mượt hơn cubic-bezier
                 }}
-                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 1,}}
+                style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 1, }}
               >
                 {activeFile?.type === "image" && (
-                  <img src={activeFile.url} alt={title} className="media-image"
-                    style={{ width: "100%", height: "100%", objectFit: "cover",
+                  <img src={getFullUrl(activeFile.url)} alt={title} className="media-image"
+                    style={{
+                      width: "100%", height: "100%", objectFit: "cover",
                     }}
                   />
                 )}
 
                 {activeFile?.type === "video" && (
-                  <video src={activeFile.url} muted loop autoPlay playsInline controls className="media-video"
-                    style={{ width: "100%", height: "100%", objectFit: "cover", backgroundColor: "#000",}}
+                  <video src={getFullUrl(activeFile.url)} muted loop autoPlay playsInline controls className="media-video"
+                    style={{ width: "100%", height: "100%", objectFit: "cover", backgroundColor: "#000", }}
                   />
                 )}
 
                 {activeFile?.type === "pdf" && (
                   <iframe src={encodeURI(activeFile.url)} title="PDF Viewer" className="media-pdf" frameBorder="0"
-                    style={{ width: "100%", height: "100%", border: "none"}}
+                    style={{ width: "100%", height: "100%", border: "none" }}
                   />
                 )}
-                
+
               </motion.div>
             </AnimatePresence>
           ) : (
@@ -133,13 +156,13 @@ export default function Card({ title, contents = [], style = {} }) {
           )}
         </div>
 
-        <div className="card-actions" style={ activeFile?.type === "pdf" ? { paddingRight: "7.4vw", paddingTop: "0.3vw" }: {}}>
+        <div className="card-actions" style={activeFile?.type === "pdf" ? { paddingRight: "7.4vw", paddingTop: "0.3vw" } : {}}>
           <i className="fas fa-eye toggle-title-icon" onClick={() => setShowTitle(!showTitle)}></i>
           {activeFile?.type !== "video" && activeFile?.type !== "pdf" && (
             <>
               <i className="fas fa-redo reload-icon" onClick={() => setActiveIndex(0)}></i>
               <i className="fas fa-expand expand-icon"
-                onClick={() => window.dispatchEvent( new CustomEvent("openLightbox", { detail: activeFile }) )}
+                onClick={() => window.dispatchEvent(new CustomEvent("openLightbox", { detail: activeFile }))}
               ></i>
             </>
           )}
@@ -148,7 +171,7 @@ export default function Card({ title, contents = [], style = {} }) {
         {showTitle && activeFile?.qrCode && (
           <div className="content-in-bottom" ref={contentBottomRef}>
             <div className="qr-overlay">
-              <img ref={qrImgRef} src={activeFile.qrCode} alt="QR Code" className="qr-code-img"/>
+              <img ref={qrImgRef} src={getFullUrl(activeFile.qrCode)} alt="QR Code" className="qr-code-img" />
             </div>
             <div className="text-right">
               <span className="qr-text" ref={qrTextRef}>

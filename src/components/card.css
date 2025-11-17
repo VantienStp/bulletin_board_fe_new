@@ -1,4 +1,3 @@
-
 .card {
     display: flex;
     flex-direction: column;
@@ -6,15 +5,15 @@
 }
 
 .image-and-qr-wrapper {
-    position: relative; 
-    flex: 1; 
+    position: relative;
+    flex: 1;
     display: flex;
     flex-direction: column;
 }
 
 /* #region =======================IMAGE CONTAINER==================*/
 .image-container {
-    flex: 1; 
+    flex: 1;
     position: relative;
     overflow: hidden;
     cursor: pointer;
@@ -23,28 +22,30 @@
 
 .image-container img,
 .image-container video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 1;
-  transition: none !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 1;
+    transition: none !important;
+    object-position: top;
 }
 
 .image-container iframe.media-pdf {
-  width: 100%;
-  height: 100%;
-  border: none;
-  border-radius: 1vw;
-  position: absolute;
-  top: 0;
-  left: 0;
-  object-fit: contain;  
-  overflow: hidden;
-  z-index: 2;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 1vw;
+    position: absolute;
+    top: 0;
+    left: 0;
+    object-fit: contain;
+    overflow: hidden;
+    z-index: 2;
 }
+
 /* #endregion */
 
 /* #region =======================CONTENT IN BOTTOM==================*/
@@ -68,6 +69,7 @@
 .card-actions i:hover {
     transform: scale(1.1);
 }
+
 /* #endregion */
 
 /* #region =======================CONTENT IN BOTTOM==================*/
@@ -76,10 +78,10 @@
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 15%;    
-    
-    min-height: 10vh;   
-    max-height: 18vh;    
+    height: 15%;
+
+    min-height: 10vh;
+    max-height: 18vh;
 
     background: var(--overlay-bg);
     display: flex;
@@ -91,6 +93,20 @@
     gap: 1vw;
 }
 
+.text-right {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.qr-text {
+    font-size: 0.8vw;
+    font-weight: 600;
+    color: white;
+    line-height: 1.4;
+    display: block;
+}
+
 .qr-overlay {
     display: flex;
     align-items: center;
@@ -99,29 +115,17 @@
 }
 
 .qr-code-img {
-    width: auto;            
-    height: 100%; 
+    width: auto;
+    height: 100%;
     max-width: 100%;
-    max-height: 100%; 
-    min-height: 100%;  
-        
+    max-height: 100%;
+    min-height: 100%;
+
     margin-top: auto;
     border-radius: 0.5vw;
     opacity: 0.9;
 }
 
-.qr-text {
-    max-height: 5vh;  
-    font-size: 0.8vw;
-    font-weight: 600;
-    color: white;
-    white-space: normal;
-    word-wrap: break-word;
-    overflow: hidden;
-    line-height: 1.3em;
-    /* line-height: 1.3em;  */
-}
+
 
 /* #endregion */
-
-

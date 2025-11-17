@@ -19,7 +19,7 @@
 
 .stat-card {
   /* background: var(--bg-2); */
-  background: var(--card-bg);
+  background: var(--color-bg-sidebar);
   border-radius: var(--radius-medium);
   box-shadow: var(--shadow-hover);
   padding: var(--padding-large);
@@ -45,4 +45,9 @@
 .stat-card p {
   font-weight: 700;
   color: var(--primary);
+}
+
+.show-header {
+  padding: var(--padding-medium) var(--padding-medium);
+  padding-left: 0;
 }

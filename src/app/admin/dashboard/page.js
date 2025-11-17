@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FaList, FaClone, FaThLarge, FaUsers } from "react-icons/fa";
+import { FaList, FaClone, FaChartBar, FaThLarge, FaUsers } from "react-icons/fa";
 import { API_BASE_URL } from "@/lib/api";
 import "./dashboard.css";
 import { getToken, authFetch } from "@/lib/auth";
@@ -53,28 +53,34 @@ export default function AdminDashboard() {
 
   return (
     <>
-      <h1 className="dashboard-title">Bảng điều khiển quản trị</h1>
+      <div className="page-header">
+        <div className="show-header">
+          <span className="icon"><FaChartBar /></span>
+          <span>Danh mục</span>
+        </div>
+        {/* <h2><FaChartBar /> Danh mục</h2> */}
+      </div>
       <div className="stats-grid">
         <div className="stat-card">
-          <FaList/>
+          <FaList />
           <h2>Danh mục</h2>
           <p>{stats.categories}</p>
         </div>
 
         <div className="stat-card">
-          <FaClone/>
+          <FaClone />
           <h2>Thẻ nội dung</h2>
           <p>{stats.cards}</p>
         </div>
 
         <div className="stat-card">
-          <FaThLarge/>
+          <FaThLarge />
           <h2>Bố cục</h2>
           <p>{stats.layouts}</p>
         </div>
 
         <div className="stat-card">
-          <FaUsers/>
+          <FaUsers />
           <h2>Người dùng</h2>
           <p>{stats.users}</p>
         </div>

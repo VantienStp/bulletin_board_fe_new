@@ -26,9 +26,10 @@ export default function useWeather() {
           desc = desc.charAt(0).toUpperCase() + desc.slice(1);
           const icon = data.weather[0].icon;
 
-          setWeather(
-            `<img src="https://openweathermap.org/img/wn/${icon}.png" class="weather-icon"/> ${temp}°C | ${city} | ${desc}`
-          );
+          setWeather(`
+            <img src="https://openweathermap.org/img/wn/${icon}.png" class="weather-icon" />
+            <span>${temp}°C | ${city} , ${desc}</span>
+          `);
         } catch (err) {
           setWeather("☀️ 30°C | TP.HCM");
         }

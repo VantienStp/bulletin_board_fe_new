@@ -95,7 +95,10 @@ export default function CardsPage() {
   return (
     <div className="admin-page">
       <div className="page-header">
-        <h2><FaClone /> Thẻ nội dung</h2>
+        <div className="show-header">
+          <span className="icon"><FaClone /></span>
+          <span>Thẻ nội dung</span>
+        </div>
         <button
           className="btn-primary"
           onClick={() => {
@@ -107,7 +110,7 @@ export default function CardsPage() {
             setShowForm(true);
           }}
         >
-          <FaPlusSquare /> Thêm thẻ
+          <FaPlusSquare /> Thêm mới
         </button>
       </div>
 
@@ -167,7 +170,8 @@ export default function CardsPage() {
         <Modal
           title={editingCard ? 'Sửa thẻ nội dung' : 'Thêm thẻ mới'}
           onClose={() => setShowForm(false)}
-          width="600px"
+          width="60%"
+          height=''
         >
           <form onSubmit={handleSubmit}>
             <label>Tiêu đề</label>

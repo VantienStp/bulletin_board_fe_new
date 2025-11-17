@@ -1,10 +1,13 @@
 .layout-editor-page {
   text-align: center;
   font-family: "Inter", sans-serif;
-  background: #fbf5ee;
+  background: #f9fafb;
   color: #222;
   min-height: 100vh;
   padding: 2rem;
+  border-radius: var(--radius-medium);
+
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
 .input-row {
@@ -37,6 +40,7 @@
   display: grid;
   background: transparent;
 }
+
 .cube {
   width: 100px;
   height: 80px;
@@ -50,6 +54,7 @@
   cursor: pointer;
   transition: 0.2s;
 }
+
 .cube:hover {
   background: #edf2f8;
   transform: scale(1.05);
@@ -75,6 +80,7 @@
   position: relative;
   box-shadow: 0 2px 8px #0002;
 }
+
 .remove-btn {
   position: absolute;
   top: 0;
@@ -102,7 +108,7 @@
 .code-box {
   background: #fffaf5;
   border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   padding: 1rem;
   max-width: 420px;
   flex: 1 1 45%;

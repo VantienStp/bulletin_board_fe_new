@@ -1,12 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { FaClone, FaEye, FaPlusSquare, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaClone, FaEye, FaPlusSquare, FaFolderOpen, FaEdit, FaTrash } from 'react-icons/fa';
 import Link from 'next/link';
 import Modal from '@/components/admin/Modal';
 import { API_BASE_URL, BASE_URL } from '@/lib/api';
 import { useParams } from 'next/navigation';
 import "./card-detail.css";
 import { authFetch, getToken } from '@/lib/auth';
+import { Select, MenuItem } from "@mui/material";
 
 export default function CardDetailPage() {
 	const [card, setCard] = useState(null);
@@ -133,7 +134,11 @@ export default function CardDetailPage() {
 	return (
 		<div className="admin-page">
 			<div className="page-header">
-				<h2><FaClone /> Chi tiết thẻ</h2>
+				<div className="show-header">
+					<span className="icon"><FaClone /></span>
+					<span>Chi tiết thẻ</span>
+				</div>
+
 				<button
 					className="btn-primary"
 					onClick={() => {
@@ -142,7 +147,7 @@ export default function CardDetailPage() {
 						setShowForm(true);
 					}}
 				>
-					<FaPlusSquare /> Thêm nội dung
+					<FaPlusSquare /> Thêm mới
 				</button>
 			</div>
 
@@ -161,17 +166,22 @@ export default function CardDetailPage() {
 						<tr key={i}>
 							<td>{c.type}</td>
 							<td>
-								{c.type === 'image' && c.url && <img src={getFullUrl(c.url)} alt="" width="100" />}
-								{c.type === 'video' && c.url && <video src={getFullUrl(c.url)} controls width="150" />}
-								{c.type === 'pdf' && c.url && <iframe src={getFullUrl(c.url)} width="150" height="100" />}
+								<div className="media-preview">
+									{c.type === 'image' && c.url && <img src={getFullUrl(c.url)} alt="" />}
+									{c.type === 'video' && c.url && <video src={getFullUrl(c.url)} controls />}
+									{c.type === 'pdf' && c.url && <iframe src={getFullUrl(c.url)} />}
+								</div>
 							</td>
+
 							<td>{c.description || '—'}</td>
 							<td>
-								{c.qrCode ? (
-									c.qrCode.startsWith("data:image")
-										? <img src={c.qrCode} alt="QR" width="80" />
-										: <img src={getFullUrl(c.qrCode)} alt="QR" width="80" />
-								) : "—"}
+								<div className="media-qr">
+									{c.qrCode ? (
+										c.qrCode.startsWith("data:image")
+											? <img src={c.qrCode} alt="QR" />
+											: <img src={getFullUrl(c.qrCode)} alt="QR" />
+									) : "—"}
+								</div>
 							</td>
 							<td>
 								{c.url && (
@@ -179,7 +189,11 @@ export default function CardDetailPage() {
 										<FaEye /> Xem
 									</Link>
 								)}
-								<button className="btn-edit" onClick={() => handleEditContent(i)}>
+								<button className="btn-edit"
+									onClick={() => {
+										handleEditContent(i); setEditingContent("edit")
+										console.log("Editing content index:", editingContent);
+									}}>
 									<FaEdit /> Sửa
 								</button>
 								<button className="btn-delete" onClick={() => handleDeleteContent(i)}>
@@ -193,63 +207,84 @@ export default function CardDetailPage() {
 
 			{showForm && (
 				<Modal
-					title={editingContent !== null ? 'Sửa nội dung' : 'Thêm nội dung mới'}
+					title={editingContent !== null ? "Sửa nội dung" : "Thêm nội dung mới"}
 					onClose={() => setShowForm(false)}
-					width="500px"
 				>
 					<form onSubmit={handleSubmit}>
-						<label>Loại</label>
-						<select
-							value={formData.type}
-							onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-						>
-							<option value="image">Image</option>
-							<option value="video">Video</option>
-							<option value="pdf">PDF</option>
-						</select>
-
-						<label>URL hình ảnh / file</label>
-						<div className="upload-row">
-							<input
-								type="text"
-								placeholder="Nhập đường dẫn hoặc chọn file..."
-								value={formData.url instanceof File ? formData.url.name : formData.url}
-								onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-							/>
-							<input
-								type="file"
-								accept={
-									formData.type === 'video'
-										? 'video/*'
-										: formData.type === 'pdf'
-											? 'application/pdf'
-											: 'image/*'
-								}
-								onChange={(e) => {
-									const file = e.target.files[0];
-									if (file) setFormData({ ...formData, url: file });
-								}}
-							/>
+						<div className="modal-fixbug">
+							<label>Loại</label>
+							<Select variant="standard" disableUnderline value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value })}>
+								<MenuItem value="image">Image</MenuItem>
+								<MenuItem value="video">Video</MenuItem>
+								<MenuItem value="pdf">PDF</MenuItem>
+							</Select>
 						</div>
 
-						<label>Mô tả</label>
-						<textarea
-							value={formData.description}
-							onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-							placeholder="Nhập mô tả..."
-						/>
+						<div>
+							<label>URL hình ảnh / file</label>
+							<div className="upload-row">
+								<input
+									type="text"
+									placeholder="Nhập đường dẫn hoặc chọn file..."
+									value={formData.url instanceof File ? formData.url.name : formData.url}
+									onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+								/>
 
-						<label>QR Code (tự động sinh từ file)</label>
-						<input
-							type="text"
-							value={formData.qrCode || ''}
-							readOnly
-							placeholder="QR sẽ được tạo tự động sau khi upload"
-						/>
+								<span
+									className="upload-btn"
+									onClick={() => document.getElementById("fileInput").click()} // 👈 click thủ công
+								>
+									<span className="icon"><FaFolderOpen /></span>
+								</span>
+
+								<input
+									id="fileInput"
+									type="file"
+									hidden
+									accept={
+										formData.type === "video"
+											? "video/*"
+											: formData.type === "pdf"
+												? "application/pdf"
+												: "image/*"
+									}
+									onChange={(e) => {
+										const file = e.target.files[0];
+										if (file) setFormData({ ...formData, url: file });
+									}}
+								/>
+							</div>
+						</div>
+
+						<div className="desc-qr-row">
+							<div className="desc-box">
+								<label>Mô tả</label>
+								<textarea
+									rows="3"
+									value={formData.description}
+									onChange={(e) =>
+										setFormData({ ...formData, description: e.target.value })
+									}
+									placeholder="Nhập mô tả..."
+								/>
+							</div>
+
+							<div className="qr-side">
+								<label>QR Code</label>
+								{formData.qrCode ? (
+									<img src={formData.qrCode} alt="QR Preview" />
+								) : (
+									<span>(Tự động tạo sau khi upload)</span>
+								)}
+							</div>
+						</div>
 
 						<div className="modal-actions">
-							<button type="submit" className={`btn-primary ${editingContent !== null ? 'btn-warning' : ''}`}>
-								{editingContent !== null ? 'Cập nhật' : 'Lưu'}
+							<button
+								type="submit"
+								className={` ${editingContent == null ? "btn-view" : "btn-edit"}`}
+							>
+								{editingContent !== null ? "Cập nhật" : "Lưu"}
 							</button>
 							<button type="button" className="btn-cancel" onClick={() => setShowForm(false)}>
 								Hủy
@@ -257,6 +292,8 @@ export default function CardDetailPage() {
 						</div>
 					</form>
 				</Modal>
+
+
 			)}
 		</div>
 	);

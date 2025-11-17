@@ -15,7 +15,6 @@ export default function HomePage() {
   useEffect(() => {
     const el = document.getElementById('devtools-indicator');
     if (el) el.style.display = 'none';
-    console.log("addsadasd", el)
   }, []);
 
   useEffect(() => {
@@ -97,28 +96,28 @@ export default function HomePage() {
           }}
         >
           {categories
-          .filter((cat) => selectedCategory === cat._id)
-          .flatMap((cat) => {
-            const layoutCardCount = layoutConfig?.positions?.length || 0;
-            const maxCards =
-              layoutCardCount > 0
-                ? layoutCardCount
-                : (layoutConfig?.rows || 1) * (layoutConfig?.columns?.length || 1);
-            const visibleMappings = cat.mappings.slice(0, maxCards);
+            .filter((cat) => selectedCategory === cat._id)
+            .flatMap((cat) => {
+              const layoutCardCount = layoutConfig?.positions?.length || 0;
+              const maxCards =
+                layoutCardCount > 0
+                  ? layoutCardCount
+                  : (layoutConfig?.rows || 1) * (layoutConfig?.columns?.length || 1);
+              const visibleMappings = cat.mappings.slice(0, maxCards);
 
-            return visibleMappings.map((map, index) => {
-              if (!map.cardId) return null;
+              return visibleMappings.map((map, index) => {
+                if (!map.cardId) return null;
 
-              const pos = layoutConfig?.positions?.[index];
-              const style = pos
-                ? {
+                const pos = layoutConfig?.positions?.[index];
+                const style = pos
+                  ? {
                     gridColumn: `${(pos.x || 0) + 1} / span ${pos.w || 1}`,
                     gridRow: `${(pos.y || 0) + 1} / span ${pos.h || 1}`,
                   }
-                : {};
-              return <Card key={map.cardId._id} {...map.cardId} style={style} />;
-            });
-          })}
+                  : {};
+                return <Card key={map.cardId._id} {...map.cardId} style={style} />;
+              });
+            })}
         </div>
       </main>
     </>

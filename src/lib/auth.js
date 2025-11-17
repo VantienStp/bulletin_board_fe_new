@@ -78,7 +78,6 @@ export async function authFetch(url, options = {}) {
   return res;
 }
 
-// === Logout helper ===
 export async function logout() {
   try {
     await fetch(`${API_BASE_URL}/auth/logout`, {
@@ -90,5 +89,6 @@ export async function logout() {
     console.warn("⚠️ Lỗi logout:", err);
   } finally {
     clearToken();
+    window.location.replace("/login"); // ⬅ chuyển luôn, không cần router
   }
 }

@@ -108,7 +108,10 @@ export default function CategoriesPage() {
   return (
     <div className="admin-page">
       <div className="page-header">
-        <h2><FaFolderOpen /> Danh mục</h2>
+        <div className="show-header">
+          <span className="icon"><FaFolderOpen /></span>
+          <span>Danh mục</span>
+        </div>
         <button
           className="btn-primary"
           onClick={() => {
@@ -117,7 +120,7 @@ export default function CategoriesPage() {
             setShowForm(true);
           }}
         >
-          <FaPlusSquare /> Thêm danh mục
+          <FaPlusSquare /> Thêm mới
         </button>
       </div>
 

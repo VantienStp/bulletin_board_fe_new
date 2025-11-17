@@ -1,6 +1,19 @@
 .table-users th:nth-child(1),
-.table-users td:nth-child(1) { width: 25%; }
+.table-users td:nth-child(1) {
+    width: 25%;
+}
+
 .table-users th:nth-child(2),
-.table-users td:nth-child(2) { width: 15%; }
+.table-users td:nth-child(2) {
+    width: 25%;
+}
+
 .table-users th:nth-child(3),
-.table-users td:nth-child(3) { width: 15%; }
+.table-users td:nth-child(3) {
+    width: 20%;
+}
+
+.table-users th:nth-child(4),
+.table-users td:nth-child(4) {
+    width: 30%;
+}

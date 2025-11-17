@@ -1,8 +1,8 @@
-// export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
 // export const BASE_URL = "https://bulletin-board-be-new.onrender.com";
 export const API_BASE_URL = `${BASE_URL}/api`;
+console.log('API_BASE_URL: hahaah', API_BASE_URL);
 
 export async function loginUser(username, password) {
     const response = await fetch(`${API_BASE_URL}/users/login`, { // ⭐ Thay đổi endpoint
@@ -43,7 +43,7 @@ export async function fetchCardsByCategory(categoryId) {
 export async function createCard(cardData, token) {
     const response = await fetch(`${API_BASE_URL}/cards`, {
         method: 'POST',
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
@@ -57,7 +57,7 @@ export async function createCard(cardData, token) {
 export async function updateCard(id, cardData, token) {
     const response = await fetch(`${API_BASE_URL}/cards/${id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
@@ -97,7 +97,7 @@ export async function fetchCategoryById(id) {
 export async function createCategory(categoryData, token) {
     const response = await fetch(`${API_BASE_URL}/categories`, {
         method: 'POST',
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
@@ -111,7 +111,7 @@ export async function createCategory(categoryData, token) {
 export async function updateCategory(id, categoryData, token) {
     const response = await fetch(`${API_BASE_URL}/categories/${id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
@@ -151,7 +151,7 @@ export async function fetchGridLayoutById(id) {
 export async function createGridLayout(layoutData, token) {
     const response = await fetch(`${API_BASE_URL}/gridLayouts`, {
         method: 'POST',
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
@@ -165,7 +165,7 @@ export async function createGridLayout(layoutData, token) {
 export async function updateGridLayout(id, layoutData, token) {
     const response = await fetch(`${API_BASE_URL}/gridLayouts/${id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
