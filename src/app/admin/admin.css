@@ -124,11 +124,12 @@
 
   --color-bg-app: #FFFFFF;
   --color-bg-sidebar: #FFFFFF;
-  --color-bg-content: #eeeeee;
+  --color-bg-content: #ecebeb;
   --color-bg-button: #2a4260;
   --color-bg-button-hover: #39587e;
 
-  --color-bg-th-table: #FFFFFF;
+  /* --color-bg-th-table: #FFFFFF; */
+  --color-bg-th-table: #f5f0f0dd;
 
   --color-text-primary: #000000;
   --color-text-secondary: rgb(62, 61, 61);
@@ -261,7 +262,7 @@ html {
   gap: var(--gap-tiny);
   padding: 0.7vw var(--padding-medium);
   padding-left: 0;
-  /* border-radius: var(--radius-medium); */
+
   border-radius: var(--radius-medium) 0 0 var(--radius-medium);
   text-decoration: none;
   color: var(--color-text-primary);
@@ -283,14 +284,74 @@ html {
 }
 
 .sidebar ul li a:hover {
-  background: linear-gradient(90deg, var(--color-bg-content));
+  background: linear-gradient(80deg, var(--color-bg-content));
   /* border-radius: var(--radius-medium) 0 0 var(--radius-medium); */
   opacity: 0.7;
+  width: 110%;
+  /* padding: 1vw; */
 }
 
+
+/* .sidebar ul li a.active:hover::before,
+.sidebar ul li a.active:hover::after {
+  content: "";
+} */
+
 .sidebar ul li a.active {
+  position: relative;
   background: linear-gradient(80deg, var(--color-bg-content));
   width: 110%;
+}
+
+.sidebar ul li a.active:hover {
+  opacity: 1;
+}
+
+
+
+.sidebar ul li a.active::before {
+  content: "";
+  position: absolute;
+  top: -1vw;
+  right: 0.5vw;
+  width: 2vw;
+  height: 1vw;
+  background: var(--color-bg-content);
+}
+
+.sidebar ul li a.active::after {
+  content: "";
+  position: absolute;
+  top: -1vw;
+  /* right: 0.55vw; */
+  right: 0.8vw;
+  width: 4vw;
+  height: 1vw;
+  background: var(--color-bg-app);
+  border-bottom-right-radius: 1vw;
+}
+
+.sidebar ul li a.active .corner-bottom {
+  content: "";
+  position: absolute;
+  bottom: -1.2vw;
+  right: -0.3vw;
+  width: 2vw;
+  height: 1.5vw;
+  /* background: #F0F2F5; */
+  background: var(--color-bg-content);
+}
+
+.sidebar ul li a.active .corner-bottom::after {
+  content: "";
+  position: absolute;
+  width: 2vw;
+  height: 1.3vw;
+  top: 0.3vw;
+  background: var(--color-bg-app);
+
+  right: 1.1vw;
+  border-top-right-radius: 1vw;
 }
 
 /* #endregion */
@@ -380,6 +441,7 @@ html {
   border-collapse: separate;
   border-spacing: 0 var(--gap-small);
   color: var(--color-text-primary);
+  gap: var(--gap-large);
 }
 
 .admin-table thead th {
@@ -420,6 +482,14 @@ td:last-child {
 
 .admin-table tbody tr:hover {
   transform: translateY(calc(-1 * var(--padding-tiny)));
+}
+
+.admin-page {
+  padding: 24px;
+  background: var(--color-bg-sidebar);
+  min-height: 80vh;
+  font-family: 'Roboto', sans-serif;
+  border-radius: var(--radius-medium);
 }
 
 /* .admin-table tbody:empty::after {
@@ -490,7 +560,7 @@ td:last-child {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
 .btn-view {
@@ -642,4 +712,38 @@ td:last-child {
     opacity: 0;
     transform: translate(-50%, -10px);
   }
+}
+
+
+.MuiInputBase-root {
+  padding: 12px !important;
+  box-sizing: border-box !important;
+  border: 1px solid #d0d0d0 !important;
+  border-radius: 8px !important;
+  background: #fff !important;
+}
+
+/* Loại bỏ override từ reset */
+.MuiInputBase-input {
+  padding: 6px 8px !important;
+}
+
+.MuiSelect-select {
+  padding-right: 32px !important;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-size: 15px;
+  resize: vertical;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+textarea:focus {
+  border-color: #4a70ff;
+  box-shadow: 0 0 0 2px rgba(74, 112, 255, 0.2);
 }

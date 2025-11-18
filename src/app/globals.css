@@ -124,19 +124,20 @@ body {
 
 .sidebar ul li a {
     display: flex;
+    align-items: center;
     flex-direction: column;
+    gap: var(--gap-tiny);
+    padding: 0.7vw calc(var(--sidebar-width) * var(--padding-ratio) / 2) 0.7vw 0;
+
     width: 100%;
     box-sizing: border-box;
     color: #a0a0a0;
     text-decoration: none;
     justify-content: center;
     text-align: center;
-    align-items: center;
     font-size: var(--font-size-xlarge);
-    padding: 0.7vw calc(var(--sidebar-width) * var(--padding-ratio) / 2) 0.7vw 0;
     transform: translateZ(0);
-    backface-visibility: hidden;
-    gap: var(--gap-tiny);
+    /* backface-visibility: hidden; */
 }
 
 .sidebar ul li a .nav-text {

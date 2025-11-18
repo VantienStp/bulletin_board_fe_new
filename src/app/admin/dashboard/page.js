@@ -56,7 +56,7 @@ export default function AdminDashboard() {
       <div className="page-header">
         <div className="show-header">
           <span className="icon"><FaChartBar /></span>
-          <span>Danh mục</span>
+          <span>Tổng quan</span>
         </div>
         {/* <h2><FaChartBar /> Danh mục</h2> */}
       </div>

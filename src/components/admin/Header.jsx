@@ -16,13 +16,37 @@ export default function Header() {
   const [userName, setUserName] = useState("Admin Kincharna");
 
   // 🌙 toggle theme
+  // useEffect(() => {
+  //   const handleUpdate = () => {
+  //     const storedName = localStorage.getItem("user_name");
+  //     console.log(storedName);
+  //     setUserName(storedName?.trim() || " Admin Kincharna");
+  //   };
+  //   document.documentElement.setAttribute("data-theme", theme);
+  //   window.addEventListener("userNameUpdated", handleUpdate);
+
+  //   const storedName = localStorage.getItem("user_name");
+  //   // if (storedName) {
+  //   //   setUserName(storedName.trim());
+  //   // }
+
+  //   return () => window.removeEventListener("userNameUpdated", handleUpdate);
+
+
+  // }, [theme]);
+
+
   useEffect(() => {
+    const storedName = localStorage.getItem("user_name");
+    if (storedName) setUserName(storedName);
+
     const handleUpdate = () => {
-      const storedName = localStorage.getItem("user_name");
-      setUserName(storedName?.trim() || " Admin Kincharna");
+      const updatedName = localStorage.getItem("user_name");
+      setUserName(updatedName || "Admin Kincharna");
     };
-    document.documentElement.setAttribute("data-theme", theme);
+
     window.addEventListener("userNameUpdated", handleUpdate);
+    document.documentElement.setAttribute("data-theme", theme);
     return () => window.removeEventListener("userNameUpdated", handleUpdate);
   }, [theme]);
 

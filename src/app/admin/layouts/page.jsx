@@ -6,6 +6,7 @@ import "./layouts.css";
 import Link from 'next/link';
 import { API_BASE_URL } from '@/lib/api';
 import { getToken } from '@/lib/auth';
+import usePagination from "@/hooks/usePagination";
 
 
 export default function LayoutsPage() {
@@ -14,14 +15,14 @@ export default function LayoutsPage() {
   const [editingLayout, setEditingLayout] = useState(null);
   const [showForm, setShowForm] = useState(false);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = layouts.slice(indexOfFirstItem, indexOfLastItem);
-
-  const totalPages = Math.ceil(layouts.length / itemsPerPage);
+  const {
+    currentPage,
+    totalPages,
+    paginatedData: currentItems,
+    goNext,
+    goPrev,
+    goToPage,
+  } = usePagination(layouts, 5);
 
   useEffect(() => { fetchLayouts(); }, []);
 
@@ -186,19 +187,15 @@ export default function LayoutsPage() {
       </table>
 
       <div className="pagination">
-        <button
-          className="page-btn"
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        >
+        <button className="page-btn" onClick={goPrev} disabled={currentPage === 1}>
           ◀
         </button>
 
         {Array.from({ length: totalPages }, (_, i) => (
           <button
             key={i}
-            className={`page-btn ${currentPage === i + 1 ? 'active' : ''}`}
-            onClick={() => setCurrentPage(i + 1)}
+            className={`page-btn ${currentPage === i + 1 ? "active" : ""}`}
+            onClick={() => goToPage(i + 1)}
           >
             {i + 1}
           </button>
@@ -206,12 +203,13 @@ export default function LayoutsPage() {
 
         <button
           className="page-btn"
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          onClick={goNext}
           disabled={currentPage === totalPages}
         >
           ▶
         </button>
       </div>
+
 
       {showForm && (
         <Modal

@@ -1,13 +1,13 @@
 "use client";
 import { useEffect, useState } from "react";
-import { FaUsers, FaUserPlus, FaPlusSquare, FaEdit, FaTrash } from "react-icons/fa";
+import { FaUsers, FaPlusSquare, FaEdit, FaTrash } from "react-icons/fa";
 import Modal from "@/components/admin/Modal";
 import { Select, MenuItem } from "@mui/material";
 
 import { API_BASE_URL } from "@/lib/api";
 import "./users.css";
-import { getToken } from "@/lib/auth";
-import { authFetch } from "@/lib/auth";
+import { getToken, authFetch } from "@/lib/auth";
+import usePagination from "@/hooks/usePagination";
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -19,22 +19,17 @@ export default function UsersPage() {
   });
   const [editingUser, setEditingUser] = useState(null);
   const [showForm, setShowForm] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
-
-  // ===== Pagination =====
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentUsers = users.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(users.length / itemsPerPage);
 
   // ===== Fetch users =====
-  useEffect(() => { fetchUsers(); }, []);
+  useEffect(() => {
+    fetchUsers();
+  }, []);
 
   async function fetchUsers() {
     try {
       const res = await authFetch(`${API_BASE_URL}/users`);
       const data = await res.json();
+
       if (Array.isArray(data)) setUsers(data);
       else console.error("Invalid user data:", data);
     } catch (err) {
@@ -56,6 +51,7 @@ export default function UsersPage() {
   // ===== Delete =====
   async function handleDelete(id) {
     if (!confirm("Bạn có chắc muốn xóa người dùng này?")) return;
+
     try {
       const res = await authFetch(`${API_BASE_URL}/users/${id}`, {
         method: "DELETE",
@@ -82,10 +78,10 @@ export default function UsersPage() {
     const method = editingUser ? "PUT" : "POST";
     const url = editingUser
       ? `${API_BASE_URL}/users/${editingUser._id}`
-      : `${API_BASE_URL}/auth/register`; // ✅ tạo mới dùng endpoint đăng ký
+      : `${API_BASE_URL}/auth/register`; // endpoint tạo mới
 
     const payload = { ...formData };
-    if (!payload.password) delete payload.password; // bỏ qua nếu không đổi mật khẩu
+    if (!payload.password) delete payload.password; // nếu không đổi mật khẩu → bỏ
 
     try {
       const res = await authFetch(url, {
@@ -94,6 +90,7 @@ export default function UsersPage() {
       });
 
       const data = await res.json();
+
       if (res.ok) {
         alert(`✅ ${editingUser ? "Cập nhật" : "Thêm"} người dùng thành công`);
         setShowForm(false);
@@ -107,6 +104,16 @@ export default function UsersPage() {
       alert("❌ Không thể kết nối tới server");
     }
   }
+
+  // ===== Pagination Hook =====
+  const {
+    currentPage,
+    totalPages,
+    paginatedData: currentUsers,
+    goNext,
+    goPrev,
+    goToPage,
+  } = usePagination(users, 5);
 
   return (
     <div className="admin-page">
@@ -157,11 +164,7 @@ export default function UsersPage() {
 
       {/* Pagination */}
       <div className="pagination">
-        <button
-          className="page-btn"
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          disabled={currentPage === 1}
-        >
+        <button className="page-btn" onClick={goPrev} disabled={currentPage === 1}>
           ◀
         </button>
 
@@ -169,7 +172,7 @@ export default function UsersPage() {
           <button
             key={i}
             className={`page-btn ${currentPage === i + 1 ? "active" : ""}`}
-            onClick={() => setCurrentPage(i + 1)}
+            onClick={() => goToPage(i + 1)}
           >
             {i + 1}
           </button>
@@ -177,7 +180,7 @@ export default function UsersPage() {
 
         <button
           className="page-btn"
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          onClick={goNext}
           disabled={currentPage === totalPages}
         >
           ▶
@@ -200,6 +203,7 @@ export default function UsersPage() {
                 required
               />
             </div>
+
             <div>
               <label>Email</label>
               <input
@@ -211,7 +215,7 @@ export default function UsersPage() {
             </div>
 
             <div>
-              <label>Mật khẩu {editingUser ? "(để trống nếu không đổi)" : ""}</label>
+              <label>Mật khẩu {editingUser ? "(bỏ trống nếu không đổi)" : ""}</label>
               <input
                 type="password"
                 value={formData.password}
@@ -221,13 +225,18 @@ export default function UsersPage() {
 
             <div>
               <label>Quyền</label>
-              <Select variant="standard"
+              <Select
+                variant="standard"
                 style={{
                   border: "0.2vw solid #ccc",
                   padding: "0.5vw",
                   borderRadius: "0.5vw",
+                  width: "100%"
                 }}
-                disableUnderline value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })}>
+                disableUnderline
+                value={formData.role}
+                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              >
                 <MenuItem value="admin">Admin</MenuItem>
                 <MenuItem value="editor">Editor</MenuItem>
                 <MenuItem value="user">User</MenuItem>

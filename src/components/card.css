@@ -43,7 +43,7 @@
     left: 0;
     object-fit: contain;
     overflow: hidden;
-    z-index: 2;
+    z-index: 20;
 }
 
 /* #endregion */
@@ -52,9 +52,11 @@
 .card-actions {
     position: absolute;
     top: 2%;
+    max-height: 0.vw;
     right: 2%;
-    display: flex;
-    z-index: 20;
+    /* display: flex; */
+    z-index: 1;
+    pointer-events: none;
 }
 
 .card-actions i {
@@ -63,7 +65,9 @@
     font-size: 1vw;
     padding: 0.5vw;
     cursor: pointer;
+    pointer-events: auto;
     text-shadow: 0 0 0.5vw rgba(0, 0, 0, 0.5);
+
 }
 
 .card-actions i:hover {

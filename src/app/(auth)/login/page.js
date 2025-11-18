@@ -75,6 +75,7 @@ export default function LoginPage() {
       }, remaining);
 
       // 🔁 Điều hướng sang dashboard
+      window.dispatchEvent(new Event("userNameUpdated"));
       window.location.href = "/admin/dashboard";
 
     } catch (err) {

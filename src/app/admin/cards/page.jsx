@@ -1,11 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { FaClone, FaPlus, FaEye, FaPlusSquare, FaEdit, FaTrash } from 'react-icons/fa';
+import { FaClone, FaEye, FaPlusSquare, FaEdit, FaTrash } from 'react-icons/fa';
 import Modal from '@/components/admin/Modal';
 import Link from 'next/link';
 import "./cards.css";
-import { API_BASE_URL, BASE_URL } from '@/lib/api';
-import { getToken, authFetch } from '@/lib/auth';
+import { API_BASE_URL } from '@/lib/api';
+import { authFetch } from '@/lib/auth';
+import usePagination from '@/hooks/usePagination';
 
 export default function CardsPage() {
   const [cards, setCards] = useState([]);
@@ -15,14 +16,6 @@ export default function CardsPage() {
   });
   const [editingCard, setEditingCard] = useState(null);
   const [showForm, setShowForm] = useState(false);
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5); // Mỗi trang 5 dòng
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = cards.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(cards.length / itemsPerPage);
 
   // 🧠 Lấy danh sách card khi load trang
   useEffect(() => {
@@ -44,6 +37,7 @@ export default function CardsPage() {
     setEditingCard(card);
     setFormData({
       title: card.title,
+      contents: card.contents || [{ type: 'image', url: '', description: '', qrCode: '' }],
     });
     setShowForm(true);
   }
@@ -66,6 +60,7 @@ export default function CardsPage() {
     }
   }
 
+  // 🧾 Tạo / cập nhật card
   async function handleSubmit(e) {
     e.preventDefault();
     const method = editingCard ? 'PUT' : 'POST';
@@ -91,6 +86,16 @@ export default function CardsPage() {
       alert('Lỗi kết nối server');
     }
   }
+
+  // 📄 Phân trang với hook dùng chung
+  const {
+    currentPage,
+    totalPages,
+    paginatedData: currentItems,
+    goNext,
+    goPrev,
+    goToPage,
+  } = usePagination(cards, 5); // mỗi trang 5 thẻ
 
   return (
     <div className="admin-page">
@@ -129,19 +134,26 @@ export default function CardsPage() {
               <td>{card.title}</td>
               <td>{card.contents?.length || 0}</td>
               <td>
-                <Link href={`/admin/cards/${card._id}`} className="btn-view"><FaEye /> Xem chi tiết</Link>
-                <button className="btn-edit" onClick={() => handleEdit(card)}><FaEdit /> Sửa</button>
-                <button className="btn-delete" onClick={() => handleDelete(card._id)}><FaTrash /> Xóa</button>
+                <Link href={`/admin/cards/${card._id}`} className="btn-view">
+                  <FaEye /> Xem chi tiết
+                </Link>
+                <button className="btn-edit" onClick={() => handleEdit(card)}>
+                  <FaEdit /> Sửa
+                </button>
+                <button className="btn-delete" onClick={() => handleDelete(card._id)}>
+                  <FaTrash /> Xóa
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
+      {/* Pagination */}
       <div className="pagination">
         <button
           className="page-btn"
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          onClick={goPrev}
           disabled={currentPage === 1}
         >
           ◀
@@ -151,7 +163,7 @@ export default function CardsPage() {
           <button
             key={i}
             className={`page-btn ${currentPage === i + 1 ? 'active' : ''}`}
-            onClick={() => setCurrentPage(i + 1)}
+            onClick={() => goToPage(i + 1)}
           >
             {i + 1}
           </button>
@@ -159,7 +171,7 @@ export default function CardsPage() {
 
         <button
           className="page-btn"
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          onClick={goNext}
           disabled={currentPage === totalPages}
         >
           ▶
@@ -171,7 +183,7 @@ export default function CardsPage() {
           title={editingCard ? 'Sửa thẻ nội dung' : 'Thêm thẻ mới'}
           onClose={() => setShowForm(false)}
           width="60%"
-          height=''
+          height=""
         >
           <form onSubmit={handleSubmit}>
             <label>Tiêu đề</label>

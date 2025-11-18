@@ -6,6 +6,8 @@ import Link from 'next/link';
 import "./categories.css";
 import { API_BASE_URL } from '@/lib/api';
 import { getToken, authFetch } from '@/lib/auth';
+import usePagination from '@/hooks/usePagination';
+import { Select, MenuItem } from "@mui/material";
 
 
 export default function CategoriesPage() {
@@ -14,13 +16,16 @@ export default function CategoriesPage() {
   const [editingCategory, setEditingCategory] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [layouts, setLayouts] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(5);
 
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = categories.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(categories.length / itemsPerPage);
+  // ⭐ Paginate using custom hook
+  const {
+    currentPage,
+    totalPages,
+    paginatedData: currentItems,
+    goNext,
+    goPrev,
+    goToPage,
+  } = usePagination(categories || [], 5);
 
   useEffect(() => {
     fetchCategories();
@@ -76,7 +81,6 @@ export default function CategoriesPage() {
       alert("Lỗi kết nối server");
     }
   }
-
 
   function handleEdit(category) {
     setEditingCategory(category);
@@ -144,22 +148,27 @@ export default function CategoriesPage() {
                   : (cat.gridLayoutId || '—')}
               </td>
               <td>
-                <Link href={`/admin/categories/${cat._id}`} className="btn-view" title="Xem chi tiết">
+                <Link href={`/admin/categories/${cat._id}`} className="btn-view">
                   <FaEye /> Xem chi tiết
                 </Link>
-                <button className="btn-edit" onClick={() => handleEdit(cat)}><FaEdit /> Sửa</button>
-                <button className="btn-delete" onClick={() => handleDelete(cat._id)}><FaTrash /> Xóa</button>
+                <button className="btn-edit" onClick={() => handleEdit(cat)}>
+                  <FaEdit /> Sửa
+                </button>
+                <button className="btn-delete" onClick={() => handleDelete(cat._id)}>
+                  <FaTrash /> Xóa
+                </button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
 
+      {/* ⭐ Pagination UI */}
       <div className="pagination">
         <button
           className="page-btn"
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
           disabled={currentPage === 1}
+          onClick={() => goToPage(currentPage - 1)}
         >
           ◀
         </button>
@@ -167,8 +176,8 @@ export default function CategoriesPage() {
         {Array.from({ length: totalPages }, (_, i) => (
           <button
             key={i}
-            className={`page-btn ${currentPage === i + 1 ? 'active' : ''}`}
-            onClick={() => setCurrentPage(i + 1)}
+            className={`page-btn ${currentPage === i + 1 ? "active" : ""}`}
+            onClick={() => goToPage(i + 1)}
           >
             {i + 1}
           </button>
@@ -176,13 +185,14 @@ export default function CategoriesPage() {
 
         <button
           className="page-btn"
-          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
           disabled={currentPage === totalPages}
+          onClick={() => goToPage(currentPage + 1)}
         >
           ▶
         </button>
       </div>
 
+      {/* MODAL */}
       {showForm && (
         <Modal
           title={editingCategory ? 'Sửa danh mục' : 'Thêm danh mục mới'}
@@ -206,19 +216,26 @@ export default function CategoriesPage() {
             />
 
             <label>Grid Layout</label>
-            <select
+            <Select
+              variant="outlined"
+              disableUnderline
               value={formData.gridLayoutId}
-              onChange={(e) => setFormData({ ...formData, gridLayoutId: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, gridLayoutId: e.target.value })
+              }
+              style={{ width: "100%" }}
             >
-              <option value="">-- Chọn layout --</option>
-              {(() => {
-                return layouts.map((layout) => (
-                  <option key={layout._id} value={layout._id}>
-                    {layout.name || layout.title || JSON.stringify(layout)}
-                  </option>
-                ));
-              })()}
-            </select>
+              <MenuItem value="">
+                -- Chọn layout --
+              </MenuItem>
+
+              {layouts.map((layout) => (
+                <MenuItem key={layout._id} value={layout._id}>
+                  {layout.name || layout.title}
+                </MenuItem>
+              ))}
+            </Select>
+
 
             <div className="modal-actions">
               <button type="submit" className="btn-primary">Lưu</button>

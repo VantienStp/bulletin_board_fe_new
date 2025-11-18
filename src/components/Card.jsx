@@ -2,7 +2,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import "./card.css";
-import { BASE_URL } from "@/lib/api";
 
 export default function Card({ title, contents = [], style = {} }) {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -103,9 +102,10 @@ export default function Card({ title, contents = [], style = {} }) {
 
   const handleClick = () => {
     if (!canClick) return;
+    clearTimeout(timerRef.current);
     setActiveIndex((prev) => (prev + 1) % contents.length);
     setCanClick(false);
-    setTimeout(() => setCanClick(true), 7000);
+    setTimeout(() => setCanClick(true), 3000);
   };
 
   return (
@@ -162,7 +162,22 @@ export default function Card({ title, contents = [], style = {} }) {
             <>
               <i className="fas fa-redo reload-icon" onClick={() => setActiveIndex(0)}></i>
               <i className="fas fa-expand expand-icon"
-                onClick={() => window.dispatchEvent(new CustomEvent("openLightbox", { detail: activeFile }))}
+                onClick={() => {
+                  console.log("🔥 Expand clicked!");
+                  console.log("Active file:", activeFile);
+                  console.log("Full URL:", getFullUrl(activeFile?.url));
+
+                  window.dispatchEvent(
+                    new CustomEvent("openLightbox", {
+                      detail: {
+                        ...activeFile,
+                        url: getFullUrl(activeFile?.url),
+                      },
+                    })
+                  );
+
+                  console.log("📢 Lightbox event dispatched!");
+                }}
               ></i>
             </>
           )}

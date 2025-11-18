@@ -63,10 +63,13 @@ export default function AdminLayout({ children }) {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={pathname === item.href ? "active" : ""}
+                // className={pathname === item.href ? "active" : ""}
+                className={pathname.startsWith(item.href) ? "active" : ""}
+
               >
                 <span className="icon">{item.icon}</span>
                 <span className="nav-text">{item.label}</span>
+                <div className="corner-bottom"></div>
               </Link>
             </li>
           ))}
@@ -74,6 +77,7 @@ export default function AdminLayout({ children }) {
             <Link
               href="/admin/settings"
               className={pathname === "/admin/settings" ? "active" : ""}
+
             >
               <span className="icon"><FaCogs /></span>
               <span>Settings</span>

@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation';
 import "./card-detail.css";
 import { authFetch, getToken } from '@/lib/auth';
 import { Select, MenuItem } from "@mui/material";
+import usePagination from "@/hooks/usePagination";
 
 export default function CardDetailPage() {
 	const [card, setCard] = useState(null);
@@ -15,6 +16,16 @@ export default function CardDetailPage() {
 	const [formData, setFormData] = useState({ type: 'image', url: '', description: '', qrCode: '' });
 	const [showForm, setShowForm] = useState(false);
 	const { id } = useParams();
+
+	// 🟦 Pagination 4 item mỗi trang
+	const {
+		currentPage,
+		totalPages,
+		paginatedData: currentContents,
+		goPrev,
+		goNext,
+		goToPage
+	} = usePagination(card?.contents || [], 4);
 
 	useEffect(() => {
 		fetchCard();
@@ -32,12 +43,11 @@ export default function CardDetailPage() {
 
 	async function handleSubmit(e) {
 		e.preventDefault();
-		const token = getToken();
 		if (!card) return;
 
 		const finalData = JSON.parse(JSON.stringify(formData));
 
-		// 🧠 Nếu người dùng chọn file mới cho url → upload lên BE trước
+		// Nếu upload file mới
 		if (formData.url instanceof File) {
 			const fd = new FormData();
 			fd.append("file", formData.url);
@@ -49,70 +59,53 @@ export default function CardDetailPage() {
 
 			const uploadData = await uploadRes.json();
 
-			if (uploadRes.ok && uploadData.url) {
-				// ✅ Lưu link file
-				finalData.url = uploadData.url;
-				finalData.type = uploadData.type || formData.type;
-
-				// ✅ Tự động lấy ảnh QR từ BE (ảnh base64) để lưu vào card
-				finalData.qrCode = uploadData.qrImage || uploadData.qrLink || "";
-			} else {
-				console.error("❌ Upload thất bại:", uploadData);
-				alert("❌ Upload thất bại, vui lòng thử lại.");
+			if (!uploadRes.ok) {
+				alert("❌ Upload thất bại!");
 				return;
 			}
+
+			finalData.url = uploadData.url;
+			finalData.type = uploadData.type || formData.type;
+			finalData.qrCode = uploadData.qrImage || uploadData.qrLink || "";
 		}
 
-		// 🧩 Gửi dữ liệu nội dung (tạo mới hoặc cập nhật)
 		const method = editingContent !== null ? "PUT" : "POST";
 		const url = editingContent !== null
 			? `${API_BASE_URL}/cards/${id}/contents/${editingContent}`
 			: `${API_BASE_URL}/cards/${id}/contents`;
 
-		try {
-			const res = await authFetch(url, {
-				method,
+		const res = await authFetch(url, {
+			method,
+			body: JSON.stringify(finalData),
+		});
 
-				body: JSON.stringify(finalData),
-			});
-
-			if (res.ok) {
-				alert(editingContent !== null ? "✅ Đã cập nhật nội dung" : "✅ Đã thêm nội dung mới");
-				setShowForm(false);
-				setEditingContent(null);
-				fetchCard();
-			} else {
-				const msg = await res.text();
-				console.error("❌ Server response:", msg);
-				alert("❌ Cập nhật thất bại");
-			}
-		} catch (err) {
-			console.error("❌ Lỗi khi lưu:", err);
-			alert("❌ Lỗi khi gửi dữ liệu lên server");
+		if (res.ok) {
+			alert(editingContent !== null ? "✅ Đã cập nhật nội dung" : "✅ Đã thêm mới");
+			setShowForm(false);
+			setEditingContent(null);
+			fetchCard();
+		} else {
+			alert("❌ Cập nhật thất bại");
 		}
 	}
 
 	async function handleDeleteContent(index) {
 		if (!confirm('Bạn có chắc muốn xóa nội dung này?')) return;
-		const token = getToken();
-		try {
-			const res = await authFetch(`${API_BASE_URL}/cards/${id}/contents/${index}`, {
-				method: 'DELETE',
 
-			});
-			if (res.ok) {
-				alert('✅ Đã xóa nội dung');
-				fetchCard();
-			} else {
-				alert('❌ Xóa thất bại');
-			}
-		} catch (err) {
-			console.error('❌ Lỗi khi xóa nội dung:', err);
+		const res = await authFetch(`${API_BASE_URL}/cards/${id}/contents/${index}`, {
+			method: 'DELETE',
+		});
+
+		if (res.ok) {
+			alert('✅ Đã xóa nội dung');
+			fetchCard();
+		} else {
+			alert('❌ Xóa thất bại');
 		}
 	}
 
 	function getFullUrl(path) {
-		if (!path) return null; // tránh cảnh báo khi path rỗng
+		if (!path) return null;
 		if (path.startsWith("http")) return path;
 		return `${BASE_URL.replace(/\/$/, "")}/${path.replace(/^\/+/, "")}`;
 	}
@@ -136,7 +129,7 @@ export default function CardDetailPage() {
 			<div className="page-header">
 				<div className="show-header">
 					<span className="icon"><FaClone /></span>
-					<span>Chi tiết thẻ</span>
+					<span>Chi tiết thẻ {card.title}</span>
 				</div>
 
 				<button
@@ -145,12 +138,12 @@ export default function CardDetailPage() {
 						setEditingContent(null);
 						setFormData({ type: 'image', url: '', description: '', qrCode: '' });
 						setShowForm(true);
-					}}
-				>
+					}}>
 					<FaPlusSquare /> Thêm mới
 				</button>
 			</div>
 
+			{/* TABLE */}
 			<table className="admin-table table-cards-detail">
 				<thead>
 					<tr>
@@ -161,50 +154,74 @@ export default function CardDetailPage() {
 						<th>Hành động</th>
 					</tr>
 				</thead>
-				<tbody>
-					{card.contents.map((c, i) => (
-						<tr key={i}>
-							<td>{c.type}</td>
-							<td>
-								<div className="media-preview">
-									{c.type === 'image' && c.url && <img src={getFullUrl(c.url)} alt="" />}
-									{c.type === 'video' && c.url && <video src={getFullUrl(c.url)} controls />}
-									{c.type === 'pdf' && c.url && <iframe src={getFullUrl(c.url)} />}
-								</div>
-							</td>
 
-							<td>{c.description || '—'}</td>
-							<td>
-								<div className="media-qr">
-									{c.qrCode ? (
-										c.qrCode.startsWith("data:image")
-											? <img src={c.qrCode} alt="QR" />
-											: <img src={getFullUrl(c.qrCode)} alt="QR" />
-									) : "—"}
-								</div>
-							</td>
-							<td>
-								{c.url && (
-									<Link href={getFullUrl(c.url)} target="_blank" className="btn-view">
-										<FaEye /> Xem
-									</Link>
-								)}
-								<button className="btn-edit"
-									onClick={() => {
-										handleEditContent(i); setEditingContent("edit")
-										console.log("Editing content index:", editingContent);
-									}}>
-									<FaEdit /> Sửa
-								</button>
-								<button className="btn-delete" onClick={() => handleDeleteContent(i)}>
-									<FaTrash /> Xóa
-								</button>
-							</td>
-						</tr>
-					))}
+				<tbody>
+					{currentContents.map((c, i) => {
+						const realIndex = (currentPage - 1) * 4 + i;
+
+						return (
+							<tr key={realIndex}>
+								<td>{c.type}</td>
+
+								<td>
+									<div className="media-preview">
+										{c.type === 'image' && c.url && <img src={getFullUrl(c.url)} alt="" />}
+										{c.type === 'video' && c.url && <video src={getFullUrl(c.url)} controls />}
+										{c.type === 'pdf' && c.url && <iframe src={getFullUrl(c.url)} />}
+									</div>
+								</td>
+
+								<td>{c.description || '—'}</td>
+
+								<td>
+									<div className="media-qr">
+										{c.qrCode ? (
+											c.qrCode.startsWith("data:image")
+												? <img src={c.qrCode} alt="QR" />
+												: <img src={getFullUrl(c.qrCode)} alt="QR" />
+										) : "—"}
+									</div>
+								</td>
+
+								<td>
+									{c.url && (
+										<Link href={getFullUrl(c.url)} target="_blank" className="btn-view">
+											<FaEye /> Xem
+										</Link>
+									)}
+
+									<button className="btn-edit" onClick={() => handleEditContent(realIndex)}>
+										<FaEdit /> Sửa
+									</button>
+
+									<button className="btn-delete" onClick={() => handleDeleteContent(realIndex)}>
+										<FaTrash /> Xóa
+									</button>
+								</td>
+							</tr>
+						);
+					})}
 				</tbody>
 			</table>
 
+			{/* PAGINATION */}
+			<div className="pagination">
+				<button className="page-btn" onClick={goPrev} disabled={currentPage === 1}>◀</button>
+
+				{Array.from({ length: totalPages }, (_, i) => (
+					<button
+						key={i}
+						className={`page-btn ${currentPage === i + 1 ? "active" : ""}`}
+						onClick={() => goToPage(i + 1)}
+					>
+						{i + 1}
+					</button>
+				))}
+
+				<button className="page-btn" onClick={goNext} disabled={currentPage === totalPages}>▶</button>
+			</div>
+
+			{/* FORM */}
 			{showForm && (
 				<Modal
 					title={editingContent !== null ? "Sửa nội dung" : "Thêm nội dung mới"}
@@ -295,6 +312,7 @@ export default function CardDetailPage() {
 
 
 			)}
+
 		</div>
 	);
 }
