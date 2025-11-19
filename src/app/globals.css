@@ -283,7 +283,11 @@ body {
 
 .header-left .time-line {
     font-size: var(--font-size-xlarge);
+    font-style: italic;
+    opacity: 0.95;
+    margin-left: 80px;
 }
+
 
 .header-right {
     display: flex;

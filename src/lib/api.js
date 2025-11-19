@@ -1,8 +1,27 @@
-export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
+function detectBaseUrl() {
+    if (typeof window !== "undefined") {
+        const host = window.location.hostname;
+        if (host.startsWith("192.168.")) {
+            return `http://${host}:10000`;
+        }
+        if (host === "localhost" || host === "127.0.0.1") {
+            return "http://localhost:10000";
+        }
+    }
+    return process.env.NEXT_PUBLIC_BASE_URL ||
+        "https://bulletin-board-be-new.onrender.com";
+}
 
-// export const BASE_URL = "https://bulletin-board-be-new.onrender.com";
+export const BASE_URL = detectBaseUrl();
 export const API_BASE_URL = `${BASE_URL}/api`;
-console.log('API_BASE_URL: hahaah', API_BASE_URL);
+
+console.log("🌐 BASE_URL:", BASE_URL);
+console.log("🌐 API_BASE_URL:", API_BASE_URL);
+// export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
+
+
+// export const API_BASE_URL = `${BASE_URL}/api`;
+// console.log('API_BASE_URL: hahaah', API_BASE_URL);
 
 export async function loginUser(username, password) {
     const response = await fetch(`${API_BASE_URL}/users/login`, { // ⭐ Thay đổi endpoint

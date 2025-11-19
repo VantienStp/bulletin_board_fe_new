@@ -158,7 +158,7 @@ export default function Card({ title, contents = [], style = {} }) {
 
         <div className="card-actions" style={activeFile?.type === "pdf" ? { paddingRight: "7.4vw", paddingTop: "0.3vw" } : {}}>
           <i className="fas fa-eye toggle-title-icon" onClick={() => setShowTitle(!showTitle)}></i>
-          {activeFile?.type !== "video" && activeFile?.type !== "pdf" && (
+          {activeFile?.type !== "pdf" && (
             <>
               <i className="fas fa-redo reload-icon" onClick={() => setActiveIndex(0)}></i>
               <i className="fas fa-expand expand-icon"

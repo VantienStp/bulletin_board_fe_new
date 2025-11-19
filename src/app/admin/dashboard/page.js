@@ -52,7 +52,7 @@ export default function AdminDashboard() {
   }, [router]);
 
   return (
-    <>
+    <div className="admin-page">
       <div className="page-header">
         <div className="show-header">
           <span className="icon"><FaChartBar /></span>
@@ -85,6 +85,6 @@ export default function AdminDashboard() {
           <p>{stats.users}</p>
         </div>
       </div>
-    </>
+    </div>
   );
 }

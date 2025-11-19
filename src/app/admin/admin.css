@@ -182,19 +182,23 @@
   --color-bg-app: #1D1D29;
   --color-bg-sidebar: #1D1D29;
   --color-bg-content: #11121E;
-  --color-bg-button: #470d4c;
+  --color-bg-button: #1E2A47;
   --color-bg-button-hover: #7B7B7B;
   --color-bg-th-table: #7B7B7B;
 
-  --color-text-primary: #FFFFFF;
+  --color-text-primary: #eeecec;
   --color-text-secondary: #CBD5E1;
 
-  --color-accent: #470d4c;
+  --color-accent: #1E2A47;
   --color-highlight: #7692b4;
 
   --color-text-active: #FFFFFF;
 
   --color-shadow: none;
+
+  --shadow-hover:
+    0.15vw 0.15vw 0.3vw var(--color-bg-content),
+    -0.15vw -0.15vw 0.3vw var(--color-bg-content);
 }
 
 
@@ -268,7 +272,7 @@ html {
   color: var(--color-text-primary);
   transition: all 0.3s ease;
   font-size: var(--font-size-medium);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .sidebar ul li a .icon {
@@ -301,6 +305,7 @@ html {
   position: relative;
   background: linear-gradient(80deg, var(--color-bg-content));
   width: 110%;
+  font-weight: 600;
 }
 
 .sidebar ul li a.active:hover {
@@ -485,9 +490,9 @@ td:last-child {
 }
 
 .admin-page {
-  padding: 24px;
+  padding: var(--padding-large);
   background: var(--color-bg-sidebar);
-  min-height: 80vh;
+  min-height: 82vh;
   font-family: 'Roboto', sans-serif;
   border-radius: var(--radius-medium);
 }
@@ -572,7 +577,8 @@ td:last-child {
 .btn-view:hover,
 .btn-edit:hover,
 .btn-delete:hover {
-  opacity: 1;
+  opacity: 1.5;
+  height: 110%;
 }
 
 .btn-edit {

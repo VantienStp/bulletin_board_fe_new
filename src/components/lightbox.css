@@ -56,7 +56,7 @@
 /* Video */
 .lightbox-media.video {
   width: 80vw;
-  max-height: 80vh;
+  max-height: 90vh;
   object-fit: contain;
   background: #000;
 }

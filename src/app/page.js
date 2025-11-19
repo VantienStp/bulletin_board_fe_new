@@ -44,6 +44,22 @@ export default function HomePage() {
     console.log("Selected layout config:", cat.gridLayoutId?.config);
   };
 
+  useEffect(() => {
+    if (categories.length === 0 || !selectedCategory) return;
+
+    const interval = setInterval(() => {
+      const others = categories.filter(cat => cat._id !== selectedCategory);
+      if (others.length === 0) return;
+
+      const randomCat = others[Math.floor(Math.random() * others.length)];
+      console.log("🔄 Auto switch to:", randomCat.title);
+
+      handleSelectCategory(randomCat);
+    }, 1 * 10 * 1000); // 10 phút
+
+    return () => clearInterval(interval);
+  }, [categories, selectedCategory]);
+
   return (
     <>
       <nav className="sidebar">
@@ -70,10 +86,24 @@ export default function HomePage() {
         <div className="header-content">
           <div className="header-left">
             <span className="main-title">
-              <span className="highlight">Bản Tin Hoạt Động</span> Toà Án Nhân Dân
+              <span className="highlight">Bản Tin Hoạt Động</span> Toà Án Nhân Dân khu vực 1
             </span>
             <div className="time-line">
-              {new Date().toISOString().split("T")[0]}
+              {(() => {
+                const d = new Date();
+
+                const weekdays = [
+                  "Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư",
+                  "Thứ Năm", "Thứ Sáu", "Thứ Bảy"
+                ];
+
+                const dayName = weekdays[d.getDay()];
+                const day = d.getDate();
+                const month = d.getMonth() + 1;
+                const year = d.getFullYear();
+
+                return `${dayName} ngày ${day} tháng ${month} năm ${year}`;
+              })()}
             </div>
           </div>
           <div className="header-right">

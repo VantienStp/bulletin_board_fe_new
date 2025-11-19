@@ -19,7 +19,7 @@
 
 .stat-card {
   /* background: var(--bg-2); */
-  background: var(--color-bg-sidebar);
+  background: var(--color-bg-content);
   border-radius: var(--radius-medium);
   box-shadow: var(--shadow-hover);
   padding: var(--padding-large);
@@ -35,16 +35,16 @@
 }
 
 .stat-card svg {
-  color: #cc3a72;
+  color: var(--color-text-primary);
 }
 
 .stat-card h2 {
-  color: #555;
+  color: var(--color-text-primary);
 }
 
 .stat-card p {
   font-weight: 700;
-  color: var(--primary);
+  color: var(--color-text-primary);
 }
 
 .show-header {
