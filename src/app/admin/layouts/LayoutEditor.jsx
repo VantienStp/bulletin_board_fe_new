@@ -4,6 +4,7 @@ import GridLayout from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import "./LayoutEditor.css";
+import { getToken, authFetch } from '@/lib/auth';
 import { API_BASE_URL } from "@/lib/api";
 import { FaTimes } from 'react-icons/fa';
 
@@ -62,6 +63,7 @@ export default function LayoutEditor({ layoutId, initialConfig }) {
     }
 
     setIsSaving(true);
+
     const updatedConfig = {
       columns: Array.from({ length: cols }, () => 1),
       rows,
@@ -71,26 +73,32 @@ export default function LayoutEditor({ layoutId, initialConfig }) {
         w: item.w,
         h: item.h,
       })),
+      // cssClass giữ nguyên nếu config ban đầu có
     };
 
     console.log("Updated layout config:", updatedConfig);
 
     try {
-      const res = await fetch(`${API_BASE_URL}/gridLayouts/${layoutId}`, {
+      const res = await authFetch(`${API_BASE_URL}/gridLayouts/${layoutId}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ config: updatedConfig }),
       });
 
-      if (!res.ok) throw new Error("Cập nhật thất bại!");
+      if (!res.ok) {
+        const errData = await res.json();
+        console.error("❌ Lỗi:", errData);
+        throw new Error(errData.message || "Cập nhật thất bại!");
+      }
+
       alert("✅ Layout đã được cập nhật thành công!");
     } catch (err) {
-      console.error(err);
-      alert("❌ Có lỗi khi lưu layout!");
+      console.error("❌ Lỗi khi lưu layout:", err);
+      alert(err.message || "❌ Có lỗi khi lưu layout!");
     } finally {
       setIsSaving(false);
     }
   };
+
 
   // 🔁 Cập nhật layout khi kéo/thả
   const handleLayoutChange = (newLayout) => setLayout(newLayout);

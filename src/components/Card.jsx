@@ -8,6 +8,9 @@ export default function Card({ title, contents = [], style = {} }) {
   const [showTitle, setShowTitle] = useState(true);
   const [canClick, setCanClick] = useState(true);
 
+  const [pdfPage, setPdfPage] = useState(0);
+
+
   const wrapperRef = useRef(null);
   const contentBottomRef = useRef(null);
   const qrImgRef = useRef(null);
@@ -24,8 +27,11 @@ export default function Card({ title, contents = [], style = {} }) {
     if (current.type === "video") {
       intervalTime = 60000;
     } else if (current.type === "pdf") {
+      console.log(activeFile);
+
       intervalTime = 60000 + Math.floor(Math.random() * 30000);
     } else {
+
       intervalTime = 5000 + Math.floor(Math.random() * 5000);
     }
 
@@ -38,6 +44,25 @@ export default function Card({ title, contents = [], style = {} }) {
   }, [activeIndex, contents]);
 
   useEffect(() => {
+    if (activeFile?.type === "pdf") {
+      setPdfPage(0);
+    }
+  }, [activeIndex]);
+
+  useEffect(() => {
+    if (activeFile?.type !== "pdf") return;
+    if (!activeFile.images || activeFile.images.length === 0) return;
+
+    const timer = setTimeout(() => {
+      setPdfPage((prev) => (prev + 1) % activeFile.images.length);
+    }, 3000); // 3 giây lật trang PDF
+
+    return () => clearTimeout(timer);
+  }, [pdfPage, activeFile]);
+
+
+
+  useEffect(() => {
     setDynamicSizes();
     window.addEventListener("resize", setDynamicSizes);
     return () => window.removeEventListener("resize", setDynamicSizes);
@@ -48,7 +73,7 @@ export default function Card({ title, contents = [], style = {} }) {
       // 🧾 Gửi request để lấy header response của PDF
       fetch(activeFile.url, { method: "HEAD" })
         .then((res) => {
-          console.log("📄 PDF Headers for:", activeFile.url);
+          // console.log("📄 PDF Headers for:", activeFile.url);
           for (const [key, value] of res.headers.entries()) {
             console.log(`   ${key}: ${value}`);
           }
@@ -143,11 +168,30 @@ export default function Card({ title, contents = [], style = {} }) {
                   />
                 )}
 
-                {activeFile?.type === "pdf" && (
+                {/* {activeFile?.type === "pdf" && (
                   <iframe src={encodeURI(activeFile.url)} title="PDF Viewer" className="media-pdf" frameBorder="0"
                     style={{ width: "100%", height: "100%", border: "none" }}
                   />
+                )} */}
+                {/* {activeFile?.type === "pdf" && activeFile.images?.length > 0 && (
+                  <img
+                    src={getFullUrl(activeFile.images[activeIndex])}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                )} */}
+
+                {activeFile?.type === "pdf" && activeFile.images?.length > 0 && (
+                  <img
+                    src={getFullUrl(activeFile.images[pdfPage])}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover"
+                    }}
+                  />
                 )}
+
+
 
               </motion.div>
             </AnimatePresence>

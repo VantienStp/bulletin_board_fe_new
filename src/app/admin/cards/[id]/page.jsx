@@ -44,6 +44,7 @@ export default function CardDetailPage() {
 	async function handleSubmit(e) {
 		e.preventDefault();
 		if (!card) return;
+		console.log("sads");
 
 		const finalData = JSON.parse(JSON.stringify(formData));
 
@@ -63,10 +64,17 @@ export default function CardDetailPage() {
 				alert("❌ Upload thất bại!");
 				return;
 			}
+			console.log(uploadData);
+
 
 			finalData.url = uploadData.url;
 			finalData.type = uploadData.type || formData.type;
 			finalData.qrCode = uploadData.qrImage || uploadData.qrLink || "";
+
+			if (uploadData.type === "pdf" && uploadData.images) {
+				finalData.images = uploadData.images;
+
+			}
 		}
 
 		const method = editingContent !== null ? "PUT" : "POST";
