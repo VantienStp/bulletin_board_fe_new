@@ -88,9 +88,9 @@ export default function Card({ title, contents = [], style = {} }) {
     // 🧩 Tính số dòng có thể hiển thị
     const lineHeight = fontSize * 1.4; // cùng tỷ lệ line-height với CSS
     const maxLines = Math.floor(contentBottomHeight / lineHeight) - 1;
-    console.log("qrSize: ", qrSize)
-    console.log("contentBottomHeight / lineHeight : ", contentBottomHeight, lineHeight)
-    console.log("maxlines: ", maxLines)
+    // console.log("qrSize: ", qrSize)
+    // console.log("contentBottomHeight / lineHeight : ", contentBottomHeight, lineHeight)
+    // console.log("maxlines: ", maxLines)
 
     // 🧩 Gán line-clamp động
     qrText.style.display = "-webkit-box";

@@ -12,7 +12,7 @@ import { Select, MenuItem } from "@mui/material";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
-  const [formData, setFormData] = useState({ title: '', description: '', gridLayoutId: '' });
+  const [formData, setFormData] = useState({ title: '', description: '', gridLayoutId: '', icon: '' });
   const [editingCategory, setEditingCategory] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [layouts, setLayouts] = useState([]);
@@ -26,6 +26,20 @@ export default function CategoriesPage() {
     goPrev,
     goToPage,
   } = usePagination(categories || [], 5);
+
+  const iconOptions = [
+    "fas fa-folder",
+    "fas fa-image",
+    "fas fa-bullhorn",
+    "fas fa-newspaper",
+    "fas fa-photo-video",
+    "fas fa-calendar",
+    "fas fa-book",
+    "fas fa-users",
+    "fas fa-file-alt",
+    "fas fa-star",
+  ];
+
 
   useEffect(() => {
     fetchCategories();
@@ -88,6 +102,7 @@ export default function CategoriesPage() {
       title: category.title,
       description: category.description || '',
       gridLayoutId: category.gridLayoutId || '',
+      icon: category.icon || ''
     });
     setShowForm(true);
   }
@@ -132,6 +147,7 @@ export default function CategoriesPage() {
         <thead>
           <tr>
             <th>Tên danh mục</th>
+            <th>Icon</th>
             <th>Mô tả</th>
             <th>Grid Layout</th>
             <th>Hành động</th>
@@ -141,6 +157,13 @@ export default function CategoriesPage() {
           {currentItems.map((cat) => (
             <tr key={cat._id}>
               <td>{cat.title}</td>
+              <td>
+                {cat.icon ? (
+                  <i className={cat.icon} style={{ fontSize: "22px" }}></i>
+                ) : (
+                  "—"
+                )}
+              </td>
               <td>{cat.description || '—'}</td>
               <td>
                 {typeof cat.gridLayoutId === 'object'
@@ -207,6 +230,26 @@ export default function CategoriesPage() {
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
             />
+
+            <label>Icon</label>
+            <Select
+              variant="outlined"
+              disableUnderline
+              value={formData.icon}
+              onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+              style={{ width: "100%" }}
+            >
+              <MenuItem value="">
+                -- Chọn icon --
+              </MenuItem>
+
+              {iconOptions.map((ic) => (
+                <MenuItem key={ic} value={ic}>
+                  <i className={ic} style={{ marginRight: 8 }}></i>
+                  {ic}
+                </MenuItem>
+              ))}
+            </Select>
 
             <label>Mô tả</label>
             <textarea

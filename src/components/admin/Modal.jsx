@@ -10,7 +10,7 @@ export default function Modal({
   width = "50%",
   height = "auto",
   maxWidth = "80%",
-  maxHeight = "80%",
+  maxHeight = "90%",
 
   minHeight = "50%",
   minWidth = "50%",

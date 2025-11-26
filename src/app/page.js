@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Clock from "@/components/Clock";
 import Weather from "@/components/Weather";
 import Card from "@/components/Card";
@@ -11,6 +11,10 @@ export default function HomePage() {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [layoutConfig, setLayoutConfig] = useState(null);
+  const intervalRef = useRef(null);
+  const [autoSwitch, setAutoSwitch] = useState(true); // mặc định tự đổi
+
+
 
   useEffect(() => {
     const el = document.getElementById('devtools-indicator');
@@ -53,9 +57,19 @@ export default function HomePage() {
   };
 
   useEffect(() => {
+    if (!autoSwitch) {
+      // nếu tắt auto, xóa interval và không làm gì thêm
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      return;
+    }
+
     if (categories.length === 0 || !selectedCategory) return;
 
-    const interval = setInterval(() => {
+    // reset interval cũ
+    if (intervalRef.current) clearInterval(intervalRef.current);
+
+    // tạo timer mới
+    intervalRef.current = setInterval(() => {
       const others = categories.filter(cat => cat._id !== selectedCategory);
       if (others.length === 0) return;
 
@@ -63,8 +77,10 @@ export default function HomePage() {
       handleSelectCategory(randomCat);
     }, 1 * 5 * 1000); // 15 phút
 
-    return () => clearInterval(interval);
-  }, [categories, selectedCategory]);
+    return () => clearInterval(intervalRef.current);
+
+  }, [selectedCategory, categories, autoSwitch]);
+
 
   useEffect(() => {
     if (!categories.length || !selectedCategory) return;
@@ -143,7 +159,10 @@ export default function HomePage() {
             </div>
           </div>
           <div className="header-right">
-            <Weather />
+            <div onClick={() => setAutoSwitch(prev => !prev)} style={{ cursor: "pointer" }}>
+              <Weather />
+            </div>
+            {/* <Weather /> */}
             <Clock />
           </div>
         </div>
