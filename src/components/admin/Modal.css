@@ -130,7 +130,7 @@
 /* Nhãn */
 .modal-body label {
     display: block;
-    margin-bottom: var(--margin-small);
+    margin-top: var(--margin-small);
     font-weight: 600;
     color: #374151;
     font-size: var(--font-size-medium);
@@ -150,16 +150,13 @@
 .modal-body input:focus,
 .modal-body textarea:focus {
     border-color: var(--primary, #2563eb);
+    font-size: var(--font-size-medium);
     outline: none;
 }
 
-/* Textarea tự động giãn chiều cao */
-/* .modal-body textarea {
-    resize: vertical;
-    min-height: 8px;
-    max-height: 250px;
-    line-height: 1.5;
-} */
+.modal-body textarea {
+    font-size: var(--font-size-medium);
+}
 
 /* Upload Row */
 .upload-row {

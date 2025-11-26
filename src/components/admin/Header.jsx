@@ -110,7 +110,7 @@ export default function Header() {
 
       <div className="header-center">
         <div className="search-wrapper">
-          <i className="fas fa-search search-icon"></i>
+          {/* <i className="fas fa-search search-icon"></i> */}
           {/* <input type="text" className="search-input" placeholder="Tìm kiếm..." /> */}
         </div>
       </div>

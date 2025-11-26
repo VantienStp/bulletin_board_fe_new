@@ -28,17 +28,49 @@ export default function CategoriesPage() {
   } = usePagination(categories || [], 5);
 
   const iconOptions = [
+    // Folder / File / Document
     "fas fa-folder",
-    "fas fa-image",
-    "fas fa-bullhorn",
-    "fas fa-newspaper",
-    "fas fa-photo-video",
-    "fas fa-calendar",
-    "fas fa-book",
-    "fas fa-users",
+    "fas fa-folder-open",
+    "fas fa-file",
     "fas fa-file-alt",
+    "fas fa-file-pdf",
+    "fas fa-file-image",
+    "fas fa-file-video",
+
+    // Media
+    "fas fa-image",
+    "fas fa-images",
+    "fas fa-photo-video",
+    "fas fa-camera",
+    "fas fa-video",
+    "fas fa-film",
+
+    // News / Announcement
+    "fas fa-newspaper",
+    "fas fa-bullhorn",
+    "fas fa-bell",
+
+    // Calendar / Time
+    "fas fa-calendar",
+    "fas fa-calendar-alt",
+    "fas fa-clock",
+
+    // User / People
+    "fas fa-user",
+    "fas fa-user-friends",
+    "fas fa-users",
+
+    // Status / Star / Bookmark
     "fas fa-star",
+    "fas fa-star-half-alt",
+    "fas fa-bookmark",
+
+
+    // Others (nice for categories)
+    "fas fa-book",
+    "fas fa-tags",
   ];
+
 
 
   useEffect(() => {
@@ -80,6 +112,8 @@ export default function CategoriesPage() {
         body: JSON.stringify(formData),
       });
 
+      console.log(formData);
+
       if (res.ok) {
         alert(editingCategory ? "✅ Đã cập nhật danh mục" : "✅ Đã tạo danh mục mới");
         setShowForm(false);
@@ -101,7 +135,9 @@ export default function CategoriesPage() {
     setFormData({
       title: category.title,
       description: category.description || '',
-      gridLayoutId: category.gridLayoutId || '',
+      gridLayoutId: typeof category.gridLayoutId === "object"
+        ? category.gridLayoutId._id
+        : category.gridLayoutId || '',
       icon: category.icon || ''
     });
     setShowForm(true);
@@ -234,7 +270,6 @@ export default function CategoriesPage() {
             <label>Icon</label>
             <Select
               variant="outlined"
-              disableUnderline
               value={formData.icon}
               onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
               style={{ width: "100%" }}
@@ -261,7 +296,6 @@ export default function CategoriesPage() {
             <label>Grid Layout</label>
             <Select
               variant="outlined"
-              disableUnderline
               value={formData.gridLayoutId}
               onChange={(e) =>
                 setFormData({ ...formData, gridLayoutId: e.target.value })
