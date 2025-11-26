@@ -22,11 +22,18 @@ export default function HomePage() {
       try {
         const res = await fetch(`${API_BASE_URL}/categories`);
         const data = await res.json();
-        console.log("Fetched categories:", data);
-
         setCategories(data);
-
         if (data.length > 0) {
+          const saved = localStorage.getItem("selectedCategory");
+
+          if (saved) {
+            const found = data.find(c => c._id === saved);
+            if (found) {
+              setSelectedCategory(found._id);
+              setLayoutConfig(found.gridLayoutId?.config || null);
+              return;
+            }
+          }
           const firstCat = data[0];
           setSelectedCategory(firstCat._id);
           setLayoutConfig(firstCat.gridLayoutId?.config || null);
@@ -38,10 +45,11 @@ export default function HomePage() {
     fetchCategories();
   }, []);
 
+
   const handleSelectCategory = (cat) => {
     setSelectedCategory(cat._id);
     setLayoutConfig(cat.gridLayoutId?.config || null);
-    console.log("Selected layout config:", cat.gridLayoutId?.config);
+    localStorage.setItem("selectedCategory", cat._id);
   };
 
   useEffect(() => {
@@ -52,13 +60,35 @@ export default function HomePage() {
       if (others.length === 0) return;
 
       const randomCat = others[Math.floor(Math.random() * others.length)];
-      console.log("🔄 Auto switch to:", randomCat.title);
-
       handleSelectCategory(randomCat);
-    }, 1 * 10 * 1000); // 10 phút
+    }, 1 * 5 * 1000); // 15 phút
 
     return () => clearInterval(interval);
   }, [categories, selectedCategory]);
+
+  useEffect(() => {
+    if (!categories.length || !selectedCategory) return;
+
+    const index = categories.findIndex(cat => cat._id === selectedCategory);
+    if (index < 0) return;
+
+    const highlight = document.getElementById("sidebar-highlight");
+    const items = document.querySelectorAll(".sidebar ul li a");
+
+    if (!highlight || !items.length) return;
+
+    const item = items[index];
+    const itemHeightPx = item.offsetHeight;
+    const itemTopPx = item.offsetTop;
+
+    const vhTop = (itemTopPx / window.innerHeight) * 100;
+    const vhHeight = (itemHeightPx / window.innerHeight) * 100;
+
+    highlight.style.transform = `translateY(${vhTop}vh)`;
+    highlight.style.height = `${vhHeight}vh`;
+
+  }, [selectedCategory, categories]);
+
 
   return (
     <>
@@ -66,6 +96,11 @@ export default function HomePage() {
         <a href="#" className="nav-logo">
           <img src={`${BASE_URL}/uploads/logo2.png`} alt="Dashboard Logo" />
         </a>
+
+        {/* BONG BÓNG ACTIVE */}
+        <div id="sidebar-highlight">
+          <div className="corner-bottom"></div>
+        </div>
         <ul>
           {categories.map((cat) => (
             <li key={cat._id}>
@@ -75,7 +110,6 @@ export default function HomePage() {
               >
                 <i className={cat.icon || "fas fa-folder"}></i>
                 <span className="nav-text">{cat.title}</span>
-                <div className="corner-bottom"></div>
               </a>
             </li>
           ))}
@@ -85,25 +119,27 @@ export default function HomePage() {
       <header className="main-header">
         <div className="header-content">
           <div className="header-left">
-            <span className="main-title">
-              <span className="highlight">Bản Tin Hoạt Động</span> Toà Án Nhân Dân khu vực 1
-            </span>
-            <div className="time-line">
-              {(() => {
-                const d = new Date();
+            <div className="title-block">
+              <span className="main-title">
+                <span className="highlight">Bản Tin Hoạt Động</span> Toà Án Nhân Dân khu vực 1
+              </span>
+              <div className="time-line">
+                {(() => {
+                  const d = new Date();
 
-                const weekdays = [
-                  "Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư",
-                  "Thứ Năm", "Thứ Sáu", "Thứ Bảy"
-                ];
+                  const weekdays = [
+                    "Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư",
+                    "Thứ Năm", "Thứ Sáu", "Thứ Bảy"
+                  ];
 
-                const dayName = weekdays[d.getDay()];
-                const day = d.getDate();
-                const month = d.getMonth() + 1;
-                const year = d.getFullYear();
+                  const dayName = weekdays[d.getDay()];
+                  const day = d.getDate();
+                  const month = d.getMonth() + 1;
+                  const year = d.getFullYear();
 
-                return `${dayName} ngày ${day} tháng ${month} năm ${year}`;
-              })()}
+                  return `${dayName} ngày ${day} tháng ${month} năm ${year}`;
+                })()}
+              </div>
             </div>
           </div>
           <div className="header-right">

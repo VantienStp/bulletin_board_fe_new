@@ -90,6 +90,7 @@ body {
     flex-direction: column;
     align-items: center;
     background: #0D1B2A;
+    position: relative;
 }
 
 .sidebar .nav-logo {
@@ -124,6 +125,7 @@ body {
 
 .sidebar ul li a {
     display: flex;
+    transition: all 0.35s ease-in-out;
     align-items: center;
     flex-direction: column;
     gap: var(--gap-tiny);
@@ -142,7 +144,6 @@ body {
 
 .sidebar ul li a .nav-text {
     font-size: var(--font-size-medium);
-    /* font-size: 0.8vw; */
     line-height: 1.2;
     opacity: 0.9;
 }
@@ -155,17 +156,28 @@ body {
 }
 
 .sidebar ul li a.active {
-    position: relative;
-    color: #0D1B2A;
-    background-color: #F0F2F5;
-    border-top-left-radius: 1vw;
-    border-bottom-left-radius: 1vw;
-    z-index: 1;
+    color: black;
+    /* background-color: red; */
     font-weight: bold;
-    width: 110%;
 }
 
-.sidebar ul li a.active::before {
+
+
+#sidebar-highlight {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    margin-left: var(--margin-small);
+    background: #F0F2F5;
+    border-radius: 1vw 0 0 1vw;
+    /* z-index: 0; */
+    height: 4.5vw;
+    transform: translateY(120vw);
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Góc trên */
+#sidebar-highlight::before {
     content: "";
     position: absolute;
     top: -1vw;
@@ -173,40 +185,42 @@ body {
     width: 2vw;
     height: 1.2vw;
     background: #F0F2F5;
-
 }
 
-.sidebar ul li a.active::after {
+#sidebar-highlight::after {
     content: "";
     position: absolute;
     top: -1.1vw;
-    right: 0.55vw;
+    right: 0.5vw;
     width: 4vw;
     height: 1.1vw;
     background: #0D1B2A;
     border-bottom-right-radius: 1vw;
 }
 
-.sidebar ul li a.active .corner-bottom {
+/* Góc dưới */
+#sidebar-highlight .corner-bottom {
     content: "";
     position: absolute;
-    bottom: -1.2vw;
-    right: -0.55vw;
+    bottom: -1vw;
+    right: -0.6vw;
     width: 2vw;
-    height: 1.5vw;
+    height: 1.25vw;
     background: #F0F2F5;
 }
 
-.sidebar ul li a.active .corner-bottom::after {
+#sidebar-highlight .corner-bottom::after {
     content: "";
     position: absolute;
     width: 2vw;
     height: 1.3vw;
-    top: 0.3vw;
+    top: 0.25vw;
     background: #0D1B2A;
     right: 1.1vw;
     border-top-right-radius: 1vw;
 }
+
+
 
 /* #region ================= TITLE ================= */
 .title {
@@ -250,7 +264,7 @@ body {
     color: black;
     margin: 1vh 1vh 0 0;
     background: #F0F2F5;
-    border-radius: 1vw 1vw 0 0;
+    border-radius: 1vh 0.5vw 0 0;
 }
 
 .main-title .highlight {
