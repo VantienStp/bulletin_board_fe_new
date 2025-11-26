@@ -578,7 +578,6 @@ td:last-child {
 .btn-edit:hover,
 .btn-delete:hover {
   opacity: 1.5;
-  height: 110%;
 }
 
 .btn-edit {
