@@ -1,6 +1,5 @@
-export default function Admin() {
-    return (
-        <>
-        </>
-    );
+import { redirect } from "next/navigation";
+
+export default function AdminPage() {
+    redirect("/admin/dashboard");
 }

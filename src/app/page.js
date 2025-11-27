@@ -12,14 +12,19 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [layoutConfig, setLayoutConfig] = useState(null);
   const intervalRef = useRef(null);
-  const [autoSwitch, setAutoSwitch] = useState(true); // mặc định tự đổi
-
-
+  const [autoSwitch, setAutoSwitch] = useState(() => {
+    const saved = localStorage.getItem("autoSwitch");
+    return saved !== null ? JSON.parse(saved) : true;
+  });
 
   useEffect(() => {
     const el = document.getElementById('devtools-indicator');
     if (el) el.style.display = 'none';
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem("autoSwitch", JSON.stringify(autoSwitch));
+  }, [autoSwitch]);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -58,17 +63,14 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!autoSwitch) {
-      // nếu tắt auto, xóa interval và không làm gì thêm
       if (intervalRef.current) clearInterval(intervalRef.current);
       return;
     }
 
     if (categories.length === 0 || !selectedCategory) return;
 
-    // reset interval cũ
     if (intervalRef.current) clearInterval(intervalRef.current);
 
-    // tạo timer mới
     intervalRef.current = setInterval(() => {
       const others = categories.filter(cat => cat._id !== selectedCategory);
       if (others.length === 0) return;

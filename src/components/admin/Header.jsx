@@ -74,7 +74,7 @@ export default function Header() {
       setTimeout(() => {
         setOpen(false);
         setIsClosing(false);
-      }, 600);
+      }, 200);
     } else {
       setOpen(true);
     }
@@ -127,7 +127,8 @@ export default function Header() {
           Chào mừng
           {/* <FaUserCircle className="user-avatar-icon" /> */}
           <button className="user-name" onClick={handleToggle}>
-            {userName} <i className="fas fa-chevron-down"></i>
+            {userName}
+            {/* <i className="fas fa-chevron-down"></i> */}
           </button>
         </div>
 
