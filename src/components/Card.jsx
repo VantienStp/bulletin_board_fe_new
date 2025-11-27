@@ -55,7 +55,7 @@ export default function Card({ title, contents = [], style = {} }) {
 
     const timer = setTimeout(() => {
       setPdfPage((prev) => (prev + 1) % activeFile.images.length);
-    }, 3000); // 3 giây lật trang PDF
+    }, 15000); // lật trang PDF sau moi 15s
 
     return () => clearTimeout(timer);
   }, [pdfPage, activeFile]);
@@ -168,18 +168,6 @@ export default function Card({ title, contents = [], style = {} }) {
                   />
                 )}
 
-                {/* {activeFile?.type === "pdf" && (
-                  <iframe src={encodeURI(activeFile.url)} title="PDF Viewer" className="media-pdf" frameBorder="0"
-                    style={{ width: "100%", height: "100%", border: "none" }}
-                  />
-                )} */}
-                {/* {activeFile?.type === "pdf" && activeFile.images?.length > 0 && (
-                  <img
-                    src={getFullUrl(activeFile.images[activeIndex])}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                )} */}
-
                 {activeFile?.type === "pdf" && activeFile.images?.length > 0 && (
                   <img
                     src={getFullUrl(activeFile.images[pdfPage])}
@@ -200,31 +188,29 @@ export default function Card({ title, contents = [], style = {} }) {
           )}
         </div>
 
-        <div className="card-actions" style={activeFile?.type === "pdf" ? { paddingRight: "7.4vw", paddingTop: "0.3vw" } : {}}>
+        <div className="card-actions">
           <i className="fas fa-eye toggle-title-icon" onClick={() => setShowTitle(!showTitle)}></i>
-          {activeFile?.type !== "pdf" && (
-            <>
-              <i className="fas fa-redo reload-icon" onClick={() => setActiveIndex(0)}></i>
-              <i className="fas fa-expand expand-icon"
-                onClick={() => {
-                  console.log("🔥 Expand clicked!");
-                  console.log("Active file:", activeFile);
-                  console.log("Full URL:", getFullUrl(activeFile?.url));
 
-                  window.dispatchEvent(
-                    new CustomEvent("openLightbox", {
-                      detail: {
-                        ...activeFile,
-                        url: getFullUrl(activeFile?.url),
-                      },
-                    })
-                  );
+          <i className="fas fa-redo reload-icon" onClick={() => setActiveIndex(0)}></i>
+          <i className="fas fa-expand expand-icon"
+            onClick={() => {
+              console.log("🔥 Expand clicked!");
+              console.log("Active file:", activeFile);
+              console.log("Full URL:", getFullUrl(activeFile?.url));
 
-                  console.log("📢 Lightbox event dispatched!");
-                }}
-              ></i>
-            </>
-          )}
+              window.dispatchEvent(
+                new CustomEvent("openLightbox", {
+                  detail: {
+                    ...activeFile,
+                    url: getFullUrl(activeFile?.url),
+                  },
+                })
+              );
+
+              console.log("📢 Lightbox event dispatched!");
+            }}
+          ></i>
+
         </div>
 
         {showTitle && activeFile?.qrCode && (

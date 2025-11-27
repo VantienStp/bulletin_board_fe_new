@@ -13,7 +13,7 @@
 .lightbox-content {
   position: relative;
   max-width: 90vw;
-  max-height: 90vh;
+  max-height: 100vh;
   border-radius: 12px;
   overflow: hidden;
   background: #000;
@@ -64,6 +64,6 @@
 /* PDF */
 .lightbox-media.pdf {
   width: 90vw;
-  height: 85vh;
+  height: 100vh;
   border: none;
 }

@@ -77,7 +77,7 @@ export default function HomePage() {
 
       const randomCat = others[Math.floor(Math.random() * others.length)];
       handleSelectCategory(randomCat);
-    }, 1 * 5 * 1000); // 15 phút
+    }, 1 * 60 * 1000);
 
     return () => clearInterval(intervalRef.current);
 
