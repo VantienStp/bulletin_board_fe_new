@@ -134,79 +134,82 @@ export default function HomePage() {
         </ul>
       </nav>
 
-      <header className="main-header">
-        <div className="header-content">
-          <div className="header-left">
-            <div className="title-block">
-              <span className="main-title">
-                <span className="highlight">Bản Tin Hoạt Động</span> Toà Án Nhân Dân khu vực 1
-              </span>
-              <div className="time-line">
-                {(() => {
-                  const d = new Date();
+      <div className="content-wrapper">
+        <header className="main-header">
+          <div className="header-content">
+            <div className="header-left">
+              <div className="title-block">
+                <span className="main-title">
+                  <span className="highlight">Bản Tin Hoạt Động</span> Toà Án Nhân Dân khu vực 1
+                </span>
+                <div className="time-line">
+                  {(() => {
+                    const d = new Date();
 
-                  const weekdays = [
-                    "Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư",
-                    "Thứ Năm", "Thứ Sáu", "Thứ Bảy"
-                  ];
+                    const weekdays = [
+                      "Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư",
+                      "Thứ Năm", "Thứ Sáu", "Thứ Bảy"
+                    ];
 
-                  const dayName = weekdays[d.getDay()];
-                  const day = d.getDate();
-                  const month = d.getMonth() + 1;
-                  const year = d.getFullYear();
+                    const dayName = weekdays[d.getDay()];
+                    const day = d.getDate();
+                    const month = d.getMonth() + 1;
+                    const year = d.getFullYear();
 
-                  return `${dayName} ngày ${day} tháng ${month} năm ${year}`;
-                })()}
+                    return `${dayName} ngày ${day} tháng ${month} năm ${year}`;
+                  })()}
+                </div>
               </div>
             </div>
-          </div>
-          <div className="header-right">
-            <div onClick={() => setAutoSwitch(prev => !prev)} style={{ cursor: "pointer" }}>
-              <Weather />
+            <div className="header-right">
+              <div onClick={() => setAutoSwitch(prev => !prev)} style={{ cursor: "pointer" }}>
+                <Weather />
+              </div>
+              {/* <Weather /> */}
+              <Clock />
             </div>
-            {/* <Weather /> */}
-            <Clock />
           </div>
-        </div>
-      </header>
+        </header>
 
-      <main className="main-content">
-        <div className="grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: layoutConfig
-              ? layoutConfig.columns.map((c) => `${c}fr`).join(" ")
-              : "1fr 1fr 1fr",
-            gridTemplateRows: layoutConfig
-              ? `repeat(${layoutConfig.rows || 1}, auto)`
-              : "auto",
-          }}
-        >
-          {categories
-            .filter((cat) => selectedCategory === cat._id)
-            .flatMap((cat) => {
-              const layoutCardCount = layoutConfig?.positions?.length || 0;
-              const maxCards =
-                layoutCardCount > 0
-                  ? layoutCardCount
-                  : (layoutConfig?.rows || 1) * (layoutConfig?.columns?.length || 1);
-              const visibleMappings = cat.mappings.slice(0, maxCards);
+        <main className="main-content">
+          <div className="grid"
+            style={{
+              display: "grid",
+              gridTemplateColumns: layoutConfig
+                ? layoutConfig.columns.map((c) => `${c}fr`).join(" ")
+                : "1fr 1fr 1fr",
+              gridTemplateRows: layoutConfig
+                ? `repeat(${layoutConfig.rows || 1}, auto)`
+                : "auto",
+            }}
+          >
+            {categories
+              .filter((cat) => selectedCategory === cat._id)
+              .flatMap((cat) => {
+                const layoutCardCount = layoutConfig?.positions?.length || 0;
+                const maxCards =
+                  layoutCardCount > 0
+                    ? layoutCardCount
+                    : (layoutConfig?.rows || 1) * (layoutConfig?.columns?.length || 1);
+                const visibleMappings = cat.mappings.slice(0, maxCards);
 
-              return visibleMappings.map((map, index) => {
-                if (!map.cardId) return null;
+                return visibleMappings.map((map, index) => {
+                  if (!map.cardId) return null;
 
-                const pos = layoutConfig?.positions?.[index];
-                const style = pos
-                  ? {
-                    gridColumn: `${(pos.x || 0) + 1} / span ${pos.w || 1}`,
-                    gridRow: `${(pos.y || 0) + 1} / span ${pos.h || 1}`,
-                  }
-                  : {};
-                return <Card key={map.cardId._id} {...map.cardId} style={style} />;
-              });
-            })}
-        </div>
-      </main>
+                  const pos = layoutConfig?.positions?.[index];
+                  const style = pos
+                    ? {
+                      gridColumn: `${(pos.x || 0) + 1} / span ${pos.w || 1}`,
+                      gridRow: `${(pos.y || 0) + 1} / span ${pos.h || 1}`,
+                    }
+                    : {};
+                  return <Card key={map.cardId._id} {...map.cardId} style={style} />;
+                });
+              })}
+          </div>
+        </main>
+      </div>
+
     </>
   );
 }

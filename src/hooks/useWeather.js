@@ -5,9 +5,15 @@ import { useState, useEffect } from "react";
 export default function useWeather() {
   const [weather, setWeather] = useState("☀️ Loading...");
 
+  // Fallback cố định
+  const fallback = `
+    <img src="https://openweathermap.org/img/wn/01d.png" class="weather-icon" />
+    <span>31°C | Thành phố Hồ Chí Minh , Bầu trời quang đãng</span>
+  `;
+
   useEffect(() => {
     if (!navigator.geolocation) {
-      setWeather("Không hỗ trợ định vị");
+      setWeather(fallback);
       return;
     }
 
@@ -16,10 +22,18 @@ export default function useWeather() {
         try {
           const { latitude, longitude } = pos.coords;
           const apiKey = "b405235d32a7ca53648989fc7b145c87";
+
           const res = await fetch(
             `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&lang=vi&appid=${apiKey}`
           );
+
+          if (!res.ok) {
+            setWeather(fallback);
+            return;
+          }
+
           const data = await res.json();
+
           const temp = Math.round(data.main.temp);
           const city = data.name;
           let desc = data.weather[0].description;
@@ -31,10 +45,10 @@ export default function useWeather() {
             <span>${temp}°C | ${city} , ${desc}</span>
           `);
         } catch (err) {
-          setWeather("☀️ 30°C | TP.HCM");
+          setWeather(fallback);
         }
       },
-      () => setWeather("Không thể lấy vị trí")
+      () => setWeather(fallback)   // user từ chối / lỗi định vị
     );
   }, []);
 

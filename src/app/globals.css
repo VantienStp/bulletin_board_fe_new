@@ -81,6 +81,17 @@ body {
         "sidebar main-content";
 }
 
+.content-wrapper {
+    grid-area: header / header / main-content / main-content;
+    display: flex;
+    flex-direction: column;
+
+    margin: 1vh 1vh 0.5vh 0;
+    background: #F0F2F5;
+    border-radius: 1vh 0.5vw 1vw 1vw;
+}
+
+
 /* #region ================= SIDE BAR ================= */
 
 .sidebar {
@@ -160,8 +171,6 @@ body {
     /* background-color: red; */
     font-weight: bold;
 }
-
-
 
 #sidebar-highlight {
     position: absolute;
@@ -262,7 +271,7 @@ body {
 .main-header {
     font-weight: 500;
     color: black;
-    margin: 1vh 1vh 0 0;
+    /* margin: 1vh 1vh 0 0; */
     background: #F0F2F5;
     border-radius: 1vh 0.5vw 0 0;
 }
@@ -346,7 +355,7 @@ body {
     background: #F0F2F5;
 
     gap: 2vw;
-    margin: 0 0.5vw 0.5vw 0;
+    /* margin: 0 0.5vw 0.5vw 0; */
     flex-grow: 1;
     background: #F0F2F5;
     border-radius: 0 0 1vw 1vw;
