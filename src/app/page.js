@@ -162,7 +162,7 @@ export default function HomePage() {
               </div>
             </div>
             <div className="header-right">
-              <div onClick={() => setAutoSwitch(prev => !prev)} style={{ cursor: "pointer" }}>
+              <div onClick={() => setAutoSwitch(prev => !prev)} style={{ cursor: "pointer", width: "100%" }}>
                 <Weather />
               </div>
               {/* <Weather /> */}
