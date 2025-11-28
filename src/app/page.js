@@ -140,7 +140,7 @@ export default function HomePage() {
             <div className="header-left">
               <div className="title-block">
                 <span className="main-title">
-                  <span className="highlight">Bản Tin Hoạt Động</span> Toà Án Nhân Dân khu vực 1
+                  <span className="highlight">Bản Tin Hoạt Động</span> Toà Án Nhân Dân Khu Vực 1 - TP.HCM
                 </span>
                 <div className="time-line">
                   {(() => {

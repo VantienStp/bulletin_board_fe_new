@@ -8,14 +8,36 @@ export default function useWeather() {
   // Fallback cố định
   const fallback = `
     <img src="https://openweathermap.org/img/wn/01d.png" class="weather-icon" />
-    <span>31°C | Thành phố Hồ Chí Minh , Bầu trời quang đãng</span>
+    <span>31°C | TP.Hồ Chí Minh, Bầu trời quang đãng</span>
   `;
+
 
   useEffect(() => {
     if (!navigator.geolocation) {
       setWeather(fallback);
       return;
     }
+
+    function shortenCityName(city) {
+      const normalized = city.trim().toLowerCase();
+
+      if (normalized === "thành phố hồ chí minh" || normalized === "hồ chí minh") {
+        return "TP.Hồ Chí Minh";
+      }
+
+      // if (normalized === "hà nội") {
+      //   return "HN";
+      // }
+
+      // Thành phố bất kỳ → TP.[Tên]
+      if (normalized.startsWith("thành phố ")) {
+        const name = city.replace(/^Thành phố\s+/i, "").trim();
+        return `TP.${name}`;
+      }
+
+      return city;
+    }
+
 
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
@@ -35,7 +57,8 @@ export default function useWeather() {
           const data = await res.json();
 
           const temp = Math.round(data.main.temp);
-          const city = data.name;
+          // const city = data.name;
+          let city = shortenCityName(data.name);
           let desc = data.weather[0].description;
           desc = desc.charAt(0).toUpperCase() + desc.slice(1);
           const icon = data.weather[0].icon;

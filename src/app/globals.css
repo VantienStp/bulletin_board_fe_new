@@ -283,7 +283,7 @@ body {
 .header-content {
     display: flex;
     justify-content: space-between;
-    padding: 1vw 2vw 0vw 2vw;
+    padding: 0.8vw 2vw 0vw 2vw;
     /* text-align: start; */
 }
 
@@ -299,16 +299,21 @@ body {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    width: 70%;
+    width: 65%;
     font-size: var(--font-size-xxlarge);
     gap: var(--gap-small);
+    margin-top: 0.5vw;
 }
 
 .header-left .time-line {
-    font-size: var(--font-size-xlarge);
-    font-style: italic;
+    margin-top: 0.4vw;
+    /* font-size: var(--font-size-large); */
+    font-size: 1.1vw;
+    /* font-style: italic; */
     opacity: 0.95;
-    margin-left: 80px;
+    color: rgb(108, 107, 107);
+
+    /* margin-left: 80px; */
 }
 
 
@@ -319,8 +324,8 @@ body {
     text-align: right;
     color: #333;
     font-size: var(--font-size-medium);
-    width: 30%;
-    gap: var(--gap-small);
+    width: 35%;
+    gap: var(--gap-tiny);
 }
 
 .header-right .weather {
@@ -329,17 +334,25 @@ body {
     justify-content: flex-end;
     gap: 0.5vw;
     width: 100%;
+    margin-top: 0.3vw;
 }
 
 .header-right .weather-icon {
-    width: 10%;
+    width: 8%;
     height: auto;
     vertical-align: middle;
     filter: drop-shadow(0.5vw 0.2vw 0.3vw rgba(0, 0, 0, 0.4));
 }
 
+.header-right .weather span {
+    font-size: 1.1vw;
+    color: rgb(108, 107, 107);
+
+}
+
 .header-right #clock {
     font-weight: bold;
+    font-size: 1.1vw;
 }
 
 
