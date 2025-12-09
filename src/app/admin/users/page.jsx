@@ -6,7 +6,7 @@ import { Select, MenuItem } from "@mui/material";
 
 import { API_BASE_URL } from "@/lib/api";
 import "./users.css";
-import { getToken, authFetch } from "@/lib/auth";
+import { authFetch } from "@/lib/auth";
 import usePagination from "@/hooks/usePagination";
 
 export default function UsersPage() {
@@ -27,11 +27,18 @@ export default function UsersPage() {
 
   async function fetchUsers() {
     try {
-      const res = await authFetch(`${API_BASE_URL}/users`);
-      const data = await res.json();
+      const res = await authFetch(`${API_BASE_URL}/users`, {
+        method: "GET",
+        credentials: "include",
+      });
 
+      if (!res.ok) {
+        console.warn("Không thể tải users:", res.status);
+        return;
+      }
+
+      const data = await res.json();
       if (Array.isArray(data)) setUsers(data);
-      else console.error("Invalid user data:", data);
     } catch (err) {
       console.error("Lỗi fetchUsers:", err);
     }
@@ -55,6 +62,7 @@ export default function UsersPage() {
     try {
       const res = await authFetch(`${API_BASE_URL}/users/${id}`, {
         method: "DELETE",
+        credentials: "include",
       });
 
       if (res.ok) {
@@ -62,7 +70,7 @@ export default function UsersPage() {
         fetchUsers();
       } else {
         const data = await res.json();
-        alert(`❌ Xóa thất bại: ${data.message || "Lỗi không xác định"}`);
+        alert(`❌ Xóa thất bại: ${data.message}`);
       }
     } catch (err) {
       console.error("Lỗi xóa user:", err);
@@ -73,20 +81,21 @@ export default function UsersPage() {
   // ===== Create / Update =====
   async function handleSubmit(e) {
     e.preventDefault();
-    const token = getToken();
 
     const method = editingUser ? "PUT" : "POST";
     const url = editingUser
       ? `${API_BASE_URL}/users/${editingUser._id}`
-      : `${API_BASE_URL}/auth/register`; // endpoint tạo mới
+      : `${API_BASE_URL}/users`; // đúng endpoint cho admin tạo user
 
     const payload = { ...formData };
-    if (!payload.password) delete payload.password; // nếu không đổi mật khẩu → bỏ
+    if (!payload.password) delete payload.password;
 
     try {
       const res = await authFetch(url, {
         method,
         body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
       });
 
       const data = await res.json();
@@ -97,7 +106,7 @@ export default function UsersPage() {
         setEditingUser(null);
         fetchUsers();
       } else {
-        alert(`❌ Thao tác thất bại: ${data.message || "Lỗi không xác định"}`);
+        alert(`❌ Thao tác thất bại: ${data.message}`);
       }
     } catch (err) {
       console.error("Lỗi handleSubmit:", err);
@@ -105,7 +114,7 @@ export default function UsersPage() {
     }
   }
 
-  // ===== Pagination Hook =====
+  // ===== Pagination =====
   const {
     currentPage,
     totalPages,
@@ -122,6 +131,7 @@ export default function UsersPage() {
           <span className="icon"><FaUsers /></span>
           <span>Người dùng</span>
         </div>
+
         <button
           className="btn-primary"
           onClick={() => {
@@ -134,26 +144,35 @@ export default function UsersPage() {
         </button>
       </div>
 
-      <table className="admin-table table-users">
+      <table className="w-full border-collapse text-left admin-table">
         <thead>
-          <tr>
-            <th>Tài khoản</th>
-            <th>Email</th>
-            <th>Quyền</th>
-            <th>Hành động</th>
+          <tr className="border-b bg-gray-50">
+            <th className="w-[25%] py-3 px-4 font-semibold text-gray-700">Tài khoản</th>
+            <th className="w-[25%] py-3 px-4 font-semibold text-gray-700">Email</th>
+            <th className="w-[20%] py-3 px-4 font-semibold text-gray-700">Quyền</th>
+            <th className="w-[30%] py-3 px-4 font-semibold text-gray-700">Hành động</th>
           </tr>
         </thead>
+
         <tbody>
           {currentUsers.map((u) => (
-            <tr key={u._id}>
-              <td>{u.username}</td>
-              <td>{u.email}</td>
-              <td>{u.role}</td>
-              <td>
-                <button className="btn-edit" onClick={() => handleEdit(u)}>
+            <tr key={u._id} className="border-b hover:bg-gray-50">
+              <td className="w-[25%] py-3 px-4">{u.username}</td>
+              <td className="w-[25%] py-3 px-4">{u.email}</td>
+              <td className="w-[20%] py-3 px-4">{u.role}</td>
+
+              <td className="w-[30%] py-3 px-4">
+                <button
+                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 mr-4 btn-edit"
+                  onClick={() => handleEdit(u)}
+                >
                   <FaEdit /> Sửa
                 </button>
-                <button className="btn-delete" onClick={() => handleDelete(u._id)}>
+
+                <button
+                  className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 btn-delete"
+                  onClick={() => handleDelete(u._id)}
+                >
                   <FaTrash /> Xóa
                 </button>
               </td>
@@ -161,6 +180,7 @@ export default function UsersPage() {
           ))}
         </tbody>
       </table>
+
 
       {/* Pagination */}
       <div className="pagination">
@@ -178,11 +198,7 @@ export default function UsersPage() {
           </button>
         ))}
 
-        <button
-          className="page-btn"
-          onClick={goNext}
-          disabled={currentPage === totalPages}
-        >
+        <button className="page-btn" onClick={goNext} disabled={currentPage === totalPages}>
           ▶
         </button>
       </div>
@@ -227,14 +243,14 @@ export default function UsersPage() {
               <label>Quyền</label>
               <Select
                 variant="standard"
+                disableUnderline
+                value={formData.role}
                 style={{
                   border: "0.2vw solid #ccc",
                   padding: "0.5vw",
                   borderRadius: "0.5vw",
-                  width: "100%"
+                  width: "100%",
                 }}
-                disableUnderline
-                value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
               >
                 <MenuItem value="admin">Admin</MenuItem>

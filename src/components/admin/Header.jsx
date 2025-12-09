@@ -1,92 +1,55 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
-import { FaUserCircle } from "react-icons/fa";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { API_BASE_URL } from "@/lib/api"; // nhớ là có file này nhé
+import { API_BASE_URL } from "@/lib/api";
 import { authFetch, clearToken } from "@/lib/auth";
-import "./Header.css";
+import { FaUserCircle } from "react-icons/fa";
 
 export default function Header() {
   const [open, setOpen] = useState(false);
-  const [isClosing, setIsClosing] = useState(false);
   const [theme, setTheme] = useState("light");
+  const [userName, setUserName] = useState("Admin Kincharna");
   const menuRef = useRef(null);
   const router = useRouter();
-  const [userName, setUserName] = useState("Admin Kincharna");
 
-  // 🌙 toggle theme
-  // useEffect(() => {
-  //   const handleUpdate = () => {
-  //     const storedName = localStorage.getItem("user_name");
-  //     console.log(storedName);
-  //     setUserName(storedName?.trim() || " Admin Kincharna");
-  //   };
-  //   document.documentElement.setAttribute("data-theme", theme);
-  //   window.addEventListener("userNameUpdated", handleUpdate);
-
-  //   const storedName = localStorage.getItem("user_name");
-  //   // if (storedName) {
-  //   //   setUserName(storedName.trim());
-  //   // }
-
-  //   return () => window.removeEventListener("userNameUpdated", handleUpdate);
-
-
-  // }, [theme]);
-
-
+  // Load username
+  // Tailwind dark mode OFF – dùng theme bằng CSS variables
   useEffect(() => {
-    const storedName = localStorage.getItem("user_name");
-    if (storedName) setUserName(storedName);
+    const stored = localStorage.getItem("user_name");
+    if (stored) setUserName(stored);
 
     const handleUpdate = () => {
-      const updatedName = localStorage.getItem("user_name");
-      setUserName(updatedName || "Admin Kincharna");
+      const updated = localStorage.getItem("user_name");
+      setUserName(updated || "Admin Kincharna");
     };
 
     window.addEventListener("userNameUpdated", handleUpdate);
+
+    // Apply theme
     document.documentElement.setAttribute("data-theme", theme);
+
     return () => window.removeEventListener("userNameUpdated", handleUpdate);
   }, [theme]);
 
-  // 📦 đóng menu khi click ra ngoài
+
+  // Click outside dropdown
   useEffect(() => {
-    const handleClickOutside = (e) => {
+    const handler = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
-        if (open) {
-          setIsClosing(true);
-          setTimeout(() => {
-            setOpen(false);
-            setIsClosing(false);
-          }, 600);
-        }
+        setOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [open]);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
-  // ⚙️ Toggle dropdown
-  const handleToggle = () => {
-    if (open) {
-      setIsClosing(true);
-      setTimeout(() => {
-        setOpen(false);
-        setIsClosing(false);
-      }, 200);
-    } else {
-      setOpen(true);
-    }
-  };
-
-  // 🚪 Xử lý Đăng xuất
+  // Logout
   const handleLogout = async () => {
     try {
-      console.log("Logging out...");
       const res = await authFetch(`${API_BASE_URL}/auth/logout`, {
         method: "POST",
-        credentials: "include", // rất quan trọng để gửi cookie refresh_token
+        credentials: "include",
       });
 
       if (res.ok) {
@@ -94,49 +57,99 @@ export default function Header() {
         localStorage.removeItem("access_token");
         sessionStorage.removeItem("access_token");
         router.push("/login");
-      } else {
-        console.error("Logout failed:", await res.json());
       }
     } catch (err) {
-      console.error("Logout error:", err);
+      console.error(err);
     }
   };
 
   return (
-    <header className="main-header">
-      <div className="header-left">
-        <span className="court-name">TÒA ÁN NHÂN DÂN TP.HỒ CHÍ MINH</span>
+    <header
+      className="
+        grid grid-cols-[2fr_1fr_1fr]
+        items-center
+        mt-[var(--margin-small)]
+        mr-[var(--margin-small)]
+        radi
+        bg-white/80 dark:bg-[var(--color-bg-content)]
+        px-8 pt-4
+        text-gray-900 dark:text-[--color-text-primary]
+        z-50 relative
+        rounded-t-[var(--radius-medium)]
+      "
+    >
+      {/* LEFT */}
+      <div className="text-left font-bold text-2xl">
+        TÒA ÁN NHÂN DÂN TP.HỒ CHÍ MINH
       </div>
 
-      <div className="header-center">
-        <div className="search-wrapper">
-          {/* <i className="fas fa-search search-icon"></i> */}
-          {/* <input type="text" className="search-input" placeholder="Tìm kiếm..." /> */}
-        </div>
-      </div>
+      {/* CENTER */}
+      <div className="flex justify-center"></div>
 
-      <div className="header-right" ref={menuRef}>
+      {/* RIGHT */}
+      <div ref={menuRef} className="flex items-center gap-4 justify-end relative">
+
+        {/* Theme toggle */}
         <button
-          className="theme-toggle"
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+          className="
+            w-8 h-8 rounded-full flex items-center justify-center
+            shadow-inner hover:scale-110 transition
+            bg-gray-200 dark:bg-gray-700
+          "
         >
           {theme === "light" ? "🌙" : "☀️"}
         </button>
 
-        <div className="user-menu">
+        {/* User menu */}
+        <div className="flex items-center gap-2 text-lg">
           Chào mừng
-          {/* <FaUserCircle className="user-avatar-icon" /> */}
-          <button className="user-name" onClick={handleToggle}>
+          <button
+            onClick={() => setOpen(!open)}
+            className="
+              bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100
+              px-4 py-1 rounded-md
+              hover:bg-gray-300 dark:hover:bg-gray-600
+              transition text-base capitalize
+            "
+          >
             {userName}
-            {/* <i className="fas fa-chevron-down"></i> */}
           </button>
         </div>
 
-        <div className={`dropdown ${open ? "show" : "hide"}`}>
-          <Link href="#">Hồ sơ</Link>
-          <Link href="/admin/settings">Cài đặt</Link>
-          <hr />
-          <a href="#" onClick={(e) => { e.preventDefault(); handleLogout(); }}>Đăng xuất</a>
+        {/* DROPDOWN */}
+        <div
+          className={`
+            absolute right-0 top-14
+            bg-white dark:bg-gray-800
+            shadow-lg rounded-md border border-gray-200 dark:border-gray-700
+            flex flex-col min-w-[160px] py-2
+            transition-all duration-300 origin-top
+            ${open ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 -translate-y-2 pointer-events-none"}
+          `}
+        >
+          <Link
+            href="#"
+            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+          >
+            Hồ sơ
+          </Link>
+
+          <Link
+            href="/admin/settings"
+            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+          >
+            Cài đặt
+          </Link>
+
+          <hr className="border-gray-200 dark:border-gray-700 my-1" />
+
+          <button
+            onClick={handleLogout}
+            className="px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+          >
+            Đăng xuất
+          </button>
         </div>
       </div>
     </header>

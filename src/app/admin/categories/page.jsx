@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { FaFolderOpen, FaEye, FaPlusSquare, FaEdit, FaTrash } from 'react-icons/fa';
 import Modal from '@/components/admin/Modal';
 import Link from 'next/link';
-import "./categories.css";
 import { API_BASE_URL } from '@/lib/api';
 import { getToken, authFetch } from '@/lib/auth';
 import usePagination from '@/hooks/usePagination';
@@ -64,6 +63,7 @@ export default function CategoriesPage() {
     "fas fa-star",
     "fas fa-star-half-alt",
     "fas fa-bookmark",
+    "fas fa-scale-balanced",
 
 
     // Others (nice for categories)
@@ -179,41 +179,38 @@ export default function CategoriesPage() {
         </button>
       </div>
 
-      <table className="admin-table table-categories">
+      <table className="w-full border-collapse table-fixed admin-table">
         <thead>
-          <tr>
-            <th>Tên danh mục</th>
-            <th>Icon</th>
-            <th>Mô tả</th>
-            <th>Grid Layout</th>
-            <th>Hành động</th>
+          <tr className="bg-gray-100 text-left">
+            <th className="w-[15%] px-4 py-2 font-semibold">Tên danh mục</th>
+            <th className="w-[20%] px-4 py-2 font-semibold">Icon</th>
+            <th className="w-[30%] px-4 py-2 font-semibold">Mô tả</th>
+            <th className="w-[15%] px-4 py-2 font-semibold">Grid Layout</th>
+            <th className="w-[25%] px-4 py-2 font-semibold">Hành động</th>
           </tr>
         </thead>
+
         <tbody>
           {currentItems.map((cat) => (
-            <tr key={cat._id}>
-              <td>{cat.title}</td>
-              <td>
-                {cat.icon ? (
-                  <i className={cat.icon} style={{ fontSize: "22px" }}></i>
-                ) : (
-                  "—"
-                )}
+            <tr key={cat._id} className="border-b hover:bg-gray-50">
+              <td className="px-4 py-2">{cat.title}</td>
+              <td className="px-4 py-2 text-center">
+                {cat.icon ? <i className={`${cat.icon} text-[22px]`} /> : "—"}
               </td>
-              <td>{cat.description || '—'}</td>
-              <td>
-                {typeof cat.gridLayoutId === 'object'
+              <td className="px-4 py-2">{cat.description || "—"}</td>
+              <td className="px-4 py-2">
+                {typeof cat.gridLayoutId === "object"
                   ? (cat.gridLayoutId.title || cat.gridLayoutId._id)
-                  : (cat.gridLayoutId || '—')}
+                  : (cat.gridLayoutId || "—")}
               </td>
-              <td>
+              <td className="px-4 py-2 flex gap-2">
                 <Link href={`/admin/categories/${cat._id}`} className="btn-view">
-                  <FaEye /> Xem chi tiết
+                  <FaEye /> Xem
                 </Link>
-                <button className="btn-edit" onClick={() => handleEdit(cat)}>
+                <button onClick={() => handleEdit(cat)} className="btn-edit">
                   <FaEdit /> Sửa
                 </button>
-                <button className="btn-delete" onClick={() => handleDelete(cat._id)}>
+                <button onClick={() => handleDelete(cat._id)} className="btn-delete">
                   <FaTrash /> Xóa
                 </button>
               </td>
@@ -221,6 +218,7 @@ export default function CategoriesPage() {
           ))}
         </tbody>
       </table>
+
 
       {/* ⭐ Pagination UI */}
       <div className="pagination">
@@ -265,6 +263,7 @@ export default function CategoriesPage() {
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
               required
+              style={{ width: "100%", fontSize: "24px" }}
             />
 
             <label>Icon</label>
@@ -272,7 +271,7 @@ export default function CategoriesPage() {
               variant="outlined"
               value={formData.icon}
               onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-              style={{ width: "100%" }}
+              style={{ width: "100%", fontSize: "24px" }}
             >
               <MenuItem value="">
                 -- Chọn icon --
@@ -291,6 +290,7 @@ export default function CategoriesPage() {
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Nhập mô tả ngắn..."
+              style={{ width: "100%", fontSize: "24px" }}
             />
 
             <label>Grid Layout</label>
@@ -300,9 +300,9 @@ export default function CategoriesPage() {
               onChange={(e) =>
                 setFormData({ ...formData, gridLayoutId: e.target.value })
               }
-              style={{ width: "100%" }}
+              style={{ width: "100%", fontSize: "24px" }}
             >
-              <MenuItem value="">
+              <MenuItem value="" >
                 -- Chọn layout --
               </MenuItem>
 

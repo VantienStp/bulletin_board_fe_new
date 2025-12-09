@@ -1,208 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
-@import "@fortawesome/fontawesome-free/css/all.min.css";
-
-:root {
-  --bg: #ffffff;
-  --bg-2: #0d1b2a;
-  --bg-3: #ffffff;
-  --card-bg: #e7ecf7;
-
-
-  --text-dark: #161B1D;
-  --text-light: #FAFBFF;
-
-  /* #region ======================= Padding/Margin ====================== */
-  --padding-tiny: 0.2vw;
-  --padding-small: 0.5vw;
-  --padding-medium: 1vw;
-  --padding-large: 1.5vw;
-  --padding-xlarge: 2vw;
-  --padding-xxlarge: 2.5vw;
-
-  --margin-tiny: 0.2vw;
-  --margin-small: 0.5vw;
-  --margin-medium: 1vw;
-  --margin-large: 1.5vw;
-  --margin-xlarge: 2vw;
-  --margin-xxlarge: 2.5vw;
-  /* #endregion */
-
-  /* #region ======================= Gap/Radius ====================== */
-  --gap-tiny: 0.3vw;
-  --gap-small: 0.5vw;
-  --gap-medium: 1vw;
-  --gap-large: 1.5vw;
-  --gap-xlarge: 2vw;
-  --gap-xxlarge: 2.5vw;
-
-  --radius-none: 0;
-  --radius-tiny: 0.2vw;
-  --radius-small: 0.4vw;
-  --radius-medium: 0.8vw;
-  --radius-large: 1.2vw;
-  --radius-xlarge: 2vw;
-  --radius-round: 50%;
-  /* #endregion */
-
-  /* #region ======================= Font Size Scale ====================== */
-  --font-size-tiny: 0.6vw;
-  --font-size-small: 0.8vw;
-  --font-size-medium: 1.2vw;
-  --font-size-large: 1.4vw;
-  --font-size-xlarge: 1.6vw;
-  --font-size-xxlarge: 2vw;
-  /* #endregion */
-
-  /* #region ======================= SHADOW TOKENS ====================== */
-
-  --shadow-light: -5px -5px 10px #FAFBFF;
-  --shadow-dark: 5px 5px 10px rgba(22, 27, 29, 0.23);
-  --shadow-strong: 10px 10px 20px rgba(22, 27, 29, 0.23), -10px -10px 20px #FAFBFF;
-
-  --shadow-hover:
-    0.15vw 0.15vw 0.3vw rgba(22, 27, 29, 0.15),
-    -0.15vw -0.15vw 0.3vw rgba(250, 251, 255, 1);
-
-  --shadow-soft:
-    0.3vw 0.3vw 0.6vw rgba(22, 27, 29, 0.23),
-    -0.3vw -0.3vw 0.6vw rgba(250, 251, 255, 1);
-
-  --shadow-medium:
-    0.6vw 0.6vw 1.2vw rgba(22, 27, 29, 0.23),
-    -0.6vw -0.6vw 1.2vw rgba(250, 251, 255, 1);
-
-  --shadow-strong:
-    1.2vw 1.2vw 2.4vw rgba(22, 27, 29, 0.23),
-    -1.2vw -1.2vw 2.4vw rgba(250, 251, 255, 1);
-
-  --shadow-inner:
-    inset 0.3vw 0.3vw 0.6vw rgba(22, 27, 29, 0.23),
-    inset -0.3vw -0.3vw 0.6vw rgba(250, 251, 255, 1);
-
-  --shadow-raised:
-    0.25vw 0.25vw 0.6vw rgba(0, 0, 0, 0.25),
-    -0.25vw -0.25vw 0.6vw rgba(255, 255, 255, 0.1);
-
-  /* 🎚 Thời gian chuyển đổi */
-  --transition-fast: 0.15s;
-  --transition-normal: 0.3s;
-  --transition-slow: 0.6s;
-
-  /* 🧭 Loại easing function */
-  --ease-linear: linear;
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-
-  /* 🌈 Motion style đặc biệt */
-  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-smooth: cubic-bezier(0.45, 0, 0.55, 1);
-  --ease-spring: cubic-bezier(0.25, 1.25, 0.5, 1);
-
-  /* ⚙️ Gói preset sẵn dùng (Transition Presets) */
-  --transition-all-fast: all var(--transition-fast) var(--ease-out);
-  --transition-all-normal: all var(--transition-normal) var(--ease-smooth);
-  --transition-all-slow: all var(--transition-slow) var(--ease-in-out);
-
-  /* 🔁 Dành riêng cho hover và animation UI */
-  --transition-hover:
-    transform var(--transition-normal) var(--ease-spring),
-    box-shadow var(--transition-normal) var(--ease-smooth),
-    color var(--transition-fast) var(--ease-out);
-
-  /* 💨 Hiệu ứng fade / opacity */
-  --transition-fade:
-    opacity var(--transition-normal) var(--ease-in-out);
-
-  /* ↔️ Hiệu ứng slide */
-  --transition-slide:
-    transform var(--transition-normal) var(--ease-smooth);
-
-  /* 🩰 Hiệu ứng bật nảy */
-  --transition-bounce:
-    transform var(--transition-slow) var(--ease-bounce);
-  /* #endregion */
-
-  --color-bg-app: #FFFFFF;
-  --color-bg-sidebar: #FFFFFF;
-  --color-bg-content: #ecebeb;
-  --color-bg-button: #2a4260;
-  --color-bg-button-hover: #39587e;
-
-  /* --color-bg-th-table: #FFFFFF; */
-  --color-bg-th-table: #f5f0f0dd;
-
-  --color-text-primary: #000000;
-  --color-text-secondary: rgb(62, 61, 61);
-
-  --color-text-active: #000000;
-
-  --color-accent: #d5dff5;
-  --color-highlight: #e7ecf7;
-
-  --color-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-
-  /* ---- PRIMARY COLORS (Light Theme Default) ---- */
-  --clr-background-light: #F3F3F3;
-  /* Nền chính */
-  --clr-surface-light: #FFFFFF;
-  /* Bề mặt (Card, Box) */
-
-  /* ---- PRIMARY COLORS (Dark Theme) ---- */
-  --clr-background-dark: #11121E;
-  /* Nền chính (Tối) */
-  --clr-surface-dark: #1D1D29;
-  /* Bề mặt (Card, Box) (Tối) */
-
-  /* ---- SECONDARY/ACCENT COLORS ---- */
-  --clr-accent-yellow: #FFBC11;
-  --clr-accent-blue: #4578F9;
-  --clr-accent-green: #43B430;
-  --clr-accent-purple: #CB3EFF;
-  --clr-accent-red: #f72222;
-
-  --clr-accent-hover: #93c5fd;
-
-
-  /* ---- TYPOGRAPHY COLORS ---- */
-  --clr-text-primary-dark: #000000;
-  /* Chữ chính trên nền sáng */
-  --clr-text-primary-light: #FFFFFF;
-  /* Chữ chính trên nền tối */
-  --clr-text-secondary: #7B7B7B;
-  /* Chữ phụ */
-
-  /* ---- TYPOGRAPHY FONT-FAMILY ---- */
-  --ff-primary: 'Inter', sans-serif;
-}
-
-[data-theme="dark"] {
-
-  --card-bg: #e7ecf7;
-
-  --color-bg-app: #1D1D29;
-  --color-bg-sidebar: #1D1D29;
-  --color-bg-content: #11121E;
-  --color-bg-button: #1E2A47;
-  --color-bg-button-hover: #7B7B7B;
-  --color-bg-th-table: #7B7B7B;
-
-  --color-text-primary: #eeecec;
-  --color-text-secondary: #CBD5E1;
-
-  --color-accent: #1E2A47;
-  --color-highlight: #7692b4;
-
-  --color-text-active: #FFFFFF;
-
-  --color-shadow: none;
-
-  --shadow-hover:
-    0.15vw 0.15vw 0.3vw var(--color-bg-content),
-    -0.15vw -0.15vw 0.3vw var(--color-bg-content);
-}
-
-
 * {
   margin: 0;
   padding: 0;
@@ -297,11 +92,6 @@ html {
 }
 
 
-/* .sidebar ul li a.active:hover::before,
-.sidebar ul li a.active:hover::after {
-  content: "";
-} */
-
 .sidebar ul li a.active {
   position: relative;
   background: linear-gradient(80deg, var(--color-bg-content));
@@ -369,7 +159,7 @@ html {
   align-items: center;
   justify-content: center;
   text-align: center;
-  margin: 1vw 0 3vh 0;
+  margin: 1vw 0 4vh 0;
 }
 
 .logo a img {
@@ -460,7 +250,6 @@ html {
 }
 
 
-.admin-table th,
 .admin-table td {
   background-color: var(--color-bg-th-table);
   padding: var(--padding-small) var(--padding-medium);
@@ -487,7 +276,7 @@ td:last-child {
 
 .admin-table tbody tr {
   background: #fff;
-  transition: var(--transition-normal);
+  /* transition: var(--transition-normal); */
 }
 
 .admin-table tbody tr:hover {
@@ -501,15 +290,6 @@ td:last-child {
   font-family: 'Roboto', sans-serif;
   border-radius: var(--radius-medium);
 }
-
-/* .admin-table tbody:empty::after {
-  content: "Không có dữ liệu hiển thị";
-  display: block;
-  text-align: center;
-  padding: 40px;
-  color: #94a3b8;
-  font-style: italic;
-} */
 
 /* #endregion */
 
@@ -747,13 +527,7 @@ textarea {
   padding: 10px 12px;
   border: 1px solid #d0d0d0;
   border-radius: 6px;
-  font-size: 15px;
   resize: vertical;
   outline: none;
   transition: all 0.2s ease;
-}
-
-textarea:focus {
-  border-color: #4a70ff;
-  box-shadow: 0 0 0 2px rgba(74, 112, 255, 0.2);
 }

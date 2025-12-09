@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import "./Modal.css";
+import "@/styles/modal.css";
 import { FaTimes } from "react-icons/fa";
 
 export default function Modal({
@@ -11,7 +11,6 @@ export default function Modal({
   height = "auto",
   maxWidth = "80%",
   maxHeight = "90%",
-
   minHeight = "50%",
   minWidth = "50%",
 }) {

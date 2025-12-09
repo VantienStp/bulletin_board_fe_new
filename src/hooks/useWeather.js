@@ -7,13 +7,14 @@ export default function useWeather() {
 
   // Fallback cố định
   const fallback = `
-    <img src="https://openweathermap.org/img/wn/01d.png" class="weather-icon" />
-    <span>31°C | TP.Hồ Chí Minh, Bầu trời quang đãng</span>
+    <img src="https://openweathermap.org/img/wn/02d.png" class="weather-icon" />
+    <span>30°C | TP.Hồ Chí Minh, Bầu trời quang đãng</span>
   `;
 
 
   useEffect(() => {
     if (!navigator.geolocation) {
+      d
       setWeather(fallback);
       return;
     }

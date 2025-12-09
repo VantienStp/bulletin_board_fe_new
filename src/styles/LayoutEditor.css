@@ -1,0 +1,67 @@
+.btn-reset.spin svg {
+  animation: spinOnce 0.6s ease;
+}
+
+.cube {
+  width: 100px;
+  height: 80px;
+  background: #c9c8c8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 20px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.cube:hover {
+  background: #edf2f8;
+  transform: scale(1.05);
+}
+
+.grid-item {
+  background: #fffaf2;
+  border: 2px solid #ff7eb6;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  position: relative;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #ff0099;
+  color: white;
+  border: none;
+  font-size: 10px;
+  border-radius: 0 0 0 6px;
+  cursor: pointer;
+  z-index: 1000 !important;
+}
+
+.code-box pre {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px;
+  overflow-x: auto;
+  white-space: pre;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: left;
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes spinOnce {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}

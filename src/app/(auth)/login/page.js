@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  // 🧠 Khi mở trang, tự load email nếu có
+  // Load email nếu đã remember
   useEffect(() => {
     const savedEmail = localStorage.getItem("rememberedEmail");
     if (savedEmail) {
@@ -24,20 +24,10 @@ export default function LoginPage() {
     e.preventDefault();
     setError(null);
 
-    // 🚨 Kiểm tra đầu vào — chặn lỗi từ FE
     if (!email || !password) {
       setError("Vui lòng nhập đầy đủ email và mật khẩu.");
       return;
     }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError("Email không hợp lệ.");
-      return;
-    }
-    // if (password.length < 8) {
-    //   setError("Mật khẩu phải có ít nhất 8 ký tự.");
-    //   return;
-    // }
 
     setLoading(true);
 
@@ -45,7 +35,7 @@ export default function LoginPage() {
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        credentials: "include", // QUAN TRỌNG: cookie set từ BE
         body: JSON.stringify({ email, password, rememberMe }),
       });
 
@@ -55,28 +45,12 @@ export default function LoginPage() {
         return;
       }
 
-      // ✅ Ghi nhớ email nếu người dùng chọn
-      if (rememberMe) {
-        localStorage.setItem("rememberedEmail", email);
-      } else {
-        localStorage.removeItem("rememberedEmail");
-      }
+      // Ghi nhớ email
+      if (rememberMe) localStorage.setItem("rememberedEmail", email);
+      else localStorage.removeItem("rememberedEmail");
 
-      // 🧱 Lưu token tạm thời
-      localStorage.setItem("accessToken", data.token);
-      localStorage.setItem("tokenExpiresAt", data.expiresAt);
-      localStorage.setItem("user_name", data.user_name);
-
-      // 🕒 Tự xóa token khi hết hạn
-      const remaining = data.expiresAt - Date.now();
-      setTimeout(() => {
-        localStorage.removeItem("accessToken");
-        console.log("Token expired → auto removed");
-      }, remaining);
-
-      // 🔁 Điều hướng sang dashboard
-      window.dispatchEvent(new Event("userNameUpdated"));
-      window.location.href = "/admin/dashboard";
+      // Không lưu token nữa → BE đã set cookie
+      window.location.href = "/admin";
 
     } catch (err) {
       console.error("❌ Fetch error:", err);
@@ -124,7 +98,6 @@ export default function LoginPage() {
             <label className="remember">
               <input
                 type="checkbox"
-                id="rememberMe"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
               />
@@ -132,22 +105,15 @@ export default function LoginPage() {
               Ghi nhớ đăng nhập
             </label>
 
-            <a
-              onClick={() => router.push("/forgot-password")}
-              className="forgot a-button"
-            >
+            <a onClick={() => router.push("/forgot-password")} className="forgot a-button">
               Quên mật khẩu?
             </a>
           </div>
+
           <button type="submit" disabled={loading}>
             {loading ? "Đang đăng nhập..." : "ĐĂNG NHẬP"}
           </button>
         </form>
-
-        <p className="redirect-text">
-          Chưa có tài khoản?{" "}
-          <a className="highlight-text a-button" onClick={() => router.push(`/signup`)}>Đăng ký ngay</a>
-        </p>
       </div>
     </div>
   );

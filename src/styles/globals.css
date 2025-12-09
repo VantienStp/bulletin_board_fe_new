@@ -1,6 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
-@import "@fortawesome/fontawesome-free/css/all.min.css";
-
 :root {
     --secondary-color: #F9F8FD;
     --text-color: #333;
@@ -123,7 +120,7 @@ body {
     margin: 0;
     display: flex;
     flex-direction: column;
-    width: 90%;
+    width: 110%;
     gap: 1.2vw;
     height: 100%;
     margin-right: 10%;
@@ -223,7 +220,7 @@ body {
     position: absolute;
     width: 2vw;
     height: 1.3vw;
-    top: 0.3vw;
+    top: 0.25vw;
     background: #0D1B2A;
     right: 1vw;
     border-top-right-radius: 1vw;
@@ -276,24 +273,19 @@ body {
     border-radius: 1vh 0.5vw 0 0;
 }
 
+.main-title {
+    font-weight: 400;
+}
+
 .main-title .highlight {
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .header-content {
     display: flex;
     justify-content: space-between;
     padding: 0.8vw 2vw 0vw 2vw;
-    /* text-align: start; */
 }
-
-/* .header-content .date-line {
-    text-align: left;
-    font-weight: bold;
-    align-self: flex-start;
-    font-size: 0.5em;
-    color: #555;
-} */
 
 .header-left {
     display: flex;
@@ -307,15 +299,10 @@ body {
 
 .header-left .time-line {
     margin-top: 0.4vw;
-    /* font-size: var(--font-size-large); */
     font-size: 1.1vw;
-    /* font-style: italic; */
     opacity: 0.95;
     color: rgb(108, 107, 107);
-
-    /* margin-left: 80px; */
 }
-
 
 .header-right {
     display: flex;

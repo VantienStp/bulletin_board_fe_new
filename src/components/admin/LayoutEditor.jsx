@@ -3,12 +3,10 @@ import { useState, useEffect, useRef } from "react";
 import GridLayout from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { FaRedo, FaSave } from "react-icons/fa";
 
-import "./LayoutEditor.css";
+import { FaRedo, FaSave, FaTimes } from "react-icons/fa";
+import "@/styles/layout-editor.css";
 import { API_BASE_URL } from "@/lib/api";
-import { FaTimes } from 'react-icons/fa';
-
 
 export default function LayoutEditor({ layoutId, layoutTitle, initialConfig }) {
   const [cols, setCols] = useState(5);
@@ -17,66 +15,56 @@ export default function LayoutEditor({ layoutId, layoutTitle, initialConfig }) {
   const [layout, setLayout] = useState([]);
   const [width, setWidth] = useState(0);
   const [isSaving, setIsSaving] = useState(false);
-  const wrapperRef = useRef(null);
-
   const [spin, setSpin] = useState(false);
 
-  // 🧠 Nhận config từ API
+  const wrapperRef = useRef(null);
+
+  /* LOAD CONFIG */
   useEffect(() => {
     if (initialConfig) {
       setCols(initialConfig.columns?.length || 5);
       setRows(initialConfig.rows || 5);
 
       if (initialConfig.positions) {
-        const newLayout = initialConfig.positions.map((pos, i) => ({
-          i: i.toString(),
-          x: pos.x,
-          y: pos.y,
-          w: pos.w,
-          h: pos.h,
-        }));
-        setLayout(newLayout);
+        setLayout(
+          initialConfig.positions.map((pos, i) => ({
+            i: i.toString(),
+            x: pos.x,
+            y: pos.y,
+            w: pos.w,
+            h: pos.h,
+          }))
+        );
       }
     }
   }, [initialConfig]);
 
+  /* RESIZE HANDLER */
   useEffect(() => {
-    const resize = () => {
-      if (wrapperRef.current) setWidth(wrapperRef.current.offsetWidth);
-    };
+    const resize = () => wrapperRef.current && setWidth(wrapperRef.current.offsetWidth);
     resize();
     window.addEventListener("resize", resize);
     return () => window.removeEventListener("resize", resize);
   }, [cols, gap]);
 
-  const handleAdd = (x, y) => {
-    const id = Date.now().toString();
-    setLayout((prev) => [...prev, { i: id, x, y, w: 1, h: 1 }]);
-  };
+  /* Add block */
+  const handleAdd = (x, y) =>
+    setLayout((prev) => [...prev, { i: Date.now().toString(), x, y, w: 1, h: 1 }]);
 
-  const handleRemove = (id) => {
-    setLayout((prev) => prev.filter((b) => b.i !== id));
-  };
+  /* Remove block */
+  const handleRemove = (id) =>
+    setLayout((prev) => prev.filter((item) => item.i !== id));
 
+  /* Save */
   const handleSave = async () => {
-    if (!layoutId) {
-      alert("⚠️ Không có ID layout để cập nhật!");
-      return;
-    }
+    if (!layoutId) return alert("⚠️ Không có ID layout!");
 
     setIsSaving(true);
     const updatedConfig = {
       columns: Array.from({ length: cols }, () => 1),
       rows,
-      positions: layout.map((item) => ({
-        x: item.x,
-        y: item.y,
-        w: item.w,
-        h: item.h,
-      })),
+      positions: layout.map((i) => ({ x: i.x, y: i.y, w: i.w, h: i.h })),
     };
-
-    console.log("Updated layout config:", updatedConfig);
 
     try {
       const res = await fetch(`${API_BASE_URL}/gridLayouts/${layoutId}`, {
@@ -85,126 +73,139 @@ export default function LayoutEditor({ layoutId, layoutTitle, initialConfig }) {
         body: JSON.stringify({ config: updatedConfig }),
       });
 
-      if (!res.ok) throw new Error("Cập nhật thất bại!");
-      alert("✅ Layout đã được cập nhật thành công!");
-    } catch (err) {
-      console.error(err);
-      alert("❌ Có lỗi khi lưu layout!");
+      if (!res.ok) throw new Error();
+      alert("✅ Layout đã được cập nhật!");
+    } catch {
+      alert("❌ Lỗi khi lưu layout!");
     } finally {
       setIsSaving(false);
     }
   };
 
-  // 🔁 Cập nhật layout khi kéo/thả
-  const handleLayoutChange = (newLayout) => setLayout(newLayout);
-
-  // 🔄 Reset toàn bộ
+  /* Reset */
   const handleReset = () => {
     setLayout([]);
     setCols(initialConfig?.columns?.length || 5);
     setRows(initialConfig?.rows || 5);
   };
 
-  // 📄 Tạo HTML & CSS preview
-  const generateHTML = () => {
-    let html = `<div class="parent">\n`;
-    layout.forEach((item) => {
-      html += `  <div class="div${item.i}">${item.i}</div>\n`;
-    });
-    html += `</div>`;
-    return html;
-  };
+  /* HTML & CSS preview */
+  const generateHTML = () =>
+    `<div class="parent">\n${layout
+      .map((i) => `  <div class="div${i.i}">${i.i}</div>`)
+      .join("\n")}\n</div>`;
 
-  const generateCSS = () => {
-    let css = `.parent {\n  display: grid;\n  grid-template-columns: repeat(${cols}, 1fr);\n  grid-template-rows: repeat(${rows}, 1fr);\n  gap: ${gap}px;\n}\n\n`;
-    layout.forEach((item) => {
-      css += `.div${item.i} {\n  grid-column: ${item.x + 1} / span ${item.w};\n  grid-row: ${item.y + 1} / span ${item.h};\n}\n\n`;
-    });
-    return css;
-  };
+  const generateCSS = () =>
+    `.parent {
+  display: grid;
+  grid-template-columns: repeat(${cols}, 1fr);
+  grid-template-rows: repeat(${rows}, 1fr);
+  gap: ${gap}px;
+}
 
-  const copyToClipboard = (text) => {
+${layout
+      .map(
+        (i) =>
+          `.div${i.i} {
+  grid-column: ${i.x + 1} / span ${i.w};
+  grid-row: ${i.y + 1} / span ${i.h};
+}`
+      )
+      .join("\n")}`;
+
+  const copy = (text) => {
     navigator.clipboard.writeText(text);
-    alert("✅ Copied to clipboard!");
+    alert("Copied!");
   };
 
-  // 📦 Tạo mảng cell nền
+  /* BASE CELLS */
   const cells = [];
-  for (let y = 0; y < rows; y++) {
-    for (let x = 0; x < cols; x++) {
-      cells.push({ x, y });
-    }
-  }
+  for (let y = 0; y < rows; y++)
+    for (let x = 0; x < cols; x++) cells.push({ x, y });
 
   return (
-    <div className="layout-editor-page">
-      <div className="layout-editor-page-top">
-        <h1>Trình tạo Grid Layout {layoutTitle}</h1>
-        <p className="desc">Tùy chỉnh bố cục — kéo, thay đổi kích thước HTML CSS.</p>
+    <div className="p-6 bg-white rounded-xl shadow-sm">
+      {/* Header */}
+      <div className="flex flex-col gap-3 mb-6">
+        <h1 className="text-2xl font-bold">Trình tạo Grid Layout {layoutTitle}</h1>
+        <p className="text-gray-600">Kéo – thả – chỉnh kích thước để tạo layout.</p>
 
-        <div className="input-row">
-          <div>
-            <label>Số Cột: </label>
+        {/* Controls */}
+        <div className="flex items-center gap-6 flex-wrap">
+          {/* Cols */}
+          <div className="flex items-center gap-2">
+            <label>Số cột:</label>
             <input
               type="number"
+              min="1"
+              max="10"
               value={cols}
-              min="1"
-              max="10"
-              onChange={(e) => setCols(Number(e.target.value))}
+              onChange={(e) => setCols(+e.target.value)}
+              className="w-16 border rounded p-1 text-center"
             />
           </div>
-          <div>
-            <label>Số Hàng: </label>
+
+          {/* Rows */}
+          <div className="flex items-center gap-2">
+            <label>Số hàng:</label>
             <input
               type="number"
-              value={rows}
               min="1"
               max="10"
-              onChange={(e) => setRows(Number(e.target.value))}
+              value={rows}
+              onChange={(e) => setRows(+e.target.value)}
+              className="w-16 border rounded p-1 text-center"
             />
           </div>
+
+          {/* Reset */}
           <button
-            className={`btn-reset ${spin ? "spin" : ""}`}
             onClick={() => {
               setSpin(true);
               handleReset();
               setTimeout(() => setSpin(false), 600);
             }}
+            className={`btn-reset flex items-center gap-2 bg-gray-200 px-4 py-2 rounded ${spin ? "spin" : ""}`}
           >
-            <FaRedo /> Đặt Lại
+            <FaRedo /> Đặt lại
           </button>
 
-          <button onClick={handleSave} disabled={isSaving} className="btn-save">
+          {/* Save */}
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="btn-save flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded disabled:bg-blue-300"
+          >
             <FaSave /> {isSaving ? "Đang lưu..." : "Lưu Layout"}
           </button>
         </div>
       </div>
 
-      <div className="grid-wrapper" ref={wrapperRef}>
+      {/* GRID WRAPPER */}
+      <div ref={wrapperRef} className="relative mx-auto">
+        {/* Base grid */}
         <div
-          className="base-grid"
+          className="grid"
           style={{
             gridTemplateColumns: `repeat(${cols}, 1fr)`,
             gridTemplateRows: `repeat(${rows}, 1fr)`,
           }}
         >
-          {cells.map((cell, i) => {
-            const isTopLeft = cell.x === 0 && cell.y === 0;
-            const isTopRight = cell.x === cols - 1 && cell.y === 0;
-            const isBottomLeft = cell.x === 0 && cell.y === rows - 1;
-            const isBottomRight = cell.x === cols - 1 && cell.y === rows - 1;
-
+          {cells.map((c, i) => {
+            const radius = {
+              borderTopLeftRadius: c.x === 0 && c.y === 0 ? "12px" : 0,
+              borderTopRightRadius: c.x === cols - 1 && c.y === 0 ? "12px" : 0,
+              borderBottomLeftRadius:
+                c.x === 0 && c.y === rows - 1 ? "12px" : 0,
+              borderBottomRightRadius:
+                c.x === cols - 1 && c.y === rows - 1 ? "12px" : 0,
+            };
             return (
               <div
                 key={i}
                 className="cube"
-                onClick={() => handleAdd(cell.x, cell.y)}
-                style={{
-                  borderTopLeftRadius: isTopLeft ? "12px" : 0,
-                  borderTopRightRadius: isTopRight ? "12px" : 0,
-                  borderBottomLeftRadius: isBottomLeft ? "12px" : 0,
-                  borderBottomRightRadius: isBottomRight ? "12px" : 0,
-                }}
+                style={radius}
+                onClick={() => handleAdd(c.x, c.y)}
               >
                 +
               </div>
@@ -212,8 +213,9 @@ export default function LayoutEditor({ layoutId, layoutTitle, initialConfig }) {
           })}
         </div>
 
+        {/* Overlay Blocks */}
         {width > 0 && (
-          <div className="overlay-grid">
+          <div className="absolute inset-0">
             <GridLayout
               className="layout"
               layout={layout}
@@ -225,11 +227,14 @@ export default function LayoutEditor({ layoutId, layoutTitle, initialConfig }) {
               isDraggable
               draggableCancel=".remove-btn"
               margin={[0, 0]}
-              onLayoutChange={handleLayoutChange}
+              onLayoutChange={setLayout}
             >
               {layout.map((item) => (
                 <div key={item.i} className="grid-item">
-                  <button className="remove-btn" onClick={() => handleRemove(item.i)}>
+                  <button
+                    className="remove-btn"
+                    onClick={() => handleRemove(item.i)}
+                  >
                     <FaTimes />
                   </button>
                   {item.i.slice(-3)}
@@ -240,20 +245,32 @@ export default function LayoutEditor({ layoutId, layoutTitle, initialConfig }) {
         )}
       </div>
 
-      {/* 💻 Code preview */}
-      <div className="code-section">
-        <div className="code-box">
-          <div className="code-header">
+      {/* CODE PREVIEW */}
+      <div className="mt-10 flex flex-wrap gap-6">
+        {/* HTML */}
+        <div className="code-box flex-1 min-w-[300px] bg-orange-50 p-4 rounded-lg shadow">
+          <div className="flex justify-between items-center mb-2 font-bold">
             <span>HTML</span>
-            <button onClick={() => copyToClipboard(generateHTML())}>Copy</button>
+            <button
+              onClick={() => copy(generateHTML())}
+              className="bg-blue-500 text-white px-3 py-1 rounded text-sm"
+            >
+              Copy
+            </button>
           </div>
           <pre>{generateHTML()}</pre>
         </div>
 
-        <div className="code-box">
-          <div className="code-header">
+        {/* CSS */}
+        <div className="code-box flex-1 min-w-[300px] bg-orange-50 p-4 rounded-lg shadow">
+          <div className="flex justify-between items-center mb-2 font-bold">
             <span>CSS</span>
-            <button onClick={() => copyToClipboard(generateCSS())}>Copy</button>
+            <button
+              onClick={() => copy(generateCSS())}
+              className="bg-blue-500 text-white px-3 py-1 rounded text-sm"
+            >
+              Copy
+            </button>
           </div>
           <pre>{generateCSS()}</pre>
         </div>

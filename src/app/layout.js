@@ -1,6 +1,8 @@
 import { AuthProvider } from '../context/AuthContext';
 import LightboxViewer from '@/components/Lightbox'; // 👈 nhớ import đúng path
 
+
+
 export const metadata = {
   title: 'Bản tin',
   description: 'Trang thông tin Toà Án',

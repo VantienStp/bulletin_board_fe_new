@@ -5,8 +5,11 @@ import "./card.css";
 
 export default function Card({ title, contents = [], style = {} }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [showTitle, setShowTitle] = useState(true);
+  const [showTitle, setShowTitle] = useState(false);
   const [canClick, setCanClick] = useState(true);
+
+  const hideTimer = useRef(null);
+
 
   const [pdfPage, setPdfPage] = useState(0);
 
@@ -32,7 +35,7 @@ export default function Card({ title, contents = [], style = {} }) {
       intervalTime = 60000 + Math.floor(Math.random() * 30000);
     } else {
 
-      intervalTime = 5000 + Math.floor(Math.random() * 5000);
+      intervalTime = 15000 + Math.floor(Math.random() * 15000);
     }
 
     clearTimeout(timerRef.current);
@@ -63,10 +66,13 @@ export default function Card({ title, contents = [], style = {} }) {
 
 
   useEffect(() => {
+    if (!showTitle) return;
     setDynamicSizes();
     window.addEventListener("resize", setDynamicSizes);
+
     return () => window.removeEventListener("resize", setDynamicSizes);
-  }, [activeFile]);
+  }, [activeFile, showTitle]);
+
 
   useEffect(() => {
     if (activeFile?.type === "pdf" && activeFile?.url) {
@@ -81,6 +87,19 @@ export default function Card({ title, contents = [], style = {} }) {
         .catch((err) => console.error("❌ Error fetching PDF headers:", err));
     }
   }, [activeFile]);
+
+  const showOverlay = () => {
+    clearTimeout(hideTimer.current);
+    setShowTitle(true);
+  };
+
+  const hideOverlay = () => {
+    clearTimeout(hideTimer.current);
+    hideTimer.current = setTimeout(() => {
+      setShowTitle(false);
+    }, 5000); // 5 giây
+  };
+
 
   function getFullUrl(path) {
     if (!path) return null; // tránh cảnh báo khi path rỗng
@@ -99,30 +118,38 @@ export default function Card({ title, contents = [], style = {} }) {
 
     const wrapperWidth = imageAndQRWrapper.offsetWidth;
     const wrapperHeight = imageAndQRWrapper.offsetHeight;
-    const largerDimension = Math.max(wrapperWidth, wrapperHeight);
 
+    // ⭐ Tính kích thước cân bằng theo diện tích
+    const area = wrapperWidth * wrapperHeight;
+    const normalized = Math.sqrt(area); // kích thước đại diện cho khung
+    let fontSize = normalized * 0.04;   // scale ổn hơn largerDimension
+
+    // Giới hạn trên và dưới
+    fontSize = Math.min(fontSize, 32);
+    fontSize = Math.max(fontSize, 12);
+
+    // ⭐ Các giá trị dựa trên dimension lớn nhất vẫn giữ như em
+    const largerDimension = Math.max(wrapperWidth, wrapperHeight);
     const contentBottomHeight = largerDimension * 0.15;
     const qrSize = largerDimension * 0.15;
-    const fontSize = largerDimension * 0.025;
 
+    // Apply vào UI
     contentInBottom.style.height = `${contentBottomHeight}px`;
     qrCodeImg.style.width = `${qrSize}px`;
     qrCodeImg.style.height = `${qrSize}px`;
     qrText.style.fontSize = `${fontSize}px`;
 
-    // 🧩 Tính số dòng có thể hiển thị
-    const lineHeight = fontSize * 1.4; // cùng tỷ lệ line-height với CSS
+    // ⭐ Tính số dòng hiển thị
+    const lineHeight = fontSize * 1.4;
     const maxLines = Math.floor(contentBottomHeight / lineHeight) - 1;
-    // console.log("qrSize: ", qrSize)
-    // console.log("contentBottomHeight / lineHeight : ", contentBottomHeight, lineHeight)
-    // console.log("maxlines: ", maxLines)
 
-    // 🧩 Gán line-clamp động
+    // ⭐ Apply line-clamp
     qrText.style.display = "-webkit-box";
     qrText.style.webkitBoxOrient = "vertical";
     qrText.style.overflow = "hidden";
     qrText.style.webkitLineClamp = maxLines;
   };
+
 
 
   const handleClick = () => {
@@ -144,13 +171,13 @@ export default function Card({ title, contents = [], style = {} }) {
           {contents.length > 0 ? (
             <AnimatePresence mode="sync" initial={false}>
               <motion.div
-                key={activeIndex}
-                initial={{ y: 100, opacity: 0 }}       // ảnh mới từ dưới đi lên
-                animate={{ y: 0, opacity: 1 }}         // ảnh mới vào giữa
-                exit={{ y: -100, opacity: 0 }}         // ảnh cũ đi lên và biến mất
+                key={activeIndex + "-" + pdfPage}
+                initial={{ y: 100, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -100, opacity: 0 }}
                 transition={{
                   duration: 0.9,
-                  ease: [0.45, 0, 0.55, 1], // ease mượt hơn cubic-bezier
+                  ease: [0.45, 0, 0.55, 1],
                 }}
                 style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 1, }}
               >
@@ -178,9 +205,6 @@ export default function Card({ title, contents = [], style = {} }) {
                     }}
                   />
                 )}
-
-
-
               </motion.div>
             </AnimatePresence>
           ) : (
@@ -188,16 +212,11 @@ export default function Card({ title, contents = [], style = {} }) {
           )}
         </div>
 
-        <div className="card-actions">
+        <div className="card-actions hidden-actions">
           <i className="fas fa-eye toggle-title-icon" onClick={() => setShowTitle(!showTitle)}></i>
-
           <i className="fas fa-redo reload-icon" onClick={() => setActiveIndex(0)}></i>
           <i className="fas fa-expand expand-icon"
             onClick={() => {
-              console.log("🔥 Expand clicked!");
-              console.log("Active file:", activeFile);
-              console.log("Full URL:", getFullUrl(activeFile?.url));
-
               window.dispatchEvent(
                 new CustomEvent("openLightbox", {
                   detail: {

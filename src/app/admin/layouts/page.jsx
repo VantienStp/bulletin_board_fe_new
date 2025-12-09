@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import { FaThLarge, FaPlusSquare, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
 import Modal from '@/components/admin/Modal';
 import "./layouts.css";
+import { getToken, authFetch } from "@/lib/auth";
 import Link from 'next/link';
 import { API_BASE_URL } from '@/lib/api';
-import { getToken } from '@/lib/auth';
 import usePagination from "@/hooks/usePagination";
 
 
@@ -27,10 +27,22 @@ export default function LayoutsPage() {
   useEffect(() => { fetchLayouts(); }, []);
 
   async function fetchLayouts() {
-    const res = await fetch(`${API_BASE_URL}/gridlayouts`);
-    const data = await res.json();
-    if (Array.isArray(data)) setLayouts(data);
+    try {
+      const res = await authFetch(`${API_BASE_URL}/gridlayouts`, {
+        method: "GET",
+        credentials: "include",
+      });
+
+      if (!res.ok) return console.warn("Không load được layouts");
+
+      const data = await res.json();
+      if (Array.isArray(data)) setLayouts(data);
+
+    } catch (err) {
+      console.error("Lỗi fetchLayouts:", err);
+    }
   }
+
 
   function handleEdit(layout) {
     setEditingLayout(layout);
@@ -170,10 +182,6 @@ export default function LayoutsPage() {
 
               </td>
               <td>
-                {/* <Link href={`/admin/layouts/${l._id}`} className="btn-view" title="Xem chi tiết">
-                  <FaEye /> Xem chi tiết
-                </Link> */}
-                {/* <button className="btn-edit" onClick={() => handleEdit(l)}><FaEdit /> Sửa</button> */}
 
                 <Link href={`/admin/layouts/${l._id}`} className="btn-view" title="Xem chi tiết">
                   <FaEdit /> Sửa
@@ -243,3 +251,4 @@ export default function LayoutsPage() {
     </div>
   );
 }
+

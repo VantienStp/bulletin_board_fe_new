@@ -1,4 +1,6 @@
-import "./auth.css";
+import "@/styles/core.css";
+import "@/styles/tokens.css";
+import "@/styles/auth.css";
 
 export default function AuthLayout({ children }) {
   return <div className="auth-container">{children}</div>;

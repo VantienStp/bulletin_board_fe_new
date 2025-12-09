@@ -1,0 +1,121 @@
+/* FONT IMPORT – đặt ở đây luôn cho nhẹ */
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap');
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+:root {
+    /* ------ COLORS ------ */
+    --bg: #ffffff;
+    --bg-2: #0d1b2a;
+    --bg-3: #ffffff;
+    --card-bg: #e7ecf7;
+
+    --color-bg-app: #FFFFFF;
+    --color-bg-sidebar: #FFFFFF;
+    --color-bg-content: #F3F3F3;
+    --color-bg-button: #2a4260;
+    --color-bg-button-hover: #39587e;
+    --color-bg-th-table: #f5f0f0dd;
+
+    /* --text-dark: #161B1D;
+    --text-light: #FAFBFF; */
+    --color-text-primary: #000000;
+    --color-text-secondary: #7B7B7B;
+    --color-text-active: #000000;
+
+    --color-accent: #d5dff5;
+    --color-highlight: #e7ecf7;
+
+    /* ------ BRAND COLORS ------ */
+    --clr-background-light: #F3F3F3;
+    --clr-surface-light: #FFFFFF;
+    --clr-accent-yellow: #FFBC11;
+    --clr-accent-blue: #4578F9;
+    --clr-accent-green: #43B430;
+    --clr-accent-purple: #CB3EFF;
+    --clr-accent-red: #f72222;
+
+    /* ------ TYPOGRAPHY ------ */
+    --ff-primary: 'Roboto Condensed', sans-serif;
+    --font-size-tiny: 0.6vw;
+    --font-size-small: 0.8vw;
+    --font-size-medium: 1.2vw;
+    --font-size-large: 1.4vw;
+    --font-size-xlarge: 1.6vw;
+    --font-size-xxlarge: 2vw;
+
+    /* ------ SPACING SCALE ------ */
+    --padding-tiny: 0.2vw;
+    --padding-small: 0.5vw;
+    --padding-medium: 1vw;
+    --padding-large: 1.5vw;
+    --padding-xlarge: 2vw;
+
+
+    --margin-tiny: 0.2vw;
+    --margin-small: 0.5vw;
+    --margin-medium: 1vw;
+    --margin-large: 1.5vw;
+
+    /* ------ GAP & RADIUS ------ */
+    --gap-tiny: 0.3vw;
+    --gap-small: 0.5vw;
+    --gap-medium: 1vw;
+
+    --radius-none: 0;
+    --radius-small: 0.4vw;
+    --radius-medium: 0.8vw;
+    --radius-large: 1.2vw;
+    --radius-xlarge: 2vw;
+    --radius-round: 50%;
+
+    /* ------ SHADOWS ------ */
+    --shadow-light: -5px -5px 10px #FAFBFF;
+    --shadow-dark: 5px 5px 10px rgba(22, 27, 29, 0.23);
+
+    --shadow-soft:
+        0.3vw 0.3vw 0.6vw rgba(22, 27, 29, 0.23),
+        -0.3vw -0.3vw 0.6vw rgba(250, 251, 255, 1);
+
+    --shadow-hover:
+        0.15vw 0.15vw 0.3vw rgba(22, 27, 29, 0.15),
+        -0.15vw -0.15vw 0.3vw rgba(250, 251, 255, 1);
+
+    /* ------ TRANSITIONS ------ */
+    --transition-fast: 0.15s;
+    --transition-normal: 0.3s;
+    --transition-slow: 0.6s;
+
+    --ease-smooth: cubic-bezier(0.45, 0, 0.55, 1);
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+    --ease-spring: cubic-bezier(0.25, 1.25, 0.5, 1);
+}
+
+[data-theme="dark"] {
+
+    --bg: #0d1b2a;
+    --card-bg: #1D1D29;
+
+    --color-bg-app: #1D1D29;
+    --color-bg-sidebar: #1D1D29;
+    --color-bg-content: #11121E;
+    --color-bg-button: #1E2A47;
+    --color-bg-button-hover: #7B7B7B;
+
+    --color-bg-th-table: #7B7B7B;
+
+    --color-text-primary: #FFFFFF;
+    --color-text-secondary: #CBD5E1;
+    --color-text-active: #FFFFFF;
+
+    --color-accent: #1E2A47;
+    --color-highlight: #7692b4;
+
+    --shadow-hover:
+        0.15vw 0.15vw 0.3vw var(--color-bg-content),
+        -0.15vw -0.15vw 0.3vw var(--color-bg-content);
+}

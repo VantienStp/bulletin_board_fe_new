@@ -26,14 +26,14 @@ export default function ResetPasswordPage() {
 
     try {
       const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-            },
-            credentials: "include", 
-            body: JSON.stringify({ email: userEmail, newPassword }),
-        });
-  
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email: userEmail, newPassword }),
+      });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Đặt lại mật khẩu thất bại");
 
@@ -46,18 +46,18 @@ export default function ResetPasswordPage() {
     }
   };
 
-    useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const email = sessionStorage.getItem("userEmailForDisplay"); 
-            if (!email) {
-                setMessage("⚠️ Phiên đặt lại mật khẩu không hợp lệ. Vui lòng bắt đầu lại từ bước 'Quên mật khẩu'.");
-                sessionStorage.removeItem("userEmailForDisplay"); 
-                setTimeout(() => router.replace(`/forgot-password`), 3000); 
-                return;
-            }
-            setUserEmail(email); 
-        }
-    }, [router]);
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const email = sessionStorage.getItem("userEmailForDisplay");
+      if (!email) {
+        setMessage("⚠️ Phiên đặt lại mật khẩu không hợp lệ. Vui lòng bắt đầu lại từ bước 'Quên mật khẩu'.");
+        sessionStorage.removeItem("userEmailForDisplay");
+        setTimeout(() => router.replace(`/forgot-password`), 3000);
+        return;
+      }
+      setUserEmail(email);
+    }
+  }, [router]);
 
   return (
     <div className="auth-wrapper">

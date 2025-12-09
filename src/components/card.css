@@ -54,9 +54,10 @@
     top: 2%;
     max-height: 0.vw;
     right: 2%;
-    /* display: flex; */
+    display: flex;
     z-index: 1;
     pointer-events: none;
+    gap: 8px;
 }
 
 .card-actions i {
@@ -67,7 +68,6 @@
     cursor: pointer;
     pointer-events: auto;
     text-shadow: 0 0 0.5vw rgba(0, 0, 0, 0.5);
-
 }
 
 .card-actions i:hover {
@@ -116,6 +116,7 @@
     align-items: center;
     aspect-ratio: 1 / 1;
     height: 100%;
+    display: none;
 }
 
 .qr-code-img {
@@ -129,7 +130,3 @@
     border-radius: 0.5vw;
     opacity: 0.9;
 }
-
-
-
-/* #endregion */

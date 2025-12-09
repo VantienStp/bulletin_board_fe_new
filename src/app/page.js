@@ -4,7 +4,11 @@ import { useState, useEffect, useRef } from "react";
 import Clock from "@/components/Clock";
 import Weather from "@/components/Weather";
 import Card from "@/components/Card";
-import "./globals.css";
+
+import "@/styles/core.css";
+import "@/styles/tokens.css";
+import "@/styles/globals.css"
+
 import { API_BASE_URL, BASE_URL } from "../lib/api";
 
 export default function HomePage() {
@@ -77,7 +81,7 @@ export default function HomePage() {
 
       const randomCat = others[Math.floor(Math.random() * others.length)];
       handleSelectCategory(randomCat);
-    }, 1 * 60 * 1000);
+    }, 30 * 60 * 1000);
 
     return () => clearInterval(intervalRef.current);
 
@@ -140,7 +144,10 @@ export default function HomePage() {
             <div className="header-left">
               <div className="title-block">
                 <span className="main-title">
-                  <span className="highlight">Bản Tin Hoạt Động</span> Toà Án Nhân Dân Khu Vực 1 - TP.HCM
+                  {/* <span className="highlight">Bản Tin Hoạt Động</span> Toà Án Nhân Dân Khu Vực 1 - TP.HCM */}
+                  <span className="highlight">Bản Tin Hoạt Động</span>
+                  {" "}Toà Án Nhân Dân Khu Vực 1 - TP.HCM
+
                 </span>
                 <div className="time-line">
                   {(() => {
