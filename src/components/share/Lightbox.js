@@ -2,11 +2,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaTimes } from "react-icons/fa";
-import "./lightbox.css";
 
 export default function Lightbox() {
   const [file, setFile] = useState(null);
 
+  // Lắng nghe sự kiện mở Lightbox
   useEffect(() => {
     const handleOpen = (e) => setFile(e.detail);
     const handleClose = () => setFile(null);
@@ -20,6 +20,7 @@ export default function Lightbox() {
     };
   }, []);
 
+  // ESC để đóng
   useEffect(() => {
     const handleKey = (e) => e.key === "Escape" && setFile(null);
     window.addEventListener("keydown", handleKey);
@@ -31,44 +32,68 @@ export default function Lightbox() {
   return (
     <AnimatePresence>
       <motion.div
-        className="lightbox-overlay"
+        className="
+          fixed inset-0 z-[99999]
+          bg-black/75 backdrop-blur-md
+          flex items-center justify-center
+        "
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={() => setFile(null)}
       >
+        {/* Content Box */}
         <motion.div
-          className="lightbox-content"
+          className="
+            relative bg-black 
+            max-w-[90vw] max-h-[100vh] 
+            rounded-xl overflow-hidden 
+            flex items-center justify-center
+          "
           onClick={(e) => e.stopPropagation()}
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
         >
           {/* Nút X */}
-          <button className="lightbox-close" onClick={() => setFile(null)}>
+          <button
+            onClick={() => setFile(null)}
+            className="
+              absolute top-3 right-3
+              bg-white/20 hover:bg-black/60
+              text-white p-2 rounded-full
+              transition flex items-center justify-center
+            "
+          >
             <FaTimes size={20} />
           </button>
 
-          {/* Nội dung theo loại file */}
+          {/* Ảnh */}
           {file.type === "image" && (
-            <img src={file.url} className="lightbox-media img" alt="preview" />
+            <img
+              src={file.url}
+              alt="preview"
+              className="max-w-[90vw] max-h-[90vh] object-contain"
+            />
           )}
 
+          {/* Video */}
           {file.type === "video" && (
             <video
               src={file.url}
               autoPlay
               loop
               controls
-              className="lightbox-media video"
+              className="w-[80vw] max-h-[90vh] object-contain bg-black"
             />
           )}
 
+          {/* PDF */}
           {file.type === "pdf" && (
             <iframe
               src={file.url}
               title="PDF"
-              className="lightbox-media pdf"
+              className="w-[90vw] h-[100vh] border-none"
             />
           )}
         </motion.div>

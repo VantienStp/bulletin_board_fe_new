@@ -1,5 +1,5 @@
 import { AuthProvider } from '../context/AuthContext';
-import LightboxViewer from '@/components/Lightbox'; // 👈 nhớ import đúng path
+import LightboxViewer from '@/components/share/Lightbox'; // 👈 nhớ import đúng path
 
 
 

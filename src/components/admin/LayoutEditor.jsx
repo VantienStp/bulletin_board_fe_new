@@ -19,7 +19,6 @@ export default function LayoutEditor({ layoutId, layoutTitle, initialConfig }) {
 
   const wrapperRef = useRef(null);
 
-  /* LOAD CONFIG */
   useEffect(() => {
     if (initialConfig) {
       setCols(initialConfig.columns?.length || 5);
@@ -39,7 +38,6 @@ export default function LayoutEditor({ layoutId, layoutTitle, initialConfig }) {
     }
   }, [initialConfig]);
 
-  /* RESIZE HANDLER */
   useEffect(() => {
     const resize = () => wrapperRef.current && setWidth(wrapperRef.current.offsetWidth);
     resize();
@@ -47,15 +45,12 @@ export default function LayoutEditor({ layoutId, layoutTitle, initialConfig }) {
     return () => window.removeEventListener("resize", resize);
   }, [cols, gap]);
 
-  /* Add block */
   const handleAdd = (x, y) =>
     setLayout((prev) => [...prev, { i: Date.now().toString(), x, y, w: 1, h: 1 }]);
 
-  /* Remove block */
   const handleRemove = (id) =>
     setLayout((prev) => prev.filter((item) => item.i !== id));
 
-  /* Save */
   const handleSave = async () => {
     if (!layoutId) return alert("⚠️ Không có ID layout!");
 

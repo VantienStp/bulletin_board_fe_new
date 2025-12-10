@@ -68,28 +68,24 @@ export default function Header() {
       className="
         grid grid-cols-[2fr_1fr_1fr]
         items-center
+ 
+        bg-[var(--color-bg-content)]
+        text-[--color-text-primary]
+        z-50 relative
+        px-8 py-4
+
         mt-[var(--margin-small)]
         mr-[var(--margin-small)]
-        radi
-        bg-white/80 dark:bg-[var(--color-bg-content)]
-        px-8 pt-4
-        text-gray-900 dark:text-[--color-text-primary]
-        z-50 relative
         rounded-t-[var(--radius-medium)]
+
       "
     >
-      {/* LEFT */}
       <div className="text-left font-bold text-2xl">
         TÒA ÁN NHÂN DÂN TP.HỒ CHÍ MINH
       </div>
 
-      {/* CENTER */}
       <div className="flex justify-center"></div>
-
-      {/* RIGHT */}
       <div ref={menuRef} className="flex items-center gap-4 justify-end relative">
-
-        {/* Theme toggle */}
         <button
           onClick={() => setTheme(theme === "light" ? "dark" : "light")}
           className="
@@ -101,7 +97,6 @@ export default function Header() {
           {theme === "light" ? "🌙" : "☀️"}
         </button>
 
-        {/* User menu */}
         <div className="flex items-center gap-2 text-lg">
           Chào mừng
           <button
@@ -117,7 +112,6 @@ export default function Header() {
           </button>
         </div>
 
-        {/* DROPDOWN */}
         <div
           className={`
             absolute right-0 top-14
