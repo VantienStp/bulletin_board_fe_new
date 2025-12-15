@@ -1,49 +1,71 @@
 "use client";
-import { useEffect, useState } from "react";
-import { FaUsers, FaPlusSquare, FaEdit, FaTrash } from "react-icons/fa";
-import Modal from "@/components/admin/Modal";
+
+import { useEffect, useState, useRef } from "react";
+import { FaUsers } from "react-icons/fa";
+import Modal from "@/components/common/Modal";
 import { Select, MenuItem } from "@mui/material";
+import Pagination from "@/components/common/Pagination";
+import DeleteModal from "@/components/common/DeleteModal";
+
 
 import { API_BASE_URL } from "@/lib/api";
-// import "./users.css";
 import { authFetch } from "@/lib/auth";
-import usePagination from "@/hooks/usePagination";
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
+
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     password: "",
     role: "editor",
   });
+
   const [editingUser, setEditingUser] = useState(null);
+  const [deleteUserId, setDeleteUserId] = useState(null);
+  const [deleteStatus, setDeleteStatus] = useState("idle");
   const [showForm, setShowForm] = useState(false);
+
+  // ===== Pagination state =====
+  const itemsPerPage = 4;
+  const [currentPage, setCurrentPage] = useState(1);
+  const paginationRef = useRef(null);
 
   // ===== Fetch users =====
   useEffect(() => {
     fetchUsers();
   }, []);
 
-  async function fetchUsers() {
-    try {
-      const res = await authFetch(`${API_BASE_URL}/users`, {
-        method: "GET",
-        credentials: "include",
-      });
+  // ===== Ensure currentPage luôn hợp lệ sau khi data thay đổi =====
+  useEffect(() => {
+    const totalPages = Math.ceil(users.length / itemsPerPage);
 
-      if (!res.ok) {
-        console.warn("Không thể tải users:", res.status);
-        return;
-      }
-
-      const data = await res.json();
-      if (Array.isArray(data)) setUsers(data);
-    } catch (err) {
-      console.error("Lỗi fetchUsers:", err);
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
     }
+
+    // Nếu xóa hết user → quay về page 1
+    if (totalPages === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [users.length, itemsPerPage, currentPage]);
+
+
+  async function fetchUsers() {
+    const res = await authFetch(`${API_BASE_URL}/users`);
+    if (!res?.ok) return;
+
+    const data = await res.json();
+    if (Array.isArray(data)) setUsers(data);
   }
 
+  // ===== Pagination slice =====
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentUsers = users.slice(startIndex, endIndex);
+
+  // ===== Handlers =====
   function handleEdit(user) {
     setEditingUser(user);
     setFormData({
@@ -55,222 +77,271 @@ export default function UsersPage() {
     setShowForm(true);
   }
 
-  // ===== Delete =====
-  async function handleDelete(id) {
-    if (!confirm("Bạn có chắc muốn xóa người dùng này?")) return;
-
-    try {
-      const res = await authFetch(`${API_BASE_URL}/users/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-
-      if (res.ok) {
-        alert("✅ Đã xóa người dùng");
-        fetchUsers();
-      } else {
-        const data = await res.json();
-        alert(`❌ Xóa thất bại: ${data.message}`);
-      }
-    } catch (err) {
-      console.error("Lỗi xóa user:", err);
-      alert("❌ Không thể kết nối đến server");
-    }
-  }
-
-  // ===== Create / Update =====
   async function handleSubmit(e) {
     e.preventDefault();
 
     const method = editingUser ? "PUT" : "POST";
     const url = editingUser
       ? `${API_BASE_URL}/users/${editingUser._id}`
-      : `${API_BASE_URL}/users`; // đúng endpoint cho admin tạo user
+      : `${API_BASE_URL}/users`;
 
     const payload = { ...formData };
     if (!payload.password) delete payload.password;
 
-    try {
-      const res = await authFetch(url, {
-        method,
-        body: JSON.stringify(payload),
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-      });
+    const res = await authFetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        alert(`✅ ${editingUser ? "Cập nhật" : "Thêm"} người dùng thành công`);
-        setShowForm(false);
-        setEditingUser(null);
-        fetchUsers();
-      } else {
-        alert(`❌ Thao tác thất bại: ${data.message}`);
-      }
-    } catch (err) {
-      console.error("Lỗi handleSubmit:", err);
-      alert("❌ Không thể kết nối tới server");
+    if (res?.ok) {
+      setShowForm(false);
+      setEditingUser(null);
+      fetchUsers();
+    } else {
+      alert("❌ Lưu thất bại");
     }
   }
 
-  // ===== Pagination =====
-  const {
-    currentPage,
-    totalPages,
-    paginatedData: currentUsers,
-    goNext,
-    goPrev,
-    goToPage,
-  } = usePagination(users, 5);
+  async function handleDeleteConfirmed() {
+    if (!deleteUserId) return;
+
+    setDeleteStatus("loading");
+
+    try {
+      const res = await authFetch(
+        `${API_BASE_URL}/users/${deleteUserId}`,
+        { method: "DELETE" }
+      );
+
+      if (!res?.ok) throw new Error("Delete failed");
+
+      await fetchUsers();
+      setDeleteStatus("success");
+
+      // ⏱ đóng modal sau 800ms cho user kịp thấy
+      setTimeout(() => {
+        setDeleteUserId(null);
+        setDeleteStatus("idle");
+      }, 800);
+
+    } catch (err) {
+      setDeleteStatus("error");
+    }
+  }
 
   return (
-    <div className="admin-page">
-      <div className="page-header">
-        <div className="show-header">
-          <span className="icon"><FaUsers /></span>
-          <span>Người dùng</span>
-        </div>
+    <div className="px-4">
+
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <FaUsers /> User Management
+        </h1>
 
         <button
-          className="btn-primary"
           onClick={() => {
-            setFormData({ username: "", email: "", password: "", role: "editor" });
+            setFormData({
+              username: "",
+              email: "",
+              password: "",
+              role: "editor",
+            });
             setEditingUser(null);
             setShowForm(true);
           }}
+          className="px-4 py-2 bg-gray-700 text-white text-sm rounded-lg hover:bg-gray-900"
         >
-          <FaPlusSquare /> Thêm người dùng
+          + Add New User
         </button>
       </div>
 
-      <table className="w-full border-collapse text-left admin-table">
-        <thead>
-          <tr className="border-b bg-gray-50">
-            <th className="w-[25%] py-3 px-4 font-semibold text-gray-700">Tài khoản</th>
-            <th className="w-[25%] py-3 px-4 font-semibold text-gray-700">Email</th>
-            <th className="w-[20%] py-3 px-4 font-semibold text-gray-700">Quyền</th>
-            <th className="w-[30%] py-3 px-4 font-semibold text-gray-700">Hành động</th>
-          </tr>
-        </thead>
+      {/* TABLE WRAPPER */}
+      <div className="bg-white rounded-xl shadow overflow-hidden">
 
-        <tbody>
+        {/* HEADER ROW */}
+        <div
+          className="
+            grid grid-cols-[2fr_1.2fr_1fr_90px]
+            px-6 py-4 font-semibold text-gray-600
+            border-b gap-4 text-[14px] text-center
+          "
+        >
+          <div className="pl-5 text-left">User</div>
+          <div>Email</div>
+          <div>Role</div>
+          <div>Actions</div>
+        </div>
+
+        {/* ROWS */}
+        <div className="divide-y">
           {currentUsers.map((u) => (
-            <tr key={u._id} className="border-b hover:bg-gray-50">
-              <td className="w-[25%] py-3 px-4">{u.username}</td>
-              <td className="w-[25%] py-3 px-4">{u.email}</td>
-              <td className="w-[20%] py-3 px-4">{u.role}</td>
+            <div
+              key={u._id}
+              className="
+                grid grid-cols-[2fr_1.2fr_1fr_90px]
+                px-6 py-3 items-center
+                hover:bg-gray-50 transition
+                gap-4 text-[13px]
+              "
+            >
+              {/* USER */}
+              <div className="flex items-center gap-4">
+                <div
+                  className="
+                    w-12 h-12 rounded-full bg-gray-200
+                    flex items-center justify-center
+                    font-bold text-gray-600
+                  "
+                >
+                  {u.username?.[0]?.toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-semibold">{u.username}</p>
+                  <p className="text-[12px] text-gray-500">
+                    ID: {u._id.slice(-6)}
+                  </p>
+                </div>
+              </div>
 
-              <td className="w-[30%] py-3 px-4">
+              {/* EMAIL */}
+              <div className="text-center text-gray-700">
+                {u.email}
+              </div>
+
+              {/* ROLE */}
+              <div className="text-center">
+                <span className="px-3 py-1 bg-gray-100 rounded-lg text-xs font-medium">
+                  {u.role}
+                </span>
+              </div>
+
+              {/* ACTIONS */}
+              <div className="flex flex-col gap-1 text-center">
                 <button
-                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 mr-4 btn-edit"
                   onClick={() => handleEdit(u)}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600"
                 >
-                  <FaEdit /> Sửa
+                  Edit
                 </button>
 
                 <button
-                  className="inline-flex items-center gap-1 text-red-600 hover:text-red-800 btn-delete"
-                  onClick={() => handleDelete(u._id)}
+                  onClick={() => setDeleteUserId(u._id)}
+                  className="px-3 py-1 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600"
                 >
-                  <FaTrash /> Xóa
+                  Delete
                 </button>
-              </td>
-            </tr>
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
-
-
-      {/* Pagination */}
-      <div className="pagination">
-        <button className="page-btn" onClick={goPrev} disabled={currentPage === 1}>
-          ◀
-        </button>
-
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            className={`page-btn ${currentPage === i + 1 ? "active" : ""}`}
-            onClick={() => goToPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-
-        <button className="page-btn" onClick={goNext} disabled={currentPage === totalPages}>
-          ▶
-        </button>
+        </div>
       </div>
 
-      {/* Modal Form */}
+      {/* PAGINATION (NEW) */}
+      <div ref={paginationRef}>
+        <Pagination
+          totalItems={users.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={(page) => {
+            setCurrentPage(page);
+            paginationRef.current?.scrollIntoView({
+              behavior: "auto",
+              block: "start",
+            });
+          }}
+        />
+      </div>
+
+      {/* MODAL */}
       {showForm && (
         <Modal
           title={editingUser ? "Sửa người dùng" : "Thêm người dùng mới"}
           onClose={() => setShowForm(false)}
         >
           <form onSubmit={handleSubmit}>
-            <div>
-              <label>Tên tài khoản</label>
-              <input
-                type="text"
-                value={formData.username}
-                onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                required
-              />
-            </div>
+            <label>Tên tài khoản</label>
+            <input
+              value={formData.username}
+              onChange={(e) =>
+                setFormData({ ...formData, username: e.target.value })
+              }
+              required
+            />
 
-            <div>
-              <label>Email</label>
-              <input
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-              />
-            </div>
+            <label>Email</label>
+            <input
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
+              required
+            />
 
-            <div>
-              <label>Mật khẩu {editingUser ? "(bỏ trống nếu không đổi)" : ""}</label>
-              <input
-                type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              />
-            </div>
+            <label>
+              Mật khẩu {editingUser && "(bỏ trống nếu không đổi)"}
+            </label>
+            <input
+              type="password"
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+            />
 
-            <div>
-              <label>Quyền</label>
-              <Select
-                variant="standard"
-                disableUnderline
-                value={formData.role}
-                style={{
-                  border: "0.2vw solid #ccc",
-                  padding: "0.5vw",
-                  borderRadius: "0.5vw",
-                  width: "100%",
-                }}
-                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              >
-                <MenuItem value="admin">Admin</MenuItem>
-                <MenuItem value="editor">Editor</MenuItem>
-                <MenuItem value="user">User</MenuItem>
-                <MenuItem value="viewer">Viewer</MenuItem>
-              </Select>
-            </div>
+            <label>Quyền</label>
+            <Select
+              variant="standard"
+              disableUnderline
+              fullWidth
+              value={formData.role}
+              onChange={(e) =>
+                setFormData({ ...formData, role: e.target.value })
+              }
+            >
+              <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="editor">Editor</MenuItem>
+              <MenuItem value="user">User</MenuItem>
+              <MenuItem value="viewer">Viewer</MenuItem>
+            </Select>
 
             <div className="modal-actions">
               <button type="submit" className="btn-primary">
                 {editingUser ? "Cập nhật" : "Thêm mới"}
               </button>
-              <button type="button" className="btn-cancel" onClick={() => setShowForm(false)}>
+              <button
+                type="button"
+                className="btn-cancel"
+                onClick={() => setShowForm(false)}
+              >
                 Hủy
               </button>
             </div>
           </form>
         </Modal>
       )}
+
+      <DeleteModal
+        open={!!deleteUserId}
+        title="Delete User?"
+        message={
+          deleteStatus === "loading"
+            ? "Đang xóa người dùng..."
+            : deleteStatus === "success"
+              ? "✅ Xóa người dùng thành công"
+              : deleteStatus === "error"
+                ? "❌ Xóa thất bại. Vui lòng thử lại."
+                : "Bạn có chắc muốn xóa người dùng này không?"
+        }
+        onCancel={() => {
+          if (deleteStatus !== "loading") {
+            setDeleteUserId(null);
+            setDeleteStatus("idle");
+          }
+        }}
+        onConfirm={handleDeleteConfirmed}
+      />
+
     </div>
   );
 }

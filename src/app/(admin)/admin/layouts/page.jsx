@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { FaThLarge, FaPlusSquare, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
-import Modal from '@/components/admin/Modal';
+import Modal from '@/components/common/Modal';
 import { authFetch } from "@/lib/auth";
 import Link from 'next/link';
 import { API_BASE_URL } from '@/lib/api';

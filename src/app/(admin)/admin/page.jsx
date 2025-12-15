@@ -1,102 +1,61 @@
 "use client";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { API_BASE_URL } from "@/lib/api";
-import { authFetch } from "@/lib/auth";
-import { FaList, FaClone, FaChartBar, FaThLarge, FaUsers } from "react-icons/fa";
 
-export default function AdminPage() {
-    const [stats, setStats] = useState({
-        categories: 0,
-        cards: 0,
-        layouts: 0,
-        users: 0,
-    });
+import StatCard from "@/components/admin/StatCard";
+import AnalyticsCard from "@/components/admin/AnalyticsCard";
+import TeamList from "@/components/admin/TeamList";
+import ProjectList from "@/components/admin/ProjectList";
+import ReminderCard from "@/components/admin/ReminderCard";
+import TimeTracker from "@/components/admin/TimeTracker";
 
-    const router = useRouter();
-
-    useEffect(() => {
-        async function fetchStats() {
-            try {
-                const res = await authFetch(`${API_BASE_URL}/dashboard/stats`, {
-                    credentials: "include",
-                });
-
-                if (res.status === 401 || res.status === 403) {
-                    router.push("/login");
-                    return;
-                }
-
-                const data = await res.json();
-                setStats(data);
-
-            } catch (err) {
-                router.push("/login");
-            }
-        }
-
-        fetchStats();
-    }, []);
-
+export default function AdminHomePage() {
     return (
+        <div className="max-w-[1600px] mx-auto w-full">
 
-
-        <div className="admin-page">  {/* vẫn dùng class cũ để bố cục không lỗi */}
-
-            {/* HEADER TITLE */}
-            <div className="flex items-center gap-3 text-2xl font-bold text-black mb-10">
-                <FaChartBar className="text-gray-700" />
-                <span>Tổng quan</span>
-            </div>
-
-            {/* GRID CARDS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
-                {/* CARD 1 */}
-                <div className="
-                    bg-white/70 backdrop-blur-md rounded-xl 
-                    p-6 text-center shadow 
-                    hover:shadow-lg transition duration-200 hover:-translate-y-1
-                ">
-                    <FaList className="text-gray-700 text-3xl mx-auto" />
-                    <h2 className="text-lg font-semibold mt-2">Danh mục</h2>
-                    <p className="text-2xl font-bold">{stats.categories}</p>
+            {/* TITLE + ACTIONS */}
+            <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+                    <p className="text-sm text-gray-500 mt-1">
+                        Plan, prioritize, and accomplish your tasks with ease.
+                    </p>
                 </div>
 
-                {/* CARD 2 */}
-                <div className="
-                    bg-white/70 backdrop-blur-md rounded-xl 
-                    p-6 text-center shadow 
-                    hover:shadow-lg transition duration-200 hover:-translate-y-1
-                ">
-                    <FaClone className="text-gray-700 text-3xl mx-auto" />
-                    <h2 className="text-lg font-semibold mt-2">Thẻ nội dung</h2>
-                    <p className="text-2xl font-bold">{stats.cards}</p>
+                <div className="flex gap-3">
+                    <button className="px-4 py-2 rounded-full border border-gray-200 bg-white text-sm">
+                        Import Data
+                    </button>
+                    <button className="px-6 py-2 rounded-full bg-green-600 text-white text-sm font-medium">
+                        + Add Project
+                    </button>
+                </div>
+            </section>
+
+            {/* SECTION 1 — STATS */}
+            <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
+                <StatCard title="Total Projects" value="24" note="Increased from last month" accent="green" />
+                <StatCard title="Ended Projects" value="10" note="Increased from last month" accent="green" />
+                <StatCard title="Running Projects" value="12" note="Increased from last month" accent="green" />
+                <StatCard title="Pending Projects" value="2" note="On Discuss" accent="orange" />
+            </section>
+
+            {/* SECTION 2 — ANALYTICS + REMINDERS */}
+            <section className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
+                <div className="xl:col-span-2">
+                    <AnalyticsCard />
+                </div>
+                <ReminderCard />
+            </section>
+
+            {/* SECTION 3 — TEAM + PROJECTS + TIME TRACK */}
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <TeamList />
+                    <ProjectList />
                 </div>
 
-                {/* CARD 3 */}
-                <div className="
-                    bg-white/70 backdrop-blur-md rounded-xl 
-                    p-6 text-center shadow 
-                    hover:shadow-lg transition duration-200 hover:-translate-y-1
-                ">
-                    <FaThLarge className="text-gray-700 text-3xl mx-auto" />
-                    <h2 className="text-lg font-semibold mt-2">Bố cục</h2>
-                    <p className="text-2xl font-bold">{stats.layouts}</p>
-                </div>
+                <TimeTracker />
+            </section>
 
-                {/* CARD 4 */}
-                <div className="
-                    bg-white/70 backdrop-blur-md rounded-xl 
-                    p-6 text-center shadow 
-                    hover:shadow-lg transition duration-200 hover:-translate-y-1
-                ">
-                    <FaUsers className="text-gray-700 text-3xl mx-auto" />
-                    <h2 className="text-lg font-semibold mt-2">Người dùng</h2>
-                    <p className="text-2xl font-bold">{stats.users}</p>
-                </div>
-
-            </div>
         </div>
     );
 }

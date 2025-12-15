@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { FaClone, FaEye, FaPlusSquare, FaFolderOpen, FaEdit, FaTrash } from 'react-icons/fa';
 import Link from 'next/link';
-import Modal from '@/components/admin/Modal';
+import Modal from '@/components/common/Modal';
 import { API_BASE_URL, BASE_URL } from '@/lib/api';
 import { useParams } from 'next/navigation';
 import { authFetch } from '@/lib/auth';

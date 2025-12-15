@@ -1,5 +1,7 @@
 "use client";
-import React from "react";
+
+import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import "@/styles/modal.css";
 import { FaTimes } from "react-icons/fa";
 
@@ -14,7 +16,12 @@ export default function Modal({
   minHeight = "50%",
   minWidth = "50%",
 }) {
-  return (
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => (document.body.style.overflow = "");
+  }, []);
+
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div
         className="modal"
@@ -22,9 +29,7 @@ export default function Modal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
-          <span style={{
-            // color: title === "Sửa nội dung" ? "var(--clr-accent-yellow)" : "var(--clr-accent-blue)"
-          }}>{title}</span>
+          <span>{title}</span>
           <button className="modal-close" onClick={onClose}>
             <FaTimes />
           </button>
@@ -32,6 +37,7 @@ export default function Modal({
 
         <div className="modal-body">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

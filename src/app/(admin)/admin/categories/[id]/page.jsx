@@ -10,7 +10,7 @@ import {
   FaPlusSquare,
 } from 'react-icons/fa';
 
-import Modal from '@/components/admin/Modal';
+import Modal from '@/components/common/Modal';
 
 import { API_BASE_URL } from '@/lib/api';
 import { authFetch } from "@/lib/auth";

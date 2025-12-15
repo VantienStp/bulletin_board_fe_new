@@ -58,8 +58,8 @@ export default function AdminLayout({ children }) {
             </div>
 
             {/* MAIN CONTENT + ANIMATION */}
-            <main className="admin-scroll flex-1 overflow-y-auto px-8 py-10 pr-[16px]">
-              <div key={pathname} className="admin-page-fade">
+            <main className="admin-scroll flex-1 overflow-y-auto">
+              <div key={pathname} className="admin-page-fade px-8 py-10 h-full">
                 {children}
               </div>
             </main>
