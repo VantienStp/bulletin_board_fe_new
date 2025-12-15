@@ -5,7 +5,6 @@ import Clock from "@/components/share/Clock";
 import Weather from "@/components/share/Weather";
 import Card from "@/components/user/Card";
 
-import "@/styles/core.css";
 import "@/styles/tokens.css";
 import "@/styles/globals.css"
 

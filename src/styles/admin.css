@@ -531,3 +531,37 @@ textarea {
   outline: none;
   transition: all 0.2s ease;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.admin-scroll {
+  scrollbar-gutter: stable;
+}
+
+.admin-page-fade {
+  animation: adminFadeIn 0.35s ease-out forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes adminFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,183 @@
+.tab-btn.active {
+  color: #111827;
+  border-color: #2563eb;
+}
+
+.settings-content h3 {
+  font-size: var(--font-size-xlarge);
+  color: var(--color-text-primary);
+  margin-bottom: var(--margin-large);
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+  max-width: 400px;
+}
+
+.settings-form label {
+  font-weight: 600;
+}
+
+.settings-form input {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+
+
+.note {
+  font-size: var(--font-size-medium);
+  color: #6b7280;
+  margin-bottom: var(--margin-large);
+}
+
+.notify-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  margin-bottom: 1rem;
+}
+
+.notify-info strong {
+  color: #111827;
+  font-size: 1rem;
+}
+
+.notify-info p {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.notify-switches {
+  display: flex;
+  gap: 1rem;
+}
+
+/* === Toggle button === */
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.toggle input {
+  display: none;
+}
+
+.slider {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: #d1d5db;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+}
+
+.slider::before {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  top: 2px;
+  left: 2px;
+  border-radius: 50%;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.toggle input:checked+.slider {
+  background: #2563eb;
+}
+
+.toggle input:checked+.slider::before {
+  transform: translateX(16px);
+}
+
+.toggle-label {
+  font-size: 0.85rem;
+  color: #374151;
+  min-width: 45px;
+  text-align: left;
+}
+
+
+
+/* #region ========== SETTINGS TABS ========== */
+
+.settings-tabs {
+  display: flex;
+  gap: var(--gap-xxlarge);
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: var(--margin-large);
+  padding-bottom: var(--padding-small);
+}
+
+
+
+.tab-btn {
+  background: none;
+  border: none;
+  outline: none;
+  font-size: var(--font-size-medium);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  position: relative;
+  padding: var(--padding-small) var(--padding-medium);
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+/* .tab-btn {
+  background: none;
+  border: none;
+  padding: 0.8rem 1.4rem;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+} */
+
+.tab-btn:hover {
+  color: var(--highlight, #415A77);
+  transform: translateY(-1px);
+}
+
+.tab-btn.active {
+  color: var(--color-text-primary);
+  font-weight: 700;
+}
+
+.tab-btn.active::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: calc(var(--padding-medium)*-1);
+  width: 100%;
+  height: 0.3vw;
+  background: var(--highlight, #415A77);
+  border-radius: var(--radius-small);
+  animation: tabSlide 0.3s ease;
+}
+
+@keyframes tabSlide {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* #endregion */

@@ -175,3 +175,8 @@
         0.15vw 0.15vw 0.3vw var(--color-bg-content),
         -0.15vw -0.15vw 0.3vw var(--color-bg-content);
 }
+
+body {
+    font-family: 'Roboto Condensed', sans-serif;
+    background: var(--color-bg-content);
+}
