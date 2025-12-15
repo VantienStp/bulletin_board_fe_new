@@ -183,7 +183,7 @@ export default function CategoriesPage() {
         <thead>
           <tr className="bg-gray-100 text-left">
             <th className="w-[15%] px-4 py-2 font-semibold">Tên danh mục</th>
-            <th className="w-[20%] px-4 py-2 font-semibold">Icon</th>
+            <th className="w-[20%] px-4 py-2 font-semibold text-center">Icon</th>
             <th className="w-[30%] px-4 py-2 font-semibold">Mô tả</th>
             <th className="w-[15%] px-4 py-2 font-semibold">Grid Layout</th>
             <th className="w-[25%] px-4 py-2 font-semibold">Hành động</th>

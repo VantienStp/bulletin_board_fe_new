@@ -243,7 +243,7 @@ html {
 .admin-table thead th {
   background: var(--color-accent);
   color: var(--color-text-primary);
-  text-align: left;
+  /* text-align: left; */
   padding: var(--padding-medium);
   font-size: var(--font-size-medium);
   text-transform: uppercase;
@@ -254,7 +254,7 @@ html {
   background-color: var(--color-bg-th-table);
   padding: var(--padding-small) var(--padding-medium);
   font-size: var(--font-size-medium);
-  text-align: left;
+  /* text-align: left; */
   /* color: #2d3748; */
 }
 

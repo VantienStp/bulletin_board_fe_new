@@ -148,7 +148,7 @@ export default function SignUpPage() {
 
   return (
     <div className="auth-wrapper">
-      <img src={`${BASE_URL}/uploads/blob-scene.svg`} alt="background shape" className="background-shape" />
+      <img src={'/law_bg.png'} alt="background shape" className="background-shape" />
       <div className="auth-card">
         <h1>Tạo tài khoản mới</h1>
         {error && <div className="error-box">{error}</div>}

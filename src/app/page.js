@@ -115,8 +115,13 @@ export default function HomePage() {
   return (
     <>
       <nav className="sidebar">
-        <a href="#" className="nav-logo">
-          <img src={`${BASE_URL}/uploads/logo2.png`} alt="Dashboard Logo" />
+        <a
+          href="#"
+          className="flex max-w-[7vw] max-h-[7vw] mb-[3vh] box-border z"
+        >
+          <img src={`${BASE_URL}/uploads/logo2.png`} alt="Dashboard Logo"
+            className=" w-[5vw] mt-[var(--margin-medium)]"
+          />
         </a>
 
         {/* BONG BÓNG ACTIVE */}
@@ -215,6 +220,23 @@ export default function HomePage() {
               })}
           </div>
         </main>
+      </div>
+
+      <div
+        className="
+                fixed bottom-0 right-0
+                w-[40vw] max-w-[600px] h-[66px]
+                bg-[rgba(234,17,17,0.8)]
+                text-slate-50
+                text-[26px] font-medium tracking-[0.3px]
+                flex items-center justify-center
+                rounded-tl-[20px]
+                shadow-[0_6px_20px_rgba(0,0,0,0.25)]
+                select-none pointer-events-none
+                z-[9999]
+              "
+      >
+        Vui lòng không chạm vào màn hình
       </div>
 
     </>

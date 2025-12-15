@@ -63,7 +63,7 @@ export default function LoginPage() {
   return (
     <div className="auth-wrapper">
       <img
-        src={`${BASE_URL}/uploads/blob-scene.svg`}
+        src={'/law_bg.png'}
         alt="background shape"
         className="background-shape"
       />

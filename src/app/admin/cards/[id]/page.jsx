@@ -5,7 +5,6 @@ import Link from 'next/link';
 import Modal from '@/components/admin/Modal';
 import { API_BASE_URL, BASE_URL } from '@/lib/api';
 import { useParams } from 'next/navigation';
-import "./card-detail.css";
 import { authFetch, getToken } from '@/lib/auth';
 import { Select, MenuItem } from "@mui/material";
 import usePagination from "@/hooks/usePagination";
@@ -154,12 +153,12 @@ export default function CardDetailPage() {
 			{/* TABLE */}
 			<table className="admin-table table-cards-detail">
 				<thead>
-					<tr>
-						<th>Loại</th>
-						<th>File / Hình ảnh</th>
-						<th>Mô tả</th>
-						<th>QR Code</th>
-						<th>Hành động</th>
+					<tr className="bg-slate-100">
+						<th className="w-[10%] px-3 py-2 text-center">Loại</th>
+						<th className="w-[15%] px-3 py-2">File / Hình</th>
+						<th className="w-[40%] px-3 py-2">Mô tả</th>
+						<th className="w-[10%] px-3 py-2 text-center">QR</th>
+						<th className="w-[25%] px-3 py-2">Hành động</th>
 					</tr>
 				</thead>
 
@@ -171,18 +170,18 @@ export default function CardDetailPage() {
 							<tr key={realIndex}>
 								<td>{c.type}</td>
 
-								<td>
-									<div className="media-preview">
-										{c.type === 'image' && c.url && <img src={getFullUrl(c.url)} alt="" />}
-										{c.type === 'video' && c.url && <video src={getFullUrl(c.url)} controls />}
-										{c.type === 'pdf' && c.url && <iframe src={getFullUrl(c.url)} />}
+								<td className="px-3 py-2">
+									<div className="w-[8vw] h-[5vw] overflow-hidden rounded-md flex items-center justify-center">
+										{c.type === "image" && <img className="w-full h-full object-cover" src={getFullUrl(c.url)} />}
+										{c.type === "video" && <video className="w-full h-full object-cover" controls src={getFullUrl(c.url)} />}
+										{c.type === "pdf" && <iframe className="w-full h-full" src={getFullUrl(c.url)} />}
 									</div>
 								</td>
 
-								<td>{c.description || '—'}</td>
+								<td className="px-3 py-2">{c.description || '—'}</td>
 
-								<td>
-									<div className="media-qr">
+								<td className="px-3 py-2 text-center">
+									<div className="w-[5vw] aspect-square mx-auto">
 										{c.qrCode ? (
 											c.qrCode.startsWith("data:image")
 												? <img src={c.qrCode} alt="QR" />
@@ -191,7 +190,7 @@ export default function CardDetailPage() {
 									</div>
 								</td>
 
-								<td>
+								<td className="px-3 py-2">
 									{c.url && (
 										<Link href={getFullUrl(c.url)} target="_blank" className="btn-view">
 											<FaEye /> Xem

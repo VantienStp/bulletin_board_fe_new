@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { FaClone, FaEye, FaPlusSquare, FaEdit, FaTrash } from 'react-icons/fa';
 import Modal from '@/components/admin/Modal';
 import Link from 'next/link';
-import "./cards.css";
 import { API_BASE_URL } from '@/lib/api';
 import { authFetch } from '@/lib/auth';
 import usePagination from '@/hooks/usePagination';
@@ -122,24 +121,33 @@ export default function CardsPage() {
       {/* Danh sách Cards */}
       <table className="admin-table table-cards">
         <thead>
-          <tr>
-            <th>Tiêu đề</th>
-            <th>Số nội dung</th>
-            <th>Hành động</th>
+          <tr className="bg-slate-100">
+            <th className="w-[30%] px-3 py-2">Tiêu đề</th>
+            <th className="w-[40%] px-3 py-2 text-center">Số nội dung</th>
+            <th className="w-[30%] px-3 py-2">Hành động</th>
           </tr>
         </thead>
+
         <tbody>
           {currentItems.map(card => (
-            <tr key={card._id}>
-              <td>{card.title}</td>
-              <td>{card.contents?.length || 0}</td>
-              <td>
+            <tr key={card._id} className="border-b last:border-b-0">
+              <td className="px-3 py-2 font-medium">
+                {card.title}
+              </td>
+
+              <td className="px-3 py-2 text-center">
+                {card.contents?.length || 0}
+              </td>
+
+              <td className="px-3 py-2 space-x-2">
                 <Link href={`/admin/cards/${card._id}`} className="btn-view">
                   <FaEye /> Xem chi tiết
                 </Link>
+
                 <button className="btn-edit" onClick={() => handleEdit(card)}>
                   <FaEdit /> Sửa
                 </button>
+
                 <button className="btn-delete" onClick={() => handleDelete(card._id)}>
                   <FaTrash /> Xóa
                 </button>
@@ -147,6 +155,7 @@ export default function CardsPage() {
             </tr>
           ))}
         </tbody>
+
       </table>
 
       {/* Pagination */}

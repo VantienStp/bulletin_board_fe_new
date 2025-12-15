@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { FaThLarge, FaPlusSquare, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
 import Modal from '@/components/admin/Modal';
-import "./layouts.css";
+// import "./layouts.css";
 import { getToken, authFetch } from "@/lib/auth";
 import Link from 'next/link';
 import { API_BASE_URL } from '@/lib/api';
@@ -103,85 +103,71 @@ export default function LayoutsPage() {
 
       <table className="admin-table table-layouts">
         <thead>
-          <tr>
-            <th>Tên bố cục</th>
-            <th>Slug</th>
-            <th>Số card hiển thị</th>
-            <th>Xem nhanh</th>
-            <th>Hành động</th>
+          <tr className="bg-slate-100 text-left">
+            <th className="w-[25%] px-3 py-2">Tên bố cục</th>
+            <th className="w-[15%] px-3 py-2">Slug</th>
+            <th className="w-[15%] px-3 py-2 text-center">Số card</th>
+            <th className="w-[20%] px-3 py-2 text-center">Xem nhanh</th>
+            <th className="w-[25%] px-3 py-2 text-center">Hành động</th>
           </tr>
         </thead>
 
         <tbody>
           {currentItems.map((l) => (
             <tr key={l._id}>
-              <td>{l.title}</td>
-              <td>{l.code}</td>
-              <td>{l.config?.positions?.length || 0}</td>
-              <td>
+              <td className="px-3 py-2">{l.title}</td>
+              <td className="px-3 py-2">{l.code}</td>
+              <td className="px-3 py-2 text-center font-medium">
+                {l.config?.positions?.length || 0}
+              </td>
+              <td className="px-3 py-2 text-center">
                 <div
+                  className="
+                    inline-grid place-items-center mx-auto
+                    bg-[var(--color-bg-content)]
+                    p-[0.3vw] rounded-md
+                    gap-[0.2vw]
+                  "
                   style={{
-                    display: "grid",
-                    gridTemplateColumns: l.config.columns.map(() => "1.2vw").join(" "), // mỗi ô ~1.2vw
+                    gridTemplateColumns: l.config.columns.map(() => "1.2vw").join(" "),
                     gridTemplateRows: `repeat(${l.config.rows}, 1.2vw)`,
-                    gap: "0.2vw",
-                    background: "var(--color-bg-content)",
-                    padding: "0.3vw",
-                    borderRadius: "0.4vw",
-                    width: "fit-content",
-                    margin: "0 auto",
-                    maxWidth: "15vw",   // tránh to quá trên màn hình rộng
                     minWidth: `${l.config.columns.length * 1.2 + (l.config.columns.length - 1) * 0.2 + 0.6}vw`,
                     minHeight: `${l.config.rows * 1.2 + (l.config.rows - 1) * 0.2 + 0.6}vw`,
-                    boxSizing: "border-box",
                   }}
                 >
                   {Array.isArray(l.config.positions) &&
                     l.config.positions.map((pos, i) => (
                       <div
                         key={i}
+                        className=" relative group bg-blue-600/80 rounded-sm w-full h-full transition hover:opacity-100 hover:shadow-md"
                         style={{
                           gridColumn: `${pos.x + 1} / span ${pos.w}`,
                           gridRow: `${pos.y + 1} / span ${pos.h}`,
-                          position: "relative",
-                          background: "#2563eb",
-                          borderRadius: "0.2vw",
-                          width: "100%",
-                          height: "100%",
-                          opacity: 0.8,
                         }}
-                        onMouseEnter={(e) => {
-                          const tooltip = document.createElement("div");
-                          tooltip.innerText = `x:${pos.x}, y:${pos.y}, w:${pos.w}, h:${pos.h}`;
-                          tooltip.style.position = "absolute";
-                          tooltip.style.top = "-1.6vw";
-                          tooltip.style.left = "50%";
-                          tooltip.style.transform = "translateX(-50%)";
-                          tooltip.style.padding = "0.2vw 0.4vw";
-                          tooltip.style.background = "rgba(0,0,0,0.75)";
-                          tooltip.style.color = "#fff";
-                          tooltip.style.fontSize = "1vw";
-                          tooltip.style.borderRadius = "0.2vw";
-                          tooltip.style.pointerEvents = "none";
-                          tooltip.style.whiteSpace = "nowrap";
-                          tooltip.classList.add("tooltip");
-                          tooltip.style.zIndex = "1000";
-                          e.currentTarget.appendChild(tooltip);
-                          e.currentTarget.style.opacity = 1;
-                          e.currentTarget.style.boxShadow = "0 0 0.4vw rgba(0,0,0,0.5)";
-                        }}
-                        onMouseLeave={(e) => {
-                          const tooltip = e.currentTarget.querySelector(".tooltip");
-                          if (tooltip) tooltip.remove();
-                          e.currentTarget.style.opacity = 0.8;
-                          e.currentTarget.style.boxShadow = "none";
-                        }}
-                      />
+                      >
+                        <div
+                          className="
+                            absolute -top-[1.6vw] left-1/2 -translate-x-1/2
+                            px-[0.4vw] py-[0.2vw]
+                            bg-black/75 text-white
+                            text-[0.8vw]
+                            rounded
+                            opacity-0
+                            group-hover:opacity-100
+                            pointer-events-none
+                            whitespace-nowrap
+                            transition
+                          "
+                        >
+                          x:{pos.x}, y:{pos.y}, w:{pos.w}, h:{pos.h}
+                        </div>
+                      </div>
+
                     ))}
                 </div>
 
               </td>
-              <td>
+              <td className="px-3 py-2">
 
                 <Link href={`/admin/layouts/${l._id}`} className="btn-view" title="Xem chi tiết">
                   <FaEdit /> Sửa

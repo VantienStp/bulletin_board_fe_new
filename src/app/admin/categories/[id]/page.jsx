@@ -11,7 +11,6 @@ import {
 } from 'react-icons/fa';
 
 import Modal from '@/components/admin/Modal';
-import './category-detail.css';
 
 import { API_BASE_URL } from '@/lib/api';
 import { authFetch } from "@/lib/auth";
@@ -126,12 +125,13 @@ export default function CategoryDetailPage() {
   if (!category) return <div>❌ Không tìm thấy danh mục</div>;
 
   return (
-    <div className="admin-page category-detail">
+    <div className="admin-page bg-slate-50 p-6 min-h-[80vh] rounded-xl">
+
 
       {/* HEADER */}
-      <div className="page-header">
-        <h2>
-          <span className="icon"><FaFolderOpen /></span>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-[1.6rem] font-bold text-slate-800 flex items-center gap-2">
+          <FaFolderOpen />
           Chi tiết danh mục {category.title}
         </h2>
 
@@ -141,16 +141,13 @@ export default function CategoryDetailPage() {
       </div>
 
       {/* LIST CARDS */}
-      <div className="cards-list">
-        <div className="page-header" style={{ marginBottom: "0.5vw" }}>
-          <div className="show-header">
-            <span>📋 Danh sách thẻ trong danh mục</span>
+      <div className="bg-white p-6 rounded-xl shadow-sm">
+        <div className="flex justify-between items-center mb-4">
+          <div className="font-semibold text-slate-700">
+            📋 Danh sách thẻ trong danh mục
           </div>
 
-          <button
-            className="btn-primary"
-            onClick={() => setShowCardModal(true)}
-          >
+          <button className="btn-primary" onClick={() => setShowCardModal(true)}>
             <FaPlusSquare /> Thêm mới
           </button>
         </div>
@@ -160,21 +157,21 @@ export default function CategoryDetailPage() {
         ) : (
           <>
             {/* TABLE */}
-            <table className="admin-table">
+            <table className="admin-table w-full border-collapse text-sm">
               <thead>
-                <tr>
-                  <th>Tiêu đề</th>
-                  <th>Số nội dung</th>
-                  <th>Hành động</th>
+                <tr className="bg-slate-100">
+                  <th className="px-3 py-2 w-[40%]">Tiêu đề</th>
+                  <th className="px-3 py-2 w-[20%] text-center">Số nội dung</th>
+                  <th className="px-3 py-2 w-[40%]">Hành động</th>
                 </tr>
               </thead>
 
               <tbody>
-                {paginatedCards.map((card) => (
-                  <tr key={card._id}>
-                    <td>{card.title}</td>
-                    <td>{card.contents?.length || 0}</td>
-                    <td>
+                {paginatedCards.map(card => (
+                  <tr key={card._id} className="border-b last:border-b-0">
+                    <td className="px-3 py-2 font-medium">{card.title}</td>
+                    <td className="px-3 py-2 text-center">{card.contents?.length || 0}</td>
+                    <td className="px-3 py-2 space-x-2">
                       <Link href={`/admin/cards/${card._id}`} className="btn-view">
                         👁 Xem chi tiết
                       </Link>
@@ -190,6 +187,7 @@ export default function CategoryDetailPage() {
                 ))}
               </tbody>
             </table>
+
 
             <div className="pagination">
               <button className="page-btn" onClick={goPrev} disabled={currentPage === 1}>◀</button>
@@ -210,7 +208,6 @@ export default function CategoryDetailPage() {
         )}
       </div>
 
-      {/* MODAL — CHỌN THẺ BẰNG SELECT */}
       {showCardModal && (
         <Modal
           title="Thêm thẻ vào danh mục"

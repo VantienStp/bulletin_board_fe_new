@@ -91,6 +91,7 @@ export default function AdminLayout({ children }) {
       <AdminHeader />
 
       <main className="main-content">{children}</main>
+
     </div>
   );
 }

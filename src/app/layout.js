@@ -19,6 +19,8 @@ export default function RootLayout({ children }) {
           {/* 👇 Lightbox luôn nằm ở DOM để lắng nghe event */}
           <LightboxViewer />
 
+
+
         </AuthProvider>
       </body>
     </html>
