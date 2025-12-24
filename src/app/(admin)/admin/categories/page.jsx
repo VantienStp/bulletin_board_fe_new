@@ -1,33 +1,33 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { FaFolderOpen, FaEye, FaPlusSquare, FaEdit, FaTrash } from 'react-icons/fa';
-import Modal from '@/components/common/Modal';
-import Link from 'next/link';
-import { API_BASE_URL } from '@/lib/api';
-import { authFetch } from '@/lib/auth';
-import usePagination from '@/hooks/usePagination';
-import { Select, MenuItem } from "@mui/material";
+"use client";
 
+import { useEffect, useState, useRef } from "react";
+import {
+  FaFolderOpen,
+  FaEye,
+  FaPlusSquare,
+  FaEdit,
+  FaTrash,
+} from "react-icons/fa";
+
+import Modal from "@/components/common/Modal";
+import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
+import { authFetch } from "@/lib/auth";
+import usePagination from "@/hooks/usePagination";
+import { Select, MenuItem } from "@mui/material";
+import Pagination from "@/components/common/Pagination";
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState([]);
-  const [formData, setFormData] = useState({ title: '', description: '', gridLayoutId: '', icon: '' });
-  const [editingCategory, setEditingCategory] = useState(null);
-  const [showForm, setShowForm] = useState(false);
   const [layouts, setLayouts] = useState([]);
-
-  // ⭐ Paginate using custom hook
-  const {
-    currentPage,
-    totalPages,
-    paginatedData: currentItems,
-    goNext,
-    goPrev,
-    goToPage,
-  } = usePagination(categories || [], 5);
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+    gridLayoutId: "",
+    icon: "",
+  });
 
   const iconOptions = [
-    // Folder / File / Document
     "fas fa-folder",
     "fas fa-folder-open",
     "fas fa-file",
@@ -36,7 +36,6 @@ export default function CategoriesPage() {
     "fas fa-file-image",
     "fas fa-file-video",
 
-    // Media
     "fas fa-image",
     "fas fa-images",
     "fas fa-photo-video",
@@ -44,58 +43,65 @@ export default function CategoriesPage() {
     "fas fa-video",
     "fas fa-film",
 
-    // News / Announcement
     "fas fa-newspaper",
     "fas fa-bullhorn",
     "fas fa-bell",
 
-    // Calendar / Time
     "fas fa-calendar",
     "fas fa-calendar-alt",
     "fas fa-clock",
 
-    // User / People
     "fas fa-user",
     "fas fa-user-friends",
     "fas fa-users",
 
-    // Status / Star / Bookmark
     "fas fa-star",
-    "fas fa-star-half-alt",
     "fas fa-bookmark",
-    "fas fa-scale-balanced",
-
-
-    // Others (nice for categories)
-    "fas fa-book",
     "fas fa-tags",
   ];
 
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
+  /* ===== Pagination (GIỐNG CardsPage) ===== */
+  const itemsPerPage = 8;
+  const [currentPage, setCurrentPage] = useState(1);
+  const paginationRef = useRef(null);
+
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedCategories = categories.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
   useEffect(() => {
     fetchCategories();
     fetchLayouts();
   }, []);
 
-  async function fetchCategories() {
-    try {
-      const res = await fetch(`${API_BASE_URL}/categories`);
-      const data = await res.json();
-      if (Array.isArray(data)) setCategories(data);
-    } catch (err) {
-      console.error('❌ Lỗi khi tải danh sách danh mục:', err);
+  useEffect(() => {
+    const totalPages = Math.ceil(categories.length / itemsPerPage);
+
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
     }
+
+    // Nếu xóa hết user → quay về page 1
+    if (totalPages === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [categories.length, itemsPerPage, currentPage]);
+
+  async function fetchCategories() {
+    const res = await fetch(`${API_BASE_URL}/categories`);
+    const data = await res.json();
+    if (Array.isArray(data)) setCategories(data);
   }
 
   async function fetchLayouts() {
-    try {
-      const res = await fetch(`${API_BASE_URL}/gridlayouts`);
-      const data = await res.json();
-      if (Array.isArray(data)) setLayouts(data);
-    } catch (err) {
-      console.error('❌ Lỗi khi tải layout:', err);
-    }
+    const res = await fetch(`${API_BASE_URL}/gridlayouts`);
+    const data = await res.json();
+    if (Array.isArray(data)) setLayouts(data);
   }
 
   async function handleSubmit(e) {
@@ -106,72 +112,65 @@ export default function CategoriesPage() {
       ? `${API_BASE_URL}/categories/${editingCategory._id}`
       : `${API_BASE_URL}/categories`;
 
-    try {
-      const res = await authFetch(url, {
-        method,
-        body: JSON.stringify(formData),
-      });
+    const res = await authFetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
 
-      console.log(formData);
 
-      if (res.ok) {
-        alert(editingCategory ? "✅ Đã cập nhật danh mục" : "✅ Đã tạo danh mục mới");
-        setShowForm(false);
-        setEditingCategory(null);
-        fetchCategories();
-      } else {
-        const err = await res.json();
-        console.error("❌ Phản hồi lỗi:", err);
-        alert(err.message || "Cập nhật thất bại");
-      }
-    } catch (err) {
-      console.error("❌ Lỗi khi lưu danh mục:", err);
-      alert("Lỗi kết nối server");
+    if (!res.ok) {
+      alert("❌ Lưu thất bại");
+      return;
     }
+
+    setShowForm(false);
+    setEditingCategory(null);
+    fetchCategories();
   }
 
-  function handleEdit(category) {
-    setEditingCategory(category);
+  function handleEdit(cat) {
+    setEditingCategory(cat);
     setFormData({
-      title: category.title,
-      description: category.description || '',
-      gridLayoutId: typeof category.gridLayoutId === "object"
-        ? category.gridLayoutId._id
-        : category.gridLayoutId || '',
-      icon: category.icon || ''
+      title: cat.title,
+      description: cat.description || "",
+      gridLayoutId:
+        typeof cat.gridLayoutId === "object"
+          ? cat.gridLayoutId._id
+          : cat.gridLayoutId || "",
+      icon: cat.icon || "",
     });
     setShowForm(true);
   }
 
   async function handleDelete(id) {
-    if (!confirm('Bạn có chắc muốn xóa danh mục này?')) return;
-    try {
-      const res = await authFetch(`${API_BASE_URL}/categories/${id}`, {
-        method: 'DELETE',
-      });
-      if (res.ok) {
-        alert('Đã xóa danh mục');
-        fetchCategories();
-      } else {
-        alert('Xóa thất bại');
-      }
-    } catch (err) {
-      console.error('❌ Lỗi khi xóa:', err);
-    }
+    if (!confirm("Bạn có chắc muốn xóa danh mục này?")) return;
+    const res = await authFetch(`${API_BASE_URL}/categories/${id}`, {
+      method: "DELETE",
+    });
+    if (res.ok) fetchCategories();
   }
 
   return (
-    <div className="admin-page">
-      <div className="page-header">
-        <div className="show-header">
-          <span className="icon"><FaFolderOpen /></span>
-          <span>Danh mục</span>
-        </div>
+    <div className="px-4">
+      {/* ===== HEADER ===== */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <FaFolderOpen /> Danh mục
+        </h1>
+
         <button
-          className="btn-primary"
+          className="px-4 py-2 bg-gray-700 text-white text-sm rounded-lg hover:bg-gray-900 flex items-center gap-2"
           onClick={() => {
             setEditingCategory(null);
-            setFormData({ title: '', description: '', gridLayoutId: '' });
+            setFormData({
+              title: "",
+              description: "",
+              gridLayoutId: "",
+              icon: "",
+            });
             setShowForm(true);
           }}
         >
@@ -179,147 +178,170 @@ export default function CategoriesPage() {
         </button>
       </div>
 
-      <table className="w-full border-collapse table-fixed admin-table">
-        <thead>
-          <tr className="bg-gray-100 text-left">
-            <th className="w-[15%] px-4 py-2 font-semibold">Tên danh mục</th>
-            <th className="w-[20%] px-4 py-2 font-semibold text-center">Icon</th>
-            <th className="w-[30%] px-4 py-2 font-semibold">Mô tả</th>
-            <th className="w-[15%] px-4 py-2 font-semibold">Grid Layout</th>
-            <th className="w-[25%] px-4 py-2 font-semibold">Hành động</th>
-          </tr>
-        </thead>
+      {/* ===== TABLE WRAPPER ===== */}
+      <div className="bg-white rounded-xl shadow overflow-hidden">
+        {/* HEADER */}
+        <div className="
+          grid grid-cols-[1.2fr_120px_2fr_1.2fr_260px]
+          px-6 py-4 font-semibold text-gray-600
+          border-b text-sm
+        ">
+          <div>Tên danh mục</div>
+          <div className="text-center">Icon</div>
+          <div>Mô tả</div>
+          <div>Layout</div>
+          <div className="text-center">Actions</div>
+        </div>
 
-        <tbody>
-          {currentItems.map((cat) => (
-            <tr key={cat._id} className="border-b hover:bg-gray-50">
-              <td className="px-4 py-2">{cat.title}</td>
-              <td className="px-4 py-2 text-center">
-                {cat.icon ? <i className={`${cat.icon} text-[22px]`} /> : "—"}
-              </td>
-              <td className="px-4 py-2">{cat.description || "—"}</td>
-              <td className="px-4 py-2">
+        {/* ROWS */}
+        <div className="divide-y">
+          {paginatedCategories.map((cat) => (
+            <div
+              key={cat._id}
+              className="
+                grid grid-cols-[1.2fr_120px_2fr_1.2fr_260px]
+                px-6 py-2 items-center
+                hover:bg-gray-50 transition
+                text-sm
+              "
+            >
+              <div className="font-medium">{cat.title}</div>
+
+              <div className="text-center text-xl">
+                {cat.icon ? <i className={cat.icon} /> : "—"}
+              </div>
+
+              <div className="text-gray-700">
+                {cat.description || "—"}
+              </div>
+
+              <div>
                 {typeof cat.gridLayoutId === "object"
-                  ? (cat.gridLayoutId.title || cat.gridLayoutId._id)
-                  : (cat.gridLayoutId || "—")}
-              </td>
-              <td className="px-4 py-2 flex gap-2">
-                <Link href={`/admin/categories/${cat._id}`} className="btn-view">
-                  <FaEye /> Xem
+                  ? cat.gridLayoutId.title
+                  : cat.gridLayoutId || "—"}
+              </div>
+
+              <div className="flex justify-center gap-2">
+                <Link
+                  href={`/admin/categories/${cat._id}`}
+                  className="px-3 py-1 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 w-20 text-center"
+                >
+                  View
                 </Link>
-                <button onClick={() => handleEdit(cat)} className="btn-edit">
-                  <FaEdit /> Sửa
+
+                <button
+                  onClick={() => handleEdit(cat)}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded-md text-sm hover:bg-yellow-600 w-20"
+                >
+                  Edit
                 </button>
-                <button onClick={() => handleDelete(cat._id)} className="btn-delete">
-                  <FaTrash /> Xóa
+
+                <button
+                  onClick={() => handleDelete(cat._id)}
+                  className="px-3 py-1 bg-red-500 text-white rounded-md text-sm hover:bg-red-600 w-20"
+                >
+                  Delete
                 </button>
-              </td>
-            </tr>
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
-
-
-      {/* ⭐ Pagination UI */}
-      <div className="pagination">
-        <button
-          className="page-btn"
-          disabled={currentPage === 1}
-          onClick={() => goToPage(currentPage - 1)}
-        >
-          ◀
-        </button>
-
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            className={`page-btn ${currentPage === i + 1 ? "active" : ""}`}
-            onClick={() => goToPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-
-        <button
-          className="page-btn"
-          disabled={currentPage === totalPages}
-          onClick={() => goToPage(currentPage + 1)}
-        >
-          ▶
-        </button>
+        </div>
       </div>
 
-      {/* MODAL */}
+      {/* ===== PAGINATION ===== */}
+      <div ref={paginationRef}>
+        <Pagination
+          totalItems={categories.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={(page) => {
+            setCurrentPage(page);
+            paginationRef.current?.scrollIntoView({
+              behavior: "auto",
+              block: "start",
+            });
+          }}
+        />
+      </div>
+
+      {/* ===== MODAL ===== */}
       {showForm && (
         <Modal
-          title={editingCategory ? 'Sửa danh mục' : 'Thêm danh mục mới'}
+          title={editingCategory ? "Sửa danh mục" : "Thêm danh mục mới"}
           onClose={() => setShowForm(false)}
           width="500px"
         >
           <form onSubmit={handleSubmit}>
             <label>Tên danh mục</label>
             <input
-              type="text"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               required
-              style={{ width: "100%", fontSize: "24px" }}
             />
 
             <label>Icon</label>
             <Select
-              variant="outlined"
               value={formData.icon}
-              onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-              style={{ width: "100%", fontSize: "24px" }}
+              onChange={(e) =>
+                setFormData({ ...formData, icon: e.target.value })
+              }
+              fullWidth
             >
-              <MenuItem value="">
-                -- Chọn icon --
-              </MenuItem>
-
+              <MenuItem value="">— Chọn icon —</MenuItem>
               {iconOptions.map((ic) => (
                 <MenuItem key={ic} value={ic}>
-                  <i className={ic} style={{ marginRight: 8 }}></i>
-                  {ic}
+                  <i className={`${ic} mr-2`} /> {ic}
                 </MenuItem>
               ))}
             </Select>
 
             <label>Mô tả</label>
             <textarea
+              rows="3"
               value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Nhập mô tả ngắn..."
-              style={{ width: "100%", fontSize: "24px" }}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  description: e.target.value,
+                })
+              }
             />
 
             <label>Grid Layout</label>
             <Select
-              variant="outlined"
               value={formData.gridLayoutId}
               onChange={(e) =>
-                setFormData({ ...formData, gridLayoutId: e.target.value })
+                setFormData({
+                  ...formData,
+                  gridLayoutId: e.target.value,
+                })
               }
-              style={{ width: "100%", fontSize: "24px" }}
+              fullWidth
             >
-              <MenuItem value="" >
-                -- Chọn layout --
-              </MenuItem>
-
-              {layouts.map((layout) => (
-                <MenuItem key={layout._id} value={layout._id}>
-                  {layout.name || layout.title}
+              <MenuItem value="">— Chọn layout —</MenuItem>
+              {layouts.map((l) => (
+                <MenuItem key={l._id} value={l._id}>
+                  {l.title}
                 </MenuItem>
               ))}
             </Select>
 
 
-            <div className="modal-actions">
-              <button type="submit" className="btn-primary">Lưu</button>
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                type="submit"
+                className="px-5 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-[18px] font-medium transition"
+              >
+                Lưu
+              </button>
+
               <button
                 type="button"
-                className="btn-cancel"
                 onClick={() => setShowForm(false)}
+                className="px-5 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-[18px] font-medium transition"
               >
                 Hủy
               </button>

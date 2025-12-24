@@ -18,10 +18,8 @@ export default function LayoutEditor({ layoutId, initialConfig }) {
   const [isSaving, setIsSaving] = useState(false);
   const wrapperRef = useRef(null);
 
-  // 🧠 Nhận config từ API
   useEffect(() => {
     if (initialConfig) {
-      console.log("📦 Nhận config từ API:", initialConfig);
       setCols(initialConfig.columns?.length || 5);
       setRows(initialConfig.rows || 5);
 
@@ -73,23 +71,31 @@ export default function LayoutEditor({ layoutId, initialConfig }) {
         w: item.w,
         h: item.h,
       })),
-      // cssClass giữ nguyên nếu config ban đầu có
     };
 
     console.log("Updated layout config:", updatedConfig);
 
     try {
-      const res = await authFetch(`${API_BASE_URL}/gridLayouts/${layoutId}`, {
-        method: "PUT",
-        body: JSON.stringify({ config: updatedConfig }),
-      });
+      // ✅ PHẢI await + gán vào res
+      const res = await authFetch(
+        `${API_BASE_URL}/gridlayouts/${layoutId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ config: updatedConfig }),
+        }
+      );
 
+      // ❌ Backend trả lỗi
       if (!res.ok) {
         const errData = await res.json();
-        console.error("❌ Lỗi:", errData);
+        console.error("❌ Lỗi từ server:", errData);
         throw new Error(errData.message || "Cập nhật thất bại!");
       }
 
+      // ✅ Thành công
       alert("✅ Layout đã được cập nhật thành công!");
     } catch (err) {
       console.error("❌ Lỗi khi lưu layout:", err);
@@ -98,6 +104,7 @@ export default function LayoutEditor({ layoutId, initialConfig }) {
       setIsSaving(false);
     }
   };
+
 
 
   // 🔁 Cập nhật layout khi kéo/thả

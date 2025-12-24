@@ -1,247 +1,305 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { FaThLarge, FaPlusSquare, FaEdit, FaTrash, FaEye } from 'react-icons/fa';
-import Modal from '@/components/common/Modal';
-import { authFetch } from "@/lib/auth";
-import Link from 'next/link';
-import { API_BASE_URL } from '@/lib/api';
-import usePagination from "@/hooks/usePagination";
+"use client";
 
+import { useEffect, useState, useRef } from "react";
+import { FaThLarge, FaPlusSquare, FaEdit, FaTrash } from "react-icons/fa";
+import Modal from "@/components/common/Modal";
+import Pagination from "@/components/common/Pagination";
+import DeleteModal from "@/components/common/DeleteModal";
+
+import { authFetch } from "@/lib/auth";
+import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function LayoutsPage() {
   const [layouts, setLayouts] = useState([]);
-  const [formData, setFormData] = useState({ title: '', code: '' });
+  const [formData, setFormData] = useState({ title: "" });
   const [editingLayout, setEditingLayout] = useState(null);
+  const [deleteLayoutId, setDeleteLayoutId] = useState(null);
+  const [deleteStatus, setDeleteStatus] = useState("idle");
+
   const [showForm, setShowForm] = useState(false);
 
-  const {
-    currentPage,
-    totalPages,
-    paginatedData: currentItems,
-    goNext,
-    goPrev,
-    goToPage,
-  } = usePagination(layouts, 5);
+  // ===== Pagination state (GIỐNG PROJECT) =====
+  const itemsPerPage = 5;
+  const [currentPage, setCurrentPage] = useState(1);
+  const paginationRef = useRef(null);
 
-  useEffect(() => { fetchLayouts(); }, []);
+  // ===== Fetch layouts =====
+  useEffect(() => {
+    fetchLayouts();
+  }, []);
+
+  useEffect(() => {
+    const totalPages = Math.ceil(layouts.length / itemsPerPage);
+
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+
+    // Nếu xóa hết user → quay về page 1
+    if (totalPages === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [layouts.length, itemsPerPage, currentPage]);
 
   async function fetchLayouts() {
     try {
-      const res = await authFetch(`${API_BASE_URL}/gridlayouts`, {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (!res.ok) return console.warn("Không load được layouts");
+      const res = await authFetch(`${API_BASE_URL}/gridlayouts`);
+      if (!res?.ok) return;
 
       const data = await res.json();
       if (Array.isArray(data)) setLayouts(data);
-
     } catch (err) {
-      console.error("Lỗi fetchLayouts:", err);
+      console.error("❌ fetchLayouts error:", err);
     }
   }
 
+  // ===== Pagination slice =====
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedLayouts = layouts.slice(startIndex, endIndex);
 
-  function handleEdit(layout) {
-    setEditingLayout(layout);
-    setFormData({ title: layout.title, code: layout.code });
-    setShowForm(true);
+  function handleDelete(id) {
+    setDeleteLayoutId(id);
   }
 
-  async function handleDelete(id) {
-    if (!confirm('Bạn có chắc muốn xóa bố cục này?')) return;
+  async function handleDeleteConfirmed() {
+    if (!deleteLayoutId) return;
 
-    const res = await authFetch(`${API_BASE_URL}/gridlayouts/${id}`, {
-      method: 'DELETE',
-    });
+    setDeleteStatus("loading");
 
-    if (res?.ok) {
-      alert('Đã xóa bố cục');
-      fetchLayouts();
-    } else {
-      alert('Xóa thất bại');
+    try {
+      const res = await authFetch(
+        `${API_BASE_URL}/gridlayouts/${deleteLayoutId}`,
+        { method: "DELETE" }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "Delete failed");
+      }
+
+      await fetchLayouts();
+      setDeleteStatus("success");
+
+      setTimeout(() => {
+        setDeleteLayoutId(null);
+        setDeleteStatus("idle");
+      }, 800);
+
+    } catch (err) {
+      setDeleteStatus(err.message);
     }
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
 
-    const method = editingLayout ? 'PUT' : 'POST';
+    const method = editingLayout ? "PUT" : "POST";
     const url = editingLayout
       ? `${API_BASE_URL}/gridlayouts/${editingLayout._id}`
       : `${API_BASE_URL}/gridlayouts`;
 
     const res = await authFetch(url, {
       method,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
     });
-
-    console.log("📤 Form data gửi đi:", formData);
 
     if (res?.ok) {
       setShowForm(false);
       setEditingLayout(null);
       fetchLayouts();
     } else {
-      alert('Lưu thất bại');
+      alert("❌ Lưu thất bại");
     }
   }
 
-
   return (
-    <div className="admin-page">
-      <div className="page-header">
-        <div className="show-header">
-          <span className="icon"><FaThLarge /></span>
-          <span>Bố cục hiển thị</span>
-        </div>
-        <button className="btn-primary" onClick={() => {
-          setFormData({ title: '', code: '' });
-          setEditingLayout(null);
-          setShowForm(true);
-        }}>
+    <div className="px-4">
+
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <FaThLarge /> Bố cục hiển thị
+        </h1>
+
+        <button
+          className="px-4 py-2 bg-gray-700 text-white text-sm rounded-lg hover:bg-gray-900 flex items-center gap-2"
+          onClick={() => {
+            setFormData({ title: "" });
+            setEditingLayout(null);
+            setShowForm(true);
+          }}
+        >
           <FaPlusSquare /> Thêm mới
         </button>
       </div>
 
-      <table className="admin-table table-layouts">
-        <thead>
-          <tr className="bg-slate-100 text-left">
-            <th className="w-[25%] px-3 py-2">Tên bố cục</th>
-            <th className="w-[15%] px-3 py-2">Slug</th>
-            <th className="w-[15%] px-3 py-2 text-center">Số card</th>
-            <th className="w-[20%] px-3 py-2 text-center">Xem nhanh</th>
-            <th className="w-[25%] px-3 py-2 text-center">Hành động</th>
-          </tr>
-        </thead>
+      {/* TABLE WRAPPER */}
+      <div className="bg-white rounded-xl shadow overflow-hidden">
 
-        <tbody>
-          {currentItems.map((l) => (
-            <tr key={l._id}>
-              <td className="px-3 py-2">{l.title}</td>
-              <td className="px-3 py-2">{l.code}</td>
-              <td className="px-3 py-2 text-center font-medium">
+        {/* TABLE HEADER */}
+        <div
+          className="
+            grid grid-cols-[1fr_0.8fr_0.6fr_1.2fr_100px]
+            px-6 py-4 font-semibold text-gray-600
+            border-b gap-4 text-[14px] text-center
+          "
+        >
+          <div className="text-left">Tên bố cục</div>
+          <div>Slug</div>
+          <div>Số card</div>
+          <div>Xem nhanh</div>
+          <div>Actions</div>
+        </div>
+
+        {/* ROWS */}
+        <div className="divide-y">
+          {paginatedLayouts.map((l) => (
+            <div
+              key={l._id}
+              className="
+                grid grid-cols-[1fr_0.8fr_0.6fr_1.2fr_100px]
+                px-6 py-2 items-center
+                hover:bg-gray-50 transition
+                gap-4 text-[13px]
+              "
+            >
+              {/* TITLE */}
+              <div className="font-medium">{l.title}</div>
+
+              {/* Slug */}
+              <div className="text-center text-gray-600">{l.slug}</div>
+
+
+              {/* COUNT */}
+              <div className="text-center font-medium">
                 {l.config?.positions?.length || 0}
-              </td>
-              <td className="px-3 py-2 text-center">
+              </div>
+
+              {/* PREVIEW */}
+              <div className="flex justify-center">
                 <div
-                  className="
-                    inline-grid place-items-center mx-auto
-                    bg-[var(--color-bg-content)]
-                    p-[0.3vw] rounded-md
-                    gap-[0.2vw]
-                  "
+                  className="inline-grid bg-gray-100 p-2 rounded-md gap-1"
                   style={{
-                    gridTemplateColumns: l.config.columns.map(() => "1.2vw").join(" "),
-                    gridTemplateRows: `repeat(${l.config.rows}, 1.2vw)`,
-                    minWidth: `${l.config.columns.length * 1.2 + (l.config.columns.length - 1) * 0.2 + 0.6}vw`,
-                    minHeight: `${l.config.rows * 1.2 + (l.config.rows - 1) * 0.2 + 0.6}vw`,
+                    gridTemplateColumns: l.config.columns.map(() => "16px").join(" "),
+                    gridTemplateRows: `repeat(${l.config.rows}, 16px)`,
                   }}
                 >
-                  {Array.isArray(l.config.positions) &&
-                    l.config.positions.map((pos, i) => (
-                      <div
-                        key={i}
-                        className=" relative group bg-blue-600/80 rounded-sm w-full h-full transition hover:opacity-100 hover:shadow-md"
-                        style={{
-                          gridColumn: `${pos.x + 1} / span ${pos.w}`,
-                          gridRow: `${pos.y + 1} / span ${pos.h}`,
-                        }}
-                      >
-                        <div
-                          className="
-                            absolute -top-[1.6vw] left-1/2 -translate-x-1/2
-                            px-[0.4vw] py-[0.2vw]
-                            bg-black/75 text-white
-                            text-[0.8vw]
-                            rounded
-                            opacity-0
-                            group-hover:opacity-100
-                            pointer-events-none
-                            whitespace-nowrap
-                            transition
-                          "
-                        >
-                          x:{pos.x}, y:{pos.y}, w:{pos.w}, h:{pos.h}
-                        </div>
-                      </div>
-
-                    ))}
+                  {l.config?.positions?.map((pos, i) => (
+                    <div
+                      key={i}
+                      className="bg-blue-500/80 rounded-sm"
+                      style={{
+                        gridColumn: `${pos.x + 1} / span ${pos.w}`,
+                        gridRow: `${pos.y + 1} / span ${pos.h}`,
+                      }}
+                    />
+                  ))}
                 </div>
+              </div>
 
-              </td>
-              <td className="px-3 py-2">
-
-                <Link href={`/admin/layouts/${l._id}`} className="btn-view" title="Xem chi tiết">
-                  <FaEdit /> Sửa
+              {/* ACTIONS */}
+              <div className="flex flex-col gap-1 text-center">
+                <Link
+                  href={`/admin/layouts/${l._id}`}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600"
+                >
+                  Edit
                 </Link>
 
-                <button className="btn-delete" onClick={() => handleDelete(l._id)}><FaTrash /> Xóa</button>
-              </td>
-            </tr>
+                <button
+                  onClick={() => handleDelete(l._id)}
+                  className="px-3 py-1 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
           ))}
-        </tbody>
-      </table>
-
-      <div className="pagination">
-        <button className="page-btn" onClick={goPrev} disabled={currentPage === 1}>
-          ◀
-        </button>
-
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            className={`page-btn ${currentPage === i + 1 ? "active" : ""}`}
-            onClick={() => goToPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-
-        <button
-          className="page-btn"
-          onClick={goNext}
-          disabled={currentPage === totalPages}
-        >
-          ▶
-        </button>
+        </div>
       </div>
 
+      {/* PAGINATION */}
+      <div ref={paginationRef}>
+        <Pagination
+          totalItems={layouts.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={(page) => {
+            setCurrentPage(page);
+            paginationRef.current?.scrollIntoView({
+              behavior: "auto",
+              block: "start",
+            });
+          }}
+        />
+      </div>
 
+      {/* MODAL */}
       {showForm && (
         <Modal
-          title={editingLayout ? 'Sửa bố cục' : 'Thêm bố cục mới'}
+          title={editingLayout ? "Sửa bố cục" : "Thêm bố cục mới"}
           onClose={() => setShowForm(false)}
         >
           <form onSubmit={handleSubmit}>
             <label>Tên bố cục</label>
             <input
-              type="text"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               required
             />
 
-            <label>Mã code</label>
+            {/* <label>Mã code</label>
             <input
-              type="text"
               value={formData.code}
-              onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, code: e.target.value })
+              }
               required
-            />
+            /> */}
 
             <div className="modal-actions">
-              <button type="submit" className="btn-primary">Lưu</button>
-              <button type="button" className="btn-cancel" onClick={() => setShowForm(false)}>Hủy</button>
+              <button type="submit" className="btn-primary">
+                Lưu
+              </button>
+              <button
+                type="button"
+                className="btn-cancel"
+                onClick={() => setShowForm(false)}
+              >
+                Hủy
+              </button>
             </div>
           </form>
         </Modal>
       )}
+
+      <DeleteModal
+        open={!!deleteLayoutId}
+        title="Delete Layout?"
+        message={
+          deleteStatus === "loading"
+            ? "Đang xóa bố cục..."
+            : deleteStatus === "success"
+              ? "✅ Xóa bố cục thành công"
+              : deleteStatus !== "idle"
+                ? `❌ ${deleteStatus}`
+                : "Bạn có chắc muốn xóa bố cục này không?"
+        }
+        onCancel={() => {
+          if (deleteStatus !== "loading") {
+            setDeleteLayoutId(null);
+            setDeleteStatus("idle");
+          }
+        }}
+        onConfirm={handleDeleteConfirmed}
+      />
+
     </div>
   );
 }
-

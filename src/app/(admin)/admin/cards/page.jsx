@@ -1,25 +1,46 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { FaClone, FaEye, FaPlusSquare, FaEdit, FaTrash } from 'react-icons/fa';
-import Modal from '@/components/common/Modal';
-import Link from 'next/link';
-import { API_BASE_URL } from '@/lib/api';
-import { authFetch } from '@/lib/auth';
-import usePagination from '@/hooks/usePagination';
+"use client";
+
+import { useEffect, useState, useRef } from "react";
+import { FaClone, FaPlusSquare } from "react-icons/fa";
+import Modal from "@/components/common/Modal";
+import DeleteModal from "@/components/common/DeleteModal";
+import Pagination from "@/components/common/Pagination";
+
+import Link from "next/link";
+import { API_BASE_URL } from "@/lib/api";
+import { authFetch } from "@/lib/auth";
 
 export default function CardsPage() {
   const [cards, setCards] = useState([]);
-  const [formData, setFormData] = useState({
-    title: '',
-    contents: [{ type: 'image', url: '', description: '', qrCode: '' }],
-  });
+  const [formData, setFormData] = useState({ title: "" });
   const [editingCard, setEditingCard] = useState(null);
-  const [showForm, setShowForm] = useState(false);
 
-  // 🧠 Lấy danh sách card khi load trang
+  const [showForm, setShowForm] = useState(false);
+  const [deleteCardId, setDeleteCardId] = useState(null);
+  const [deleteStatus, setDeleteStatus] = useState("idle");
+
+  /* ===== Pagination (GIỐNG LayoutsPage) ===== */
+  const itemsPerPage = 8;
+  const [currentPage, setCurrentPage] = useState(1);
+  const paginationRef = useRef(null);
+
+  /* ===== Fetch ===== */
   useEffect(() => {
     fetchCards();
   }, []);
+
+  useEffect(() => {
+    const totalPages = Math.ceil(cards.length / itemsPerPage);
+
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+
+    // Nếu xóa hết user → quay về page 1
+    if (totalPages === 0 && currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  }, [cards.length, itemsPerPage, currentPage]);
 
   async function fetchCards() {
     try {
@@ -27,89 +48,90 @@ export default function CardsPage() {
       const data = await res.json();
       if (Array.isArray(data)) setCards(data);
     } catch (err) {
-      console.error('❌ Lỗi khi tải danh sách thẻ:', err);
+      console.error("❌ fetchCards error:", err);
     }
   }
 
-  // 📝 Sửa card
+  /* ===== Pagination slice ===== */
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedCards = cards.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
+
+  /* ===== Edit ===== */
   function handleEdit(card) {
     setEditingCard(card);
-    setFormData({
-      title: card.title,
-      contents: card.contents || [{ type: 'image', url: '', description: '', qrCode: '' }],
-    });
+    setFormData({ title: card.title });
     setShowForm(true);
   }
 
-  // 🗑 Xóa card
-  async function handleDelete(id) {
-    if (!confirm('Bạn có chắc muốn xóa thẻ này?')) return;
+  /* ===== Delete ===== */
+  function handleDelete(id) {
+    setDeleteCardId(id);
+  }
+
+  async function handleDeleteConfirmed() {
+    if (!deleteCardId) return;
+    setDeleteStatus("loading");
 
     try {
-      const res = await authFetch(`${API_BASE_URL}/cards/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        alert('Đã xóa thẻ');
-        fetchCards();
-      } else {
-        alert('Xóa thất bại');
-      }
+      const res = await authFetch(
+        `${API_BASE_URL}/cards/${deleteCardId}`,
+        { method: "DELETE" }
+      );
+
+      if (!res.ok) throw new Error("Xóa thẻ thất bại");
+
+      await fetchCards();
+      setDeleteStatus("success");
+
+      setTimeout(() => {
+        setDeleteCardId(null);
+        setDeleteStatus("idle");
+      }, 800);
     } catch (err) {
-      console.error('❌ Lỗi khi xóa thẻ:', err);
-      alert('Lỗi kết nối server');
+      setDeleteStatus(err.message);
     }
   }
 
-  // 🧾 Tạo / cập nhật card
+  /* ===== Submit ===== */
   async function handleSubmit(e) {
     e.preventDefault();
-    const method = editingCard ? 'PUT' : 'POST';
+
+    const method = editingCard ? "PUT" : "POST";
     const url = editingCard
       ? `${API_BASE_URL}/cards/${editingCard._id}`
       : `${API_BASE_URL}/cards`;
 
-    try {
-      const res = await authFetch(url, { method, body: JSON.stringify(formData) });
+    const res = await authFetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
 
-      if (res.ok) {
-        alert(editingCard ? '✅ Đã cập nhật thẻ' : '✅ Đã tạo thẻ mới');
-        setShowForm(false);
-        setEditingCard(null);
-        fetchCards();
-      } else {
-        const errData = await res.json();
-        console.error('Phản hồi lỗi:', errData);
-        alert(`❌ Lưu thất bại: ${errData.message || 'Lỗi không xác định'}`);
-      }
-    } catch (err) {
-      console.error('❌ Lỗi khi lưu thẻ:', err);
-      alert('Lỗi kết nối server');
+    if (!res.ok) {
+      alert("❌ Lưu thẻ thất bại");
+      return;
     }
+
+    setShowForm(false);
+    setEditingCard(null);
+    fetchCards();
   }
 
-  // 📄 Phân trang với hook dùng chung
-  const {
-    currentPage,
-    totalPages,
-    paginatedData: currentItems,
-    goNext,
-    goPrev,
-    goToPage,
-  } = usePagination(cards, 5); // mỗi trang 5 thẻ
-
   return (
-    <div className="admin-page">
-      <div className="page-header">
-        <div className="show-header">
-          <span className="icon"><FaClone /></span>
-          <span>Thẻ nội dung</span>
-        </div>
+    <div className="px-4">
+      {/* ===== HEADER ===== */}
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <FaClone /> Thẻ nội dung
+        </h1>
+
         <button
-          className="btn-primary"
+          className="px-4 py-2 bg-gray-700 text-white text-sm rounded-lg hover:bg-gray-900 flex items-center gap-2"
           onClick={() => {
-            setFormData({
-              title: '',
-              contents: [{ type: 'image', url: '', description: '', qrCode: '' }],
-            });
+            setFormData({ title: "" });
             setEditingCard(null);
             setShowForm(true);
           }}
@@ -118,99 +140,133 @@ export default function CardsPage() {
         </button>
       </div>
 
-      {/* Danh sách Cards */}
-      <table className="admin-table table-cards">
-        <thead>
-          <tr className="bg-slate-100">
-            <th className="w-[30%] px-3 py-2">Tiêu đề</th>
-            <th className="w-[40%] px-3 py-2 text-center">Số nội dung</th>
-            <th className="w-[30%] px-3 py-2">Hành động</th>
-          </tr>
-        </thead>
+      {/* ===== TABLE WRAPPER ===== */}
+      <div className="bg-white rounded-xl shadow overflow-hidden">
+        {/* HEADER */}
+        <div className="
+          grid grid-cols-[1fr_1fr_300px]
+          px-6 py-4 font-semibold text-gray-600
+          border-b text-sm
+        ">
+          <div>Tiêu đề</div>
+          <div className="text-center">Số nội dung</div>
+          <div className="text-center">Actions</div>
+        </div>
 
-        <tbody>
-          {currentItems.map(card => (
-            <tr key={card._id} className="border-b last:border-b-0">
-              <td className="px-3 py-2 font-medium">
-                {card.title}
-              </td>
+        {/* ROWS */}
+        <div className="divide-y">
+          {paginatedCards.map((card) => (
+            <div
+              key={card._id}
+              className="
+                grid grid-cols-[1fr_1fr_300px]
+                px-6 py-2 items-center
+                hover:bg-gray-50 transition
+                text-sm
+              "
+            >
+              <div className="font-medium">{card.title}</div>
 
-              <td className="px-3 py-2 text-center">
+              <div className="text-center">
                 {card.contents?.length || 0}
-              </td>
+              </div>
 
-              <td className="px-3 py-2 space-x-2">
-                <Link href={`/admin/cards/${card._id}`} className="btn-view">
-                  <FaEye /> Xem chi tiết
+              <div className="flex justify-center gap-2">
+                <Link
+                  href={`/admin/cards/${card._id}`}
+                  className="px-3 py-1 bg-blue-500 text-white rounded-md text-sm hover:bg-blue-600 text-center w-20"
+                >
+                  View
                 </Link>
 
-                <button className="btn-edit" onClick={() => handleEdit(card)}>
-                  <FaEdit /> Sửa
+                <button
+                  onClick={() => handleEdit(card)}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded-md text-sm hover:bg-yellow-600 text-center w-20"
+                >
+                  Edit
                 </button>
 
-                <button className="btn-delete" onClick={() => handleDelete(card._id)}>
-                  <FaTrash /> Xóa
+                <button
+                  onClick={() => handleDelete(card._id)}
+                  className="px-3 py-1 bg-red-500 text-white rounded-md text-sm hover:bg-red-600 text-center w-20"
+                >
+                  Delete
                 </button>
-              </td>
-            </tr>
+              </div>
+            </div>
           ))}
-        </tbody>
-
-      </table>
-
-      {/* Pagination */}
-      <div className="pagination">
-        <button
-          className="page-btn"
-          onClick={goPrev}
-          disabled={currentPage === 1}
-        >
-          ◀
-        </button>
-
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            className={`page-btn ${currentPage === i + 1 ? 'active' : ''}`}
-            onClick={() => goToPage(i + 1)}
-          >
-            {i + 1}
-          </button>
-        ))}
-
-        <button
-          className="page-btn"
-          onClick={goNext}
-          disabled={currentPage === totalPages}
-        >
-          ▶
-        </button>
+        </div>
       </div>
 
+      {/* ===== PAGINATION ===== */}
+      <div ref={paginationRef}>
+        <Pagination
+          totalItems={cards.length}
+          itemsPerPage={itemsPerPage}
+          currentPage={currentPage}
+          onPageChange={(page) => {
+            setCurrentPage(page);
+            paginationRef.current?.scrollIntoView({
+              behavior: "auto",
+              block: "start",
+            });
+          }}
+        />
+      </div>
+
+      {/* ===== MODAL ===== */}
       {showForm && (
         <Modal
-          title={editingCard ? 'Sửa thẻ nội dung' : 'Thêm thẻ mới'}
+          title={editingCard ? "Sửa thẻ nội dung" : "Thêm thẻ mới"}
           onClose={() => setShowForm(false)}
-          width="60%"
-          height=""
         >
           <form onSubmit={handleSubmit}>
             <label>Tiêu đề</label>
             <input
-              type="text"
               value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
               required
             />
+
             <div className="modal-actions">
-              <button type="submit" className="btn-primary">Lưu</button>
-              <button type="button" className="btn-cancel" onClick={() => setShowForm(false)}>
+              <button type="submit" className="btn-primary">
+                Lưu
+              </button>
+              <button
+                type="button"
+                className="btn-cancel"
+                onClick={() => setShowForm(false)}
+              >
                 Hủy
               </button>
             </div>
           </form>
         </Modal>
       )}
+
+      {/* ===== DELETE MODAL ===== */}
+      <DeleteModal
+        open={!!deleteCardId}
+        title="Delete Card?"
+        message={
+          deleteStatus === "loading"
+            ? "Đang xóa thẻ..."
+            : deleteStatus === "success"
+              ? "✅ Xóa thẻ thành công"
+              : deleteStatus !== "idle"
+                ? `❌ ${deleteStatus}`
+                : "Bạn có chắc muốn xóa thẻ này không?"
+        }
+        onCancel={() => {
+          if (deleteStatus !== "loading") {
+            setDeleteCardId(null);
+            setDeleteStatus("idle");
+          }
+        }}
+        onConfirm={handleDeleteConfirmed}
+      />
     </div>
   );
 }
