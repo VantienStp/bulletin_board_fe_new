@@ -15,8 +15,8 @@ export default function Sidebar({ onLogout }) {
     ];
 
     const generalMenu = [
-        // { href: "/admin/settings", label: "Settings" },
-        // { href: "/admin/help", label: "Help" },
+        { href: "/admin/settings", label: "Settings" },
+        { href: "/admin/help", label: "Help" },
         { href: "/admin/profile", label: "Profile" },
     ];
 
