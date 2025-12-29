@@ -38,7 +38,6 @@ export default function Sidebar({ onLogout }) {
         ],
         GENERAL: [
             { id: "settings", href: "/admin/settings", label: "Settings", icon: "fa-gear" },
-            { id: "help", href: "/admin/help", label: "Help", icon: "fa-circle-question" },
             { id: "profile", href: "/admin/profile", label: "Profile", icon: "fa-user" },
         ],
     };
@@ -61,7 +60,7 @@ export default function Sidebar({ onLogout }) {
         const current = allItems.find(item =>
             item.href === "/admin"
                 ? pathname === "/admin"
-                : pathname.startsWith(item.href) 
+                : pathname.startsWith(item.href)
         );
         setActiveId(current?.id ?? null);
     }, [pathname]);

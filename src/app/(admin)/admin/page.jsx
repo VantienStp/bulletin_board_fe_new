@@ -1,11 +1,11 @@
 "use client";
 
-import StatCard from "@/components/admin/StatCard";
-import AnalyticsCard from "@/components/admin/AnalyticsCard";
-import TeamList from "@/components/admin/TeamList";
-import ProjectList from "@/components/admin/ProjectList";
-import ReminderCard from "@/components/admin/ReminderCard";
-import TimeTracker from "@/components/admin/TimeTracker";
+import StatCard from "@/components/feature/dashboard/StatCard";
+import AnalyticsCard from "@/components/feature/dashboard/AnalyticsCard";
+import TeamList from "@/components/feature/dashboard/TeamList";
+import ProjectList from "@/components/feature/dashboard/ProjectList";
+import ReminderCard from "@/components/feature/dashboard/ReminderCard";
+import TimeTracker from "@/components/feature/dashboard/TimeTracker";
 
 export default function AdminHomePage() {
     return (

@@ -21,23 +21,6 @@ export default function Pagination({
         });
     };
 
-    // ===== Keyboard navigation =====
-    useEffect(() => {
-        const handleKeyDown = (e) => {
-            if (e.key === "ArrowRight" && currentPage < totalPages) {
-                onPageChange(currentPage + 1);
-                scrollToSelf();
-            }
-            if (e.key === "ArrowLeft" && currentPage > 1) {
-                onPageChange(currentPage - 1);
-                scrollToSelf();
-            }
-        };
-
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [currentPage, totalPages, onPageChange]);
-
     // ===== Build pages safely =====
     if (totalPages === 0) return null;
 
