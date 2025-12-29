@@ -11,9 +11,7 @@ export default function Topbar() {
   const pathname = usePathname();
   const segments = pathname.split("/").filter(Boolean);
 
-  const isDashboard = segments.length === 1 && segments[0] === "admin";
-
-
+  // Build từng path đầy đủ cho từng breadcrumb
   const buildHref = (idx) => {
     return "/" + segments.slice(0, idx + 2).join("/");
   };
@@ -22,21 +20,23 @@ export default function Topbar() {
     <div className="sticky top-0 z-40">
       <div className="w-full flex justify-between items-center">
 
+        {/* LEFT: Breadcrumb & Greeting */}
         <div className="flex items-center gap-2 text-2xl font-semibold">
-
-          {isDashboard && (
-            <span className="text-gray-900 font-medium">
-              Dashboard
-            </span>
-          )}
-
-          {!isDashboard &&
+          {segments.length === 1 && segments[0] === "admin" ? (
+            <div className="flex flex-col">
+              <span className="text-gray-900 flex items-center gap-2">
+                Chào buổi sáng, CloudFinz! 👋
+              </span>
+              <p className="text-xs font-normal text-gray-500 italic">
+                Sẵn sàng để đưa các dự án vươn xa chưa nào?
+              </p>
+            </div>
+          ) : (
+            /* Nếu không phải trang chủ admin, thì hiển thị Breadcrumb như cũ */
             segments.slice(1).map((seg, idx) => {
               const isLast = idx === segments.length - 2;
-
               return (
                 <div key={idx} className="flex items-center gap-2">
-
                   {!isLast ? (
                     <Link
                       href={buildHref(idx)}
@@ -49,15 +49,14 @@ export default function Topbar() {
                       {formatSegment(seg)}
                     </span>
                   )}
-
-                  {!isLast && (
-                    <span className="text-gray-400">›</span>
-                  )}
+                  {!isLast && <span className="text-gray-400">›</span>}
                 </div>
               );
-            })}
+            })
+          )}
         </div>
 
+        {/* RIGHT */}
         <div className="flex items-center gap-5 ml-auto">
           <button className="w-9 h-9 rounded-full bg-white flex items-center justify-center shadow-sm">
             <i className="fa-regular fa-envelope text-gray-600" />
@@ -68,7 +67,7 @@ export default function Topbar() {
 
           <div className="flex items-center gap-3 bg-green-500 text-black px-3 py-1.5 rounded-full">
             <img
-              src="/me2.png"
+              src="/me15.png"
               className="w-9 h-9 rounded-full object-cover border"
               alt="Avatar"
             />
@@ -83,4 +82,3 @@ export default function Topbar() {
     </div>
   );
 }
-

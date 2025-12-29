@@ -1,88 +1,96 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import {
-	FaClone,
-	FaEye,
-	FaPlusSquare,
-	FaFolderOpen,
-	FaEdit,
-	FaTrash,
-} from "react-icons/fa";
-
-import Link from "next/link";
-import Modal from "@/components/common/Modal";
-import Pagination from "@/components/common/Pagination";
-
-import { API_BASE_URL, BASE_URL } from "@/lib/api";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { authFetch } from "@/lib/auth";
-import { Select, MenuItem } from "@mui/material";
-import usePagination from "@/hooks/usePagination";
+import { FaClone } from "react-icons/fa";
 
+// Import Libs & Hooks
+import { API_BASE_URL } from "@/lib/api";
+import { authFetch } from "@/lib/auth";
+import usePagination from "@/hooks/usePagination";
+import { contentAdapter } from "@/data/adapters/contentAdapter";
+
+// Import Components Mới
+import { useContentFilters } from "@/hooks/useContentFilters";
+import ContentToolbar from "@/components/feature/cards/contents/ContentToolbar";
+import Pagination from "@/components/common/Pagination";
+import ContentTable from "@/components/feature/cards/contents/ContentTable";
+import ContentFormModal from "@/components/feature/cards/contents/ContentFormModal";
 export default function CardDetailPage() {
 	const { id } = useParams();
 
 	const [card, setCard] = useState(null);
-	const [editingContent, setEditingContent] = useState(null);
-	const [formData, setFormData] = useState({
-		type: "image",
-		url: "",
-		description: "",
-		qrCode: "",
-	});
+	const [contents, setContents] = useState([]);
+	const [loading, setLoading] = useState(true);
+
+	// --- HOOK FILTER ---
+	const {
+		searchText, setSearchText,
+		filters, toggleFilter, clearFilters,
+		filteredContents
+	} = useContentFilters(contents);
+
+	// Form State
+	const [editingIndex, setEditingIndex] = useState(null);
 	const [showForm, setShowForm] = useState(false);
 
-	/* ===== Pagination ===== */
+	// Pagination 
 	const {
 		currentPage,
-		totalPages,
 		paginatedData: currentContents,
-		goPrev,
-		goNext,
 		goToPage,
-	} = usePagination(card?.contents || [], 4);
+	} = usePagination(filteredContents, 4);
 
 	useEffect(() => {
 		fetchCard();
 	}, [id]);
 
 	async function fetchCard() {
+		setLoading(true);
 		try {
 			const res = await fetch(`${API_BASE_URL}/cards/${id}`);
+			if (!res.ok) return;
+
 			const data = await res.json();
 			setCard(data);
+
+			if (data.contents) {
+				setContents(data.contents.map(c => contentAdapter(c)));
+			}
 		} catch (err) {
 			console.error("❌ fetchCard error:", err);
+		} finally {
+			setLoading(false);
 		}
 	}
 
-	/* ===== Helpers ===== */
-	function getFullUrl(path) {
-		if (!path) return null;
-		if (path.startsWith("http")) return path;
-		return `${BASE_URL.replace(/\/$/, "")}/${path.replace(/^\/+/, "")}`;
-	}
+	useEffect(() => {
+		goToPage(1);
+	}, [searchText, filters]);
 
-	/* ===== Edit ===== */
-	function handleEditContent(index) {
-		const content = card.contents[index];
-		setEditingContent(index);
-		setFormData({
-			type: content.type || "image",
-			url: content.url || "",
-			description: content.description || "",
-			qrCode: content.qrCode || "",
-		});
+	const handleOpenCreate = () => {
+		setEditingIndex(null);
 		setShowForm(true);
-	}
+	};
 
-	/* ===== Delete ===== */
-	async function handleDeleteContent(index) {
+	const handleOpenEdit = (content, index) => {
+		const originalIndex = contents.findIndex(c => c.url === content.url && c.description === content.description);
+
+		if (originalIndex !== -1) {
+			setEditingIndex(originalIndex);
+			setShowForm(true);
+		}
+	};
+
+	const handleDelete = async (index) => {
 		if (!confirm("Bạn có chắc muốn xóa nội dung này?")) return;
+		const contentToDelete = currentContents[index];
+		const originalIndex = contents.findIndex(c => c === contentToDelete);
+
+		if (originalIndex === -1) return;
 
 		const res = await authFetch(
-			`${API_BASE_URL}/cards/${id}/contents/${index}`,
+			`${API_BASE_URL}/cards/${id}/contents/${originalIndex}`,
 			{ method: "DELETE" }
 		);
 
@@ -91,30 +99,26 @@ export default function CardDetailPage() {
 		} else {
 			alert("❌ Xóa thất bại");
 		}
-	}
+	};
 
-	/* ===== Submit ===== */
-	async function handleSubmit(e) {
-		e.preventDefault();
-		if (!card) return;
-
-		const finalData = JSON.parse(JSON.stringify(formData));
+	const handleSubmitForm = async (formData) => {
+		let finalData = { ...formData };
 
 		if (formData.url instanceof File) {
 			const fd = new FormData();
 			fd.append("file", formData.url);
 
-			const uploadRes = await authFetch(
-				`${API_BASE_URL}/files/upload`,
-				{ method: "POST", body: fd }
-			);
+			const uploadRes = await authFetch(`${API_BASE_URL}/files/upload`, {
+				method: "POST",
+				body: fd,
+			});
 
-			const uploadData = await uploadRes.json();
 			if (!uploadRes.ok) {
 				alert("❌ Upload thất bại");
 				return;
 			}
 
+			const uploadData = await uploadRes.json();
 			finalData.url = uploadData.url;
 			finalData.type = uploadData.type || formData.type;
 			finalData.qrCode = uploadData.qrImage || uploadData.qrLink || "";
@@ -124,257 +128,96 @@ export default function CardDetailPage() {
 			}
 		}
 
-		const method = editingContent !== null ? "PUT" : "POST";
-		const url =
-			editingContent !== null
-				? `${API_BASE_URL}/cards/${id}/contents/${editingContent}`
-				: `${API_BASE_URL}/cards/${id}/contents`;
+		const method = editingIndex !== null ? "PUT" : "POST";
+		const url = editingIndex !== null
+			? `${API_BASE_URL}/cards/${id}/contents/${editingIndex}`
+			: `${API_BASE_URL}/cards/${id}/contents`;
 
 		const res = await authFetch(url, {
 			method,
-			headers: {
-				"Content-Type": "application/json",
-			},
+			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(finalData),
 		});
 
-
 		if (res.ok) {
 			setShowForm(false);
-			setEditingContent(null);
+			setEditingIndex(null);
 			fetchCard();
 		} else {
 			alert("❌ Lưu thất bại");
 		}
+	};
+
+
+	if (loading) {
+		return (
+			<div className="w-full h-96 flex flex-col items-center justify-center">
+				<div className="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin mb-4"></div>
+				<p className="text-gray-400 text-sm">Đang tải nội dung...</p>
+			</div>
+		);
 	}
 
-	if (!card) return <p>Đang tải...</p>;
+	if (!card) return <p className="p-4 text-red-500">Không tìm thấy thẻ.</p>;
 
 	return (
-		<div className="px-4">
-			{/* ===== HEADER ===== */}
-			<div className="flex justify-between items-center mb-4">
-				<h1 className="text-2xl font-bold flex items-center gap-2">
-					<FaClone /> Chi tiết thẻ: {card.title}
-				</h1>
-
-				<button
-					className="px-4 py-2 bg-gray-700 text-white rounded-lg text-sm flex items-center gap-2 hover:bg-gray-900"
-					onClick={() => {
-						setEditingContent(null);
-						setFormData({
-							type: "image",
-							url: "",
-							description: "",
-							qrCode: "",
-						});
-						setShowForm(true);
-					}}
-				>
-					<FaPlusSquare /> Thêm mới
-				</button>
-			</div>
-
-			{/* ===== TABLE WRAPPER ===== */}
-			<div className="bg-white rounded-xl shadow overflow-hidden">
-				{/* HEADER */}
-				<div className="grid grid-cols-[0.5fr_1fr_0.5fr_0.5fr_120px] px-6 py-4 font-semibold text-gray-600 text-center border-b text-sm">
-					<div>File</div>
-					<div>Mô tả</div>
-
-					<div>Loại</div>
-
-					<div>QR</div>
-					<div>Actions</div>
+		<div className="px-4 pb-20">
+			{/* HEADER + TOOLBAR */}
+			<div className="flex justify-between items-end mb-6">
+				<div>
+					<h1 className="text-2xl font-bold flex items-center gap-2 mb-1">
+						<i className={"fa-solid fa-clone"} /> Chi tiết thẻ: {card.title}
+					</h1>
+					<p className="text-gray-500 text-sm">
+						Hiển thị {filteredContents.length} nội dung phù hợp.
+					</p>
 				</div>
 
-				{/* ROWS */}
-				<div className="divide-y">
-					{currentContents
-						.filter(Boolean)
-						.map((c, i) => {
-							const realIndex = (currentPage - 1) * 4 + i;
-
-							return (
-								<div
-									key={realIndex}
-									className="grid grid-cols-[0.5fr_1fr_0.5fr_0.5fr_120px] px-6 py-2 items-center text-sm hover:bg-gray-50"
-								>
-
-									<div className="h-24 w-48 rounded-md overflow-hidden flex items-center justify-center bg-gray-100">
-										{c.type === "image" && (
-											<img
-												src={getFullUrl(c.url)}
-												className="w-full h-full object-cover"
-											/>
-										)}
-										{c.type === "video" && (
-											<video
-												src={getFullUrl(c.url)}
-												className="w-full h-full object-cover"
-												controls
-											/>
-										)}
-										{c.type === "pdf" && (
-											<iframe
-												src={getFullUrl(c.url)}
-												className="w-full h-full"
-											/>
-										)}
-									</div>
-
-									<div className="text-gray-700">
-										{c.description || "—"}
-									</div>
-
-									<div className="text-center font-medium">{c.type}</div>
-
-									<div className="flex justify-center">
-										{c.qrCode ? (
-											<img
-												src={
-													c.qrCode.startsWith("data:image")
-														? c.qrCode
-														: getFullUrl(c.qrCode)
-												}
-												className="w-20 h-20 object-contain"
-											/>
-										) : (
-											"—"
-										)}
-									</div>
-
-									<div className="flex flex-col gap-2 justify-center">
-										{c.url && (
-											<Link
-												href={getFullUrl(c.url)}
-												target="_blank"
-												className="px-3 py-1 bg-blue-500 text-white rounded-md text-sm text-center hover:bg-blue-600"
-											>
-												View
-											</Link>
-										)}
-
-										<button
-											onClick={() => handleEditContent(realIndex)}
-											className="px-3 py-1 bg-yellow-500 text-white rounded-md text-sm hover:bg-yellow-600"
-										>
-											Edit
-										</button>
-
-										<button
-											onClick={() => handleDeleteContent(realIndex)}
-											className="px-3 py-1 bg-red-500 text-white rounded-md text-sm hover:bg-red-600"
-										>
-											Delete
-										</button>
-									</div>
-								</div>
-							);
-						})}
-				</div>
-			</div>
-
-			{/* ===== PAGINATION ===== */}
-			<div className="mt-4">
-				<Pagination
-					totalItems={card.contents.length}
-					itemsPerPage={4}
-					currentPage={currentPage}
-					onPageChange={goToPage}
+				{/* 👇 TOOLBAR MỚI */}
+				<ContentToolbar
+					searchText={searchText}
+					setSearchText={setSearchText}
+					filters={filters}
+					toggleFilter={toggleFilter}
+					clearFilters={clearFilters}
+					onAdd={handleOpenCreate}
 				/>
 			</div>
 
-			{/* ===== FORM MODAL ===== */}
-			{showForm && (
-				<Modal
-					title={editingContent !== null ? "Sửa nội dung" : "Thêm nội dung"}
-					onClose={() => setShowForm(false)}
-				>
-					<form onSubmit={handleSubmit}>
-						<label>Loại</label>
-						<Select
-							variant="standard"
-							disableUnderline
-							value={formData.type}
-							onChange={(e) =>
-								setFormData({ ...formData, type: e.target.value })
-							}
-						>
-							<MenuItem value="image">Image</MenuItem>
-							<MenuItem value="video">Video</MenuItem>
-							<MenuItem value="pdf">PDF</MenuItem>
-						</Select>
+			{/* TABLE */}
+			{filteredContents.length > 0 ? (
+				<>
+					<ContentTable
+						contents={currentContents}
+						onEdit={handleOpenEdit}
+						onDelete={handleDelete}
+					/>
 
-						<label>File / URL</label>
-						<div className="flex gap-2 items-center">
-							<input
-								value={
-									formData.url instanceof File
-										? formData.url.name
-										: formData.url
-								}
-								onChange={(e) =>
-									setFormData({ ...formData, url: e.target.value })
-								}
-							/>
-
-							<button
-								type="button"
-								className="px-3 py-2 bg-gray-200 rounded-md"
-								onClick={() =>
-									document.getElementById("fileInput").click()
-								}
-							>
-								<FaFolderOpen />
-							</button>
-
-							<input
-								id="fileInput"
-								type="file"
-								hidden
-								accept={
-									formData.type === "video"
-										? "video/*"
-										: formData.type === "pdf"
-											? "application/pdf"
-											: "image/*"
-								}
-								onChange={(e) => {
-									const file = e.target.files[0];
-									if (file)
-										setFormData({ ...formData, url: file });
-								}}
+					{/* PAGINATION */}
+					{filteredContents.length > 0 && (
+						<div className="mt-6 flex justify-center">
+							<Pagination
+								totalItems={filteredContents.length}
+								itemsPerPage={4}
+								currentPage={currentPage}
+								onPageChange={goToPage}
 							/>
 						</div>
-
-						<label>Mô tả</label>
-						<textarea
-							rows="3"
-							value={formData.description}
-							onChange={(e) =>
-								setFormData({
-									...formData,
-									description: e.target.value,
-								})
-							}
-						/>
-
-						<div className="modal-actions">
-							<button type="submit" className="btn-primary">
-								{editingContent !== null ? "Cập nhật" : "Lưu"}
-							</button>
-							<button
-								type="button"
-								className="btn-cancel"
-								onClick={() => setShowForm(false)}
-							>
-								Hủy
-							</button>
-						</div>
-					</form>
-				</Modal>
+					)}
+				</>
+			) : (
+				<div className="bg-white rounded-xl border border-dashed p-10 text-center text-gray-400">
+					{contents.length === 0 ? "Chưa có nội dung nào. Hãy thêm mới!" : "Không tìm thấy nội dung phù hợp."}
+				</div>
 			)}
+
+			{/* FORM MODAL */}
+			<ContentFormModal
+				isOpen={showForm}
+				onClose={() => setShowForm(false)}
+				initialData={editingIndex !== null ? contents[editingIndex] : null}
+				onSubmit={handleSubmitForm}
+			/>
 		</div>
 	);
 }

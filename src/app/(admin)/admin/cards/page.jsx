@@ -129,7 +129,7 @@ export default function CardsPage() {
 			<div className="flex justify-between items-end mb-6">
 				<div>
 					<h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-						<FaClone /> Thẻ nội dung
+						<i className={"fa-solid fa-clone"} /> Thẻ nội dung
 					</h1>
 					<p className="text-sm text-gray-500 mt-2">
 						Hiển thị {filteredCards.length} thẻ phù hợp.
