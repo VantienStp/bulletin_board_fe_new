@@ -11,12 +11,9 @@ export default function useArrowNavigation({
     const lastTriggerRef = useRef(0);
 
     // 🔥 BƯỚC QUAN TRỌNG: Chuẩn hóa dữ liệu đầu vào
-    // Nếu items là Array, giữ nguyên.
-    // Nếu items là Object, biến nó thành một mảng phẳng (flat array).
     const flatItems = useMemo(() => {
         if (Array.isArray(items)) return items;
         if (typeof items === 'object' && items !== null) {
-            // Biến { MAIN: [...], GENERAL: [...] } thành một mảng duy nhất [...]
             return Object.values(items).flat();
         }
         return [];
@@ -29,7 +26,6 @@ export default function useArrowNavigation({
             const now = Date.now();
             if (now - lastTriggerRef.current < delay) return;
 
-            // Dùng flatItems thay vì items gốc
             const index = flatItems.findIndex(i => i.id === activeId);
             if (index === -1) return;
 

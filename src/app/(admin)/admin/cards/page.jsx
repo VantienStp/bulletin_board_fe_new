@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { FaClone, FaPlusSquare, FaCalendarAlt, FaClock, FaCheckCircle, FaExclamationCircle } from "react-icons/fa";
+import { FaClone, FaPlusSquare, FaCalendarAlt, FaClock } from "react-icons/fa";
 import Modal from "@/components/common/Modal";
 import DeleteModal from "@/components/common/DeleteModal";
 import Pagination from "@/components/common/Pagination";
@@ -12,28 +12,28 @@ import { authFetch } from "@/lib/auth";
 
 export default function CardsPage() {
   const [cards, setCards] = useState([]);
-  // ✅ Cập nhật initial formData
+  
   const [formData, setFormData] = useState({
     title: "",
-    startDate: new Date().toISOString().split('T')[0], // Mặc định là hôm nay
+    startDate: new Date().toISOString().split('T')[0], 
     endDate: "",
     isWorkDaysOnly: false
   });
+  
   const [editingCard, setEditingCard] = useState(null);
-
   const [showForm, setShowForm] = useState(false);
+  
+  // State cho việc xóa
   const [deleteCardId, setDeleteCardId] = useState(null);
   const [deleteStatus, setDeleteStatus] = useState("idle");
 
-  const itemsPerPage = 8;
+  const itemsPerPage = 7;
   const [currentPage, setCurrentPage] = useState(1);
   const paginationRef = useRef(null);
 
   useEffect(() => {
     fetchCards();
   }, []);
-
-  // ... (giữ nguyên logic pagination useEffect)
 
   async function fetchCards() {
     try {
@@ -48,13 +48,11 @@ export default function CardsPage() {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedCards = cards.slice(startIndex, startIndex + itemsPerPage);
 
-  // ✅ Hàm định dạng ngày tháng để hiển thị
   const formatDate = (dateStr) => {
     if (!dateStr) return "Vĩnh viễn";
     return new Date(dateStr).toLocaleDateString("vi-VN");
   };
 
-  // ✅ Hàm kiểm tra trạng thái để hiện Badge
   const getStatusBadge = (card) => {
     const now = new Date();
     const start = new Date(card.startDate);
@@ -67,7 +65,6 @@ export default function CardsPage() {
 
   function handleEdit(card) {
     setEditingCard(card);
-    // ✅ Đưa dữ liệu cũ vào form khi edit
     setFormData({
       title: card.title,
       startDate: card.startDate ? card.startDate.split('T')[0] : "",
@@ -77,7 +74,44 @@ export default function CardsPage() {
     setShowForm(true);
   }
 
-  // ... (giữ nguyên handleDelete và handleDeleteConfirmed)
+  // ✅ 1. Kích hoạt Modal Xóa
+  function handleDelete(id) {
+    setDeleteCardId(id);
+    setDeleteStatus("confirming");
+  }
+
+  async function handleDeleteConfirmed() {
+    if (!deleteCardId) return;
+
+    setDeleteStatus("deleting");
+
+    try {
+      const res = await authFetch(`${API_BASE_URL}/cards/${deleteCardId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        setCards((prev) => prev.filter((c) => c._id !== deleteCardId));
+        
+        alert("✅ Đã xóa thẻ thành công!");
+        
+        setDeleteCardId(null);
+        setDeleteStatus("idle");
+      } else {
+        const errorData = await res.json();
+        
+        alert(`❌ ${errorData.message || "Xóa thất bại! Vui lòng thử lại."}`);
+        
+        setDeleteStatus("idle");
+        setDeleteCardId(null);
+      }
+    } catch (error) {
+      console.error("Lỗi khi xóa:", error);
+      alert("❌ Lỗi kết nối đến server!");
+      setDeleteStatus("idle");
+      setDeleteCardId(null);
+    }
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -130,7 +164,7 @@ export default function CardsPage() {
 
       {/* TABLE WRAPPER */}
       <div className="bg-white rounded-xl shadow overflow-hidden">
-        {/* HEADER - ✅ Cập nhật Grid Cols */}
+        {/* HEADER */}
         <div className="
           grid grid-cols-[1.5fr_100px_100px_200px_120px_240px]
           px-6 py-4 font-semibold text-gray-600
@@ -212,12 +246,12 @@ export default function CardsPage() {
         </div>
       </div>
 
-      {/* PAGINATION (Giữ nguyên) */}
+      {/* PAGINATION */}
       <div ref={paginationRef} className="mt-4">
         <Pagination totalItems={cards.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
       </div>
 
-      {/* MODAL - ✅ Cập nhật Form Fields */}
+      {/* MODAL EDIT/CREATE */}
       {showForm && (
         <Modal
           title={editingCard ? "Sửa thẻ nội dung" : "Thêm thẻ mới"}
@@ -286,8 +320,14 @@ export default function CardsPage() {
         </Modal>
       )}
 
-      {/* DELETE MODAL (Giữ nguyên) */}
-      <DeleteModal /* ... */ />
+      {/* ✅ DELETE MODAL - Đã được thêm lại */}
+      <DeleteModal 
+        open={!!deleteCardId}
+        title="Xóa thẻ nội dung"
+        message="Hành động này sẽ xóa thẻ và toàn bộ file đính kèm vĩnh viễn khỏi server. Bạn có chắc chắn không?"
+        onCancel={() => setDeleteCardId(null)}
+        onConfirm={handleDeleteConfirmed}
+      />
     </div>
   );
 }

@@ -22,9 +22,14 @@ export default function Modal({
   }, []);
 
   return createPortal(
-    <div className="modal-overlay" onClick={onClose}>
+    // 1. Thêm animate fadeIn 0.2s cho nền
+    <div 
+      className="modal-overlay animate-[fadeIn_0.2s_ease-out]" 
+      onClick={onClose}
+    >
       <div
-        className="modal"
+        // 2. Thêm animate scaleIn 0.2s cho hộp modal (Thay vì slideUp)
+        className="modal animate-[scaleIn_0.2s_ease-out]"
         style={{ width, height, maxWidth, maxHeight, minHeight, minWidth }}
         onClick={(e) => e.stopPropagation()}
       >
