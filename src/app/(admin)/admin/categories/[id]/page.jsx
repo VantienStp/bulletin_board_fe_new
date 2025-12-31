@@ -1,9 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-// import Link from "next/link";
+import useSWR from "swr"; // 👈 Import SWR
+import { fetcher } from "@/lib/fetcher"; // Import fetcher
+
 import { FaArrowLeft, FaFolderOpen } from "react-icons/fa";
+import Link from "next/link"; // Đừng quên import Link nếu dùng nút Back
 
 // Libs & Hooks & Adapters
 import { API_BASE_URL } from "@/lib/api";
@@ -11,11 +14,9 @@ import { authFetch } from "@/lib/auth";
 import usePagination from "@/hooks/usePagination";
 import { cardAdapter } from "@/data/adapters/cardAdapter";
 
-// Import Mới
+// Import Components
 import { useCategoryDetailFilters } from "@/hooks/useCategoryDetailFilters";
 import CategoryDetailToolbar from "@/components/feature/categories/detail/CategoryDetailToolbar";
-
-// Components
 import Pagination from "@/components/common/Pagination";
 import CategoryCardTable from "@/components/feature/categories/detail/CategoryCardTable";
 import AddCardModal from "@/components/feature/categories/detail/AddCardModal";
@@ -23,60 +24,46 @@ import AddCardModal from "@/components/feature/categories/detail/AddCardModal";
 export default function CategoryDetailPage() {
 	const { id } = useParams();
 
-	const [category, setCategory] = useState(null);
-	const [cards, setCards] = useState([]);
-	const [allCards, setAllCards] = useState([]);
-	const [loading, setLoading] = useState(true);
+	// Fetch Category Detail
+	const { data: category, error: catError } = useSWR(
+		id ? `${API_BASE_URL}/categories/${id}` : null,
+		fetcher
+	);
+
+	// Fetch Cards trong Category 
+	const { data: rawCards, mutate: mutateCards } = useSWR(
+		id ? `${API_BASE_URL}/categories/${id}/cards` : null,
+		fetcher
+	);
+
+	const { data: rawAllCards } = useSWR(`${API_BASE_URL}/cards`, fetcher);
+
+	// --- CHUẨN HÓA DATA ---
+	const cards = rawCards ? rawCards.map(c => cardAdapter(c)) : [];
+	const allCards = rawAllCards ? rawAllCards.map(c => cardAdapter(c)) : [];
+
+	const loading = !category || !rawCards;
 	const [showModal, setShowModal] = useState(false);
 
 	// --- HOOK FILTER ---
 	const {
 		searchText, setSearchText,
-		filteredCards // Dữ liệu đã lọc
+		filteredCards
 	} = useCategoryDetailFilters(cards);
 
-	// Pagination (Dùng filteredCards)
+	// Pagination
 	const {
 		currentPage,
 		paginatedData: currentCards,
 		goToPage,
 	} = usePagination(filteredCards, 4);
 
-	useEffect(() => {
-		if (!id) return;
-		fetchData();
-	}, [id]);
-
 	// Reset trang về 1 khi search
 	useEffect(() => {
 		goToPage(1);
 	}, [searchText]);
 
-	async function fetchData() {
-		setLoading(true);
-		try {
-			const catRes = await authFetch(`${API_BASE_URL}/categories/${id}`);
-			const catData = await catRes.json();
-			setCategory(catData);
-
-			const cardsRes = await authFetch(`${API_BASE_URL}/categories/${id}/cards`);
-			const cardsData = await cardsRes.json();
-			if (Array.isArray(cardsData)) {
-				setCards(cardsData.map(c => cardAdapter(c)));
-			}
-
-			const allRes = await authFetch(`${API_BASE_URL}/cards`);
-			const allData = await allRes.json();
-			if (Array.isArray(allData)) {
-				setAllCards(allData.map(c => cardAdapter(c)));
-			}
-
-		} catch (err) {
-			console.error(err);
-		} finally {
-			setLoading(false);
-		}
-	}
+	// --- HANDLERS ---
 
 	const handleAddCard = async (cardId) => {
 		const res = await authFetch(
@@ -90,7 +77,8 @@ export default function CategoryDetailPage() {
 
 		if (res.ok) {
 			setShowModal(false);
-			fetchData();
+			mutateCards();
+			alert("✅ Thêm thành công");
 		} else {
 			alert("❌ Thêm thất bại");
 		}
@@ -105,7 +93,8 @@ export default function CategoryDetailPage() {
 		);
 
 		if (res.ok) {
-			fetchData();
+			mutateCards();
+			alert("✅ Gỡ thành công");
 		} else {
 			alert("❌ Gỡ thất bại");
 		}
@@ -120,16 +109,22 @@ export default function CategoryDetailPage() {
 		);
 	}
 
-	if (!category) return <div className="p-10 text-center">❌ Không tìm thấy danh mục</div>;
+	if (catError) return <div className="p-10 text-center text-red-500">❌ Không tìm thấy danh mục</div>;
 
 	return (
 		<div className="px-4 pb-10">
-			<div className="flex justify-between items-center">
+			{/* HEADER */}
+			<div className="flex justify-between items-center mb-6">
 				<h1 className="text-2xl font-bold flex items-center gap-2">
-					<i className={"fa-solid fa-tags"} />Danh mục: {category.title}
+					<FaFolderOpen className="text-yellow-500" /> Danh mục: {category.title}
 				</h1>
 
-
+				<Link
+					href="/admin/categories"
+					className="px-4 py-2 bg-gray-200 rounded-lg text-sm hover:bg-gray-300 flex items-center gap-2 transition"
+				>
+					<FaArrowLeft /> Quay lại
+				</Link>
 			</div>
 
 			{/* HEADER DƯỚI: THÔNG TIN & TOOLBAR */}
@@ -138,7 +133,6 @@ export default function CategoryDetailPage() {
 					Hiển thị {filteredCards.length} thẻ trong danh mục.
 				</p>
 
-				{/* 👇 TOOLBAR MỚI NẰM Ở ĐÂY */}
 				<CategoryDetailToolbar
 					searchText={searchText}
 					setSearchText={setSearchText}
@@ -147,14 +141,13 @@ export default function CategoryDetailPage() {
 			</div>
 
 			{/* LIST WRAPPER */}
-			{/* (Đã bỏ header cũ bên trong bảng để dùng Toolbar bên ngoài) */}
 			<CategoryCardTable
 				cards={currentCards}
 				onRemove={handleRemoveCard}
 			/>
 
 			{/* PAGINATION */}
-			{filteredCards.length > 0 && (
+			{filteredCards.length > 4 && (
 				<div className="mt-6 flex justify-center">
 					<Pagination
 						totalItems={filteredCards.length}

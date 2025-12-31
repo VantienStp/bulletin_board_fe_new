@@ -1,3 +1,5 @@
+// src/data/adapters/categoryAdapter.js
+
 export const categoryAdapter = (data) => {
     if (!data) return null;
 
@@ -7,8 +9,8 @@ export const categoryAdapter = (data) => {
         description: data.description || "",
         icon: data.icon || "",
 
-        // Xử lý logic Layout (Populated object hoặc ID string)
         layoutId: typeof data.gridLayoutId === 'object' ? data.gridLayoutId?._id : data.gridLayoutId || "",
-        layoutTitle: typeof data.gridLayoutId === 'object' ? data.gridLayoutId?.title : "—",
+        layoutTitle: data.layoutTitle || (typeof data.gridLayoutId === 'object' ? data.gridLayoutId?.title : "—"),
+        cardCount: data.cardCount !== undefined ? data.cardCount : (data.mappings?.length || 0),
     };
 };

@@ -1,61 +1,45 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { FaClone } from "react-icons/fa";
+import { useState, useRef, useEffect } from "react";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
+
 import DeleteModal from "@/components/common/DeleteModal";
 import Pagination from "@/components/common/Pagination";
 import { API_BASE_URL } from "@/lib/api";
 import { authFetch } from "@/lib/auth";
 import { cardAdapter } from "@/data/adapters/cardAdapter";
 
-// Import mới
 import { useCardFilters } from "@/hooks/useCardFilters";
 import CardToolbar from "@/components/feature/cards/CardToolbar";
 import CardTable from "@/components/feature/cards/CardTable";
 import CardFormModal from "@/components/feature/cards/CardFormModal";
 
 export default function CardsPage() {
-	const [allCards, setAllCards] = useState([]); // Chứa toàn bộ data từ API
+	// 1. Dùng SWR để fetch và cache data
+	const { data: rawCards, mutate } = useSWR(`${API_BASE_URL}/cards`, fetcher);
 
-	// Dùng Hook Filter
+	// 2. Chuẩn hóa data
+	const allCards = rawCards ? rawCards.map(item => cardAdapter(item)) : [];
+
 	const {
 		searchText, setSearchText,
 		filters, toggleFilter, clearFilters,
-		filteredCards // Data đã được lọc
+		filteredCards
 	} = useCardFilters(allCards);
 
-	// State Form & Delete
 	const [editingCard, setEditingCard] = useState(null);
 	const [showForm, setShowForm] = useState(false);
 	const [deleteCardId, setDeleteCardId] = useState(null);
 	const [deleteStatus, setDeleteStatus] = useState("idle");
 
-	// Pagination
 	const itemsPerPage = 6;
 	const [currentPage, setCurrentPage] = useState(1);
 	const paginationRef = useRef(null);
 
 	useEffect(() => {
-		fetchCards();
-	}, []);
-
-	// Reset trang về 1 khi search/filter thay đổi
-	useEffect(() => {
 		setCurrentPage(1);
 	}, [searchText, filters]);
-
-	async function fetchCards() {
-		try {
-			const res = await fetch(`${API_BASE_URL}/cards`);
-			const rawData = await res.json();
-			if (Array.isArray(rawData)) {
-				const cleanData = rawData.map(item => cardAdapter(item));
-				setAllCards(cleanData); // Lưu vào state gốc
-			}
-		} catch (err) {
-			console.error(err);
-		}
-	}
 
 	const handleOpenCreate = () => {
 		setEditingCard(null);
@@ -86,7 +70,7 @@ export default function CardsPage() {
 
 		setShowForm(false);
 		setEditingCard(null);
-		fetchCards();
+		mutate(); // Reload data ngầm
 	};
 
 	const handleOpenDelete = (id) => {
@@ -102,10 +86,10 @@ export default function CardsPage() {
 			const res = await authFetch(`${API_BASE_URL}/cards/${deleteCardId}`, { method: "DELETE" });
 
 			if (res.ok) {
-				setAllCards((prev) => prev.filter((c) => c.id !== deleteCardId));
 				alert("✅ Đã xóa thẻ thành công!");
 				setDeleteCardId(null);
 				setDeleteStatus("idle");
+				mutate(); // Reload data ngầm
 			} else {
 				const errorData = await res.json();
 				alert(`❌ ${errorData.message || "Xóa thất bại!"}`);
@@ -119,13 +103,11 @@ export default function CardsPage() {
 		}
 	}
 
-	// --- PHÂN TRANG TRÊN DATA ĐÃ LỌC ---
 	const startIndex = (currentPage - 1) * itemsPerPage;
 	const paginatedCards = filteredCards.slice(startIndex, startIndex + itemsPerPage);
 
 	return (
 		<div className="px-4 pb-10">
-			{/* HEADER + TOOLBAR */}
 			<div className="flex justify-between items-end mb-6">
 				<div>
 					<h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
@@ -146,14 +128,12 @@ export default function CardsPage() {
 				/>
 			</div>
 
-			{/* TABLE */}
 			<CardTable
 				cards={paginatedCards}
 				onEdit={handleOpenEdit}
 				onDelete={handleOpenDelete}
 			/>
 
-			{/* PAGINATION */}
 			{filteredCards.length > itemsPerPage && (
 				<div ref={paginationRef} className=" flex justify-center">
 					<Pagination
@@ -165,7 +145,6 @@ export default function CardsPage() {
 				</div>
 			)}
 
-			{/* MODALS */}
 			<CardFormModal
 				isOpen={showForm}
 				onClose={() => setShowForm(false)}

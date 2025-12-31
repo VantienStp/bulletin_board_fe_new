@@ -1,26 +1,32 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { FaThLarge } from "react-icons/fa";
+import { useState, useRef, useEffect } from "react";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
+import { FaLayerGroup } from "react-icons/fa";
+
 import Pagination from "@/components/common/Pagination";
 import DeleteModal from "@/components/common/DeleteModal";
 import { authFetch } from "@/lib/auth";
 import { API_BASE_URL } from "@/lib/api";
 import { layoutAdapter } from "@/data/adapters/layoutAdapter";
 
-// Import Components & Hooks
 import { useLayoutFilters } from "@/hooks/useLayoutFilters";
 import LayoutToolbar from "@/components/feature/layouts/LayoutToolbar";
 import LayoutTable from "@/components/feature/layouts/LayoutTable";
 import LayoutFormModal from "@/components/feature/layouts/LayoutFormModal";
 
 export default function LayoutsPage() {
-	const [allLayouts, setAllLayouts] = useState([]); // Đổi tên state gốc
+	// 1. Dùng SWR để fetch
+	const { data: rawLayouts, mutate } = useSWR(`${API_BASE_URL}/gridlayouts`, fetcher);
+
+	// 2. Chuẩn hóa
+	const allLayouts = rawLayouts ? rawLayouts.map(item => layoutAdapter(item)) : [];
 
 	// --- HOOK FILTER & SEARCH ---
 	const {
 		searchText, setSearchText,
-		filteredLayouts // Dữ liệu đã lọc để hiển thị
+		filteredLayouts
 	} = useLayoutFilters(allLayouts);
 
 	// State Form & Delete
@@ -34,31 +40,12 @@ export default function LayoutsPage() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const paginationRef = useRef(null);
 
-	useEffect(() => {
-		fetchLayouts();
-	}, []);
-
 	// Reset về trang 1 khi tìm kiếm
 	useEffect(() => {
 		setCurrentPage(1);
 	}, [searchText]);
 
-	async function fetchLayouts() {
-		try {
-			const res = await authFetch(`${API_BASE_URL}/gridlayouts`);
-			if (!res?.ok) return;
-
-			const rawData = await res.json();
-			if (Array.isArray(rawData)) {
-				const cleanData = rawData.map(item => layoutAdapter(item));
-				setAllLayouts(cleanData); // Lưu vào state gốc
-			}
-		} catch (err) {
-			console.error("❌ fetchLayouts error:", err);
-		}
-	}
-
-	// --- HANDLERS (Giữ nguyên) ---
+	// --- HANDLERS ---
 	const handleOpenCreate = () => {
 		setEditingLayout(null);
 		setShowForm(true);
@@ -84,7 +71,7 @@ export default function LayoutsPage() {
 		if (res?.ok) {
 			setShowForm(false);
 			setEditingLayout(null);
-			fetchLayouts();
+			mutate(); // Reload data ngầm
 		} else {
 			alert("❌ Lưu thất bại");
 		}
@@ -92,6 +79,7 @@ export default function LayoutsPage() {
 
 	const handleDelete = (id) => {
 		setDeleteLayoutId(id);
+		setDeleteStatus("idle");
 	};
 
 	const handleDeleteConfirmed = async () => {
@@ -104,7 +92,7 @@ export default function LayoutsPage() {
 
 			if (!res.ok) throw new Error(data.message || "Delete failed");
 
-			await fetchLayouts();
+			mutate(); // Reload data ngầm
 			setDeleteStatus("success");
 
 			setTimeout(() => {
@@ -120,20 +108,21 @@ export default function LayoutsPage() {
 	const startIndex = (currentPage - 1) * itemsPerPage;
 	const paginatedLayouts = filteredLayouts.slice(startIndex, startIndex + itemsPerPage);
 
+	if (!rawLayouts) return <div>Đang tải dữ liệu...</div>;
+
 	return (
 		<div className="px-4 pb-10">
 			{/* HEADER + TOOLBAR */}
 			<div className="flex justify-between items-end mb-8">
 				<div>
 					<h1 className="text-2xl font-bold flex items-center gap-2">
-						<i className={"fa-solid fa-layer-group "} /> Bố cục hiển thị
+						<FaLayerGroup /> Bố cục hiển thị
 					</h1>
 					<p className="text-sm text-gray-500 mt-2">
 						Hiển thị {filteredLayouts.length} bố cục phù hợp.
 					</p>
 				</div>
 
-				{/* 👇 TOOLBAR MỚI NẰM Ở ĐÂY */}
 				<LayoutToolbar
 					searchText={searchText}
 					setSearchText={setSearchText}

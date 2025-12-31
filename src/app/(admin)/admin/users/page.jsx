@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import { FaUsers } from "react-icons/fa";
+
 import Pagination from "@/components/common/Pagination";
 import DeleteModal from "@/components/common/DeleteModal";
 import { API_BASE_URL } from "@/lib/api";
@@ -14,9 +17,13 @@ import UserTable from "@/components/feature/users/UserTable";
 import UserFormModal from "@/components/feature/users/UserFormModal";
 
 export default function UsersPage() {
-  const [allUsers, setAllUsers] = useState([]);
+  // 1. Dùng SWR để fetch
+  const { data: rawUsers, mutate } = useSWR(`${API_BASE_URL}/users`, fetcher);
 
-  // --- HOOK FILTER ---
+  // 2. Chuẩn hóa
+  const allUsers = rawUsers ? rawUsers.map(item => userAdapter(item)) : [];
+
+  // Hook Filter
   const {
     searchText, setSearchText,
     filters, toggleFilter, clearFilters,
@@ -34,26 +41,10 @@ export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const paginationRef = useRef(null);
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  // Reset trang về 1 khi search/filter
+  // Reset trang khi search
   useEffect(() => {
     setCurrentPage(1);
   }, [searchText, filters]);
-
-  async function fetchUsers() {
-    const res = await authFetch(`${API_BASE_URL}/users`);
-    if (!res?.ok) return;
-
-    const rawData = await res.json();
-    if (Array.isArray(rawData)) {
-      // Áp dụng Adapter
-      const cleanData = rawData.map(item => userAdapter(item));
-      setAllUsers(cleanData);
-    }
-  }
 
   // --- HANDLERS ---
   const handleOpenCreate = () => {
@@ -72,7 +63,6 @@ export default function UsersPage() {
       ? `${API_BASE_URL}/users/${editingUser.id}`
       : `${API_BASE_URL}/users`;
 
-    // Logic password: Nếu edit mà không nhập pass thì xóa field đó đi để BE không update
     const payload = { ...formData };
     if (!payload.password) delete payload.password;
 
@@ -85,7 +75,7 @@ export default function UsersPage() {
     if (res?.ok) {
       setShowForm(false);
       setEditingUser(null);
-      fetchUsers();
+      mutate(); // Reload data
     } else {
       alert("❌ Lưu thất bại");
     }
@@ -93,6 +83,7 @@ export default function UsersPage() {
 
   const handleDelete = (id) => {
     setDeleteUserId(id);
+    setDeleteStatus("idle");
   };
 
   const handleDeleteConfirmed = async () => {
@@ -103,7 +94,7 @@ export default function UsersPage() {
       const res = await authFetch(`${API_BASE_URL}/users/${deleteUserId}`, { method: "DELETE" });
       if (!res?.ok) throw new Error("Delete failed");
 
-      await fetchUsers();
+      mutate(); // Reload data
       setDeleteStatus("success");
 
       setTimeout(() => {
@@ -115,9 +106,10 @@ export default function UsersPage() {
     }
   };
 
-  // --- PAGINATION ON FILTERED DATA ---
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+
+  if (!rawUsers) return <div>Đang tải dữ liệu...</div>;
 
   return (
     <div className="px-4 pb-20">
@@ -150,7 +142,7 @@ export default function UsersPage() {
       />
 
       {/* PAGINATION */}
-      {filteredUsers.length > 0 && (
+      {filteredUsers.length > itemsPerPage && (
         <div ref={paginationRef} className="mt-6 flex justify-center">
           <Pagination
             totalItems={filteredUsers.length}

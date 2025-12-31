@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { FaClone } from "react-icons/fa";
+import useSWR from "swr"; // 👈 Import SWR
+import { fetcher } from "@/lib/fetcher"; // Import fetcher
 
 // Import Libs & Hooks
 import { API_BASE_URL } from "@/lib/api";
@@ -10,20 +11,24 @@ import { authFetch } from "@/lib/auth";
 import usePagination from "@/hooks/usePagination";
 import { contentAdapter } from "@/data/adapters/contentAdapter";
 
-// Import Components Mới
+// Import Components & Hooks Mới
 import { useContentFilters } from "@/hooks/useContentFilters";
 import ContentToolbar from "@/components/feature/cards/contents/ContentToolbar";
 import Pagination from "@/components/common/Pagination";
 import ContentTable from "@/components/feature/cards/contents/ContentTable";
 import ContentFormModal from "@/components/feature/cards/contents/ContentFormModal";
+
 export default function CardDetailPage() {
 	const { id } = useParams();
 
-	const [card, setCard] = useState(null);
-	const [contents, setContents] = useState([]);
-	const [loading, setLoading] = useState(true);
+	const { data: rawCard, error, isLoading, mutate } = useSWR(
+		id ? `${API_BASE_URL}/cards/${id}` : null,
+		fetcher
+	);
 
-	// --- HOOK FILTER ---
+	const contents = rawCard?.contents ? rawCard.contents.map(c => contentAdapter(c)) : [];
+
+	// --- HOOK FILTER \
 	const {
 		searchText, setSearchText,
 		filters, toggleFilter, clearFilters,
@@ -34,7 +39,7 @@ export default function CardDetailPage() {
 	const [editingIndex, setEditingIndex] = useState(null);
 	const [showForm, setShowForm] = useState(false);
 
-	// Pagination 
+	// Pagination
 	const {
 		currentPage,
 		paginatedData: currentContents,
@@ -42,62 +47,47 @@ export default function CardDetailPage() {
 	} = usePagination(filteredContents, 4);
 
 	useEffect(() => {
-		fetchCard();
-	}, [id]);
-
-	async function fetchCard() {
-		setLoading(true);
-		try {
-			const res = await fetch(`${API_BASE_URL}/cards/${id}`);
-			if (!res.ok) return;
-
-			const data = await res.json();
-			setCard(data);
-
-			if (data.contents) {
-				setContents(data.contents.map(c => contentAdapter(c)));
-			}
-		} catch (err) {
-			console.error("❌ fetchCard error:", err);
-		} finally {
-			setLoading(false);
-		}
-	}
-
-	useEffect(() => {
 		goToPage(1);
 	}, [searchText, filters]);
+
+	// --- HANDLERS ---
 
 	const handleOpenCreate = () => {
 		setEditingIndex(null);
 		setShowForm(true);
 	};
 
-	const handleOpenEdit = (content, index) => {
-		const originalIndex = contents.findIndex(c => c.url === content.url && c.description === content.description);
-
-		if (originalIndex !== -1) {
-			setEditingIndex(originalIndex);
+	const handleOpenEdit = (content) => {
+		const idx = contents.findIndex(c => c === content);
+		if (idx !== -1) {
+			setEditingIndex(idx);
 			setShowForm(true);
 		}
 	};
 
-	const handleDelete = async (index) => {
+	const handleDelete = async (currentIndex) => {
 		if (!confirm("Bạn có chắc muốn xóa nội dung này?")) return;
-		const contentToDelete = currentContents[index];
+		const contentToDelete = currentContents[currentIndex];
+
 		const originalIndex = contents.findIndex(c => c === contentToDelete);
 
 		if (originalIndex === -1) return;
 
-		const res = await authFetch(
-			`${API_BASE_URL}/cards/${id}/contents/${originalIndex}`,
-			{ method: "DELETE" }
-		);
+		try {
+			const res = await authFetch(
+				`${API_BASE_URL}/cards/${id}/contents/${originalIndex}`,
+				{ method: "DELETE" }
+			);
 
-		if (res.ok) {
-			fetchCard();
-		} else {
-			alert("❌ Xóa thất bại");
+			if (res.ok) {
+				mutate();
+				alert("✅ Đã xóa thành công");
+			} else {
+				alert("❌ Xóa thất bại");
+			}
+		} catch (error) {
+			console.error(error);
+			alert("❌ Lỗi kết nối");
 		}
 	};
 
@@ -108,23 +98,25 @@ export default function CardDetailPage() {
 			const fd = new FormData();
 			fd.append("file", formData.url);
 
-			const uploadRes = await authFetch(`${API_BASE_URL}/files/upload`, {
-				method: "POST",
-				body: fd,
-			});
+			try {
+				const uploadRes = await authFetch(`${API_BASE_URL}/files/upload`, {
+					method: "POST",
+					body: fd,
+				});
 
-			if (!uploadRes.ok) {
+				if (!uploadRes.ok) throw new Error("Upload failed");
+
+				const uploadData = await uploadRes.json();
+				finalData.url = uploadData.url;
+				finalData.type = uploadData.type || formData.type;
+				finalData.qrCode = uploadData.qrImage || uploadData.qrLink || "";
+
+				if (uploadData.type === "pdf" && uploadData.images) {
+					finalData.images = uploadData.images;
+				}
+			} catch (error) {
 				alert("❌ Upload thất bại");
 				return;
-			}
-
-			const uploadData = await uploadRes.json();
-			finalData.url = uploadData.url;
-			finalData.type = uploadData.type || formData.type;
-			finalData.qrCode = uploadData.qrImage || uploadData.qrLink || "";
-
-			if (uploadData.type === "pdf" && uploadData.images) {
-				finalData.images = uploadData.images;
 			}
 		}
 
@@ -133,23 +125,26 @@ export default function CardDetailPage() {
 			? `${API_BASE_URL}/cards/${id}/contents/${editingIndex}`
 			: `${API_BASE_URL}/cards/${id}/contents`;
 
-		const res = await authFetch(url, {
-			method,
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(finalData),
-		});
+		try {
+			const res = await authFetch(url, {
+				method,
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(finalData),
+			});
 
-		if (res.ok) {
-			setShowForm(false);
-			setEditingIndex(null);
-			fetchCard();
-		} else {
-			alert("❌ Lưu thất bại");
+			if (res.ok) {
+				setShowForm(false);
+				setEditingIndex(null);
+				mutate(); // 👈 Reload data bằng SWR
+			} else {
+				alert("❌ Lưu thất bại");
+			}
+		} catch (error) {
+			alert("❌ Lỗi kết nối");
 		}
 	};
 
-
-	if (loading) {
+	if (isLoading) {
 		return (
 			<div className="w-full h-96 flex flex-col items-center justify-center">
 				<div className="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin mb-4"></div>
@@ -158,7 +153,7 @@ export default function CardDetailPage() {
 		);
 	}
 
-	if (!card) return <p className="p-4 text-red-500">Không tìm thấy thẻ.</p>;
+	if (error || !rawCard) return <p className="p-10 text-center text-red-500">❌ Không tìm thấy thẻ hoặc lỗi tải dữ liệu.</p>;
 
 	return (
 		<div className="px-4 pb-20">
@@ -166,14 +161,13 @@ export default function CardDetailPage() {
 			<div className="flex justify-between items-end mb-6">
 				<div>
 					<h1 className="text-2xl font-bold flex items-center gap-2 mb-1">
-						<i className={"fa-solid fa-clone"} /> Chi tiết thẻ: {card.title}
+						<i className={"fa-solid fa-clone"} /> Chi tiết thẻ: {rawCard.title}
 					</h1>
 					<p className="text-gray-500 text-sm">
 						Hiển thị {filteredContents.length} nội dung phù hợp.
 					</p>
 				</div>
 
-				{/* 👇 TOOLBAR MỚI */}
 				<ContentToolbar
 					searchText={searchText}
 					setSearchText={setSearchText}
@@ -194,7 +188,7 @@ export default function CardDetailPage() {
 					/>
 
 					{/* PAGINATION */}
-					{filteredContents.length > 0 && (
+					{filteredContents.length > 4 && (
 						<div className="mt-6 flex justify-center">
 							<Pagination
 								totalItems={filteredContents.length}
@@ -215,6 +209,7 @@ export default function CardDetailPage() {
 			<ContentFormModal
 				isOpen={showForm}
 				onClose={() => setShowForm(false)}
+				// Lấy data từ mảng gốc (contents) dựa trên editingIndex
 				initialData={editingIndex !== null ? contents[editingIndex] : null}
 				onSubmit={handleSubmitForm}
 			/>

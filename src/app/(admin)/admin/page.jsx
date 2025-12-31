@@ -9,7 +9,7 @@ import TimeTracker from "@/components/feature/dashboard/TimeTracker";
 
 export default function AdminHomePage() {
     return (
-        <div className="max-w-[1600px] mx-auto w-full">
+        <div className="mx-auto w-full">
 
             {/* TITLE + ACTIONS */}
             <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">

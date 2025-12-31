@@ -16,12 +16,10 @@ export const layoutAdapter = (data) => {
         cardCount: Array.isArray(safeConfig.positions) ? safeConfig.positions.length : 0,
 
         // 2. Tính toán CSS cho Grid Preview ngay tại đây
-        // Ví dụ: "16px 16px 16px..."
         gridTemplateColumns: Array.isArray(safeConfig.columns)
             ? safeConfig.columns.map(() => "16px").join(" ")
             : "16px",
 
-        // Ví dụ: "repeat(4, 16px)"
         gridTemplateRows: `repeat(${safeConfig.rows || 1}, 16px)`
     };
 };

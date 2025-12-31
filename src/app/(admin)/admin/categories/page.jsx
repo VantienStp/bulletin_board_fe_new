@@ -1,23 +1,33 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { FaFolderOpen } from "react-icons/fa";
+import { useState, useRef, useEffect } from "react";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
+
+// Components
 import Pagination from "@/components/common/Pagination";
 import { API_BASE_URL } from "@/lib/api";
 import { authFetch } from "@/lib/auth";
 import { categoryAdapter } from "@/data/adapters/categoryAdapter";
 
-// Import Hooks & Components mới
 import { useCategoryFilters } from "@/hooks/useCategoryFilters";
 import CategoryToolbar from "@/components/feature/categories/CategoryToolbar";
 import CategoryTable from "@/components/feature/categories/CategoryTable";
 import CategoryFormModal from "@/components/feature/categories/CategoryFormModal";
 
 export default function CategoriesPage() {
-	const [allCategories, setAllCategories] = useState([]);
-	const [layouts, setLayouts] = useState([]);
+	// 1. Dùng SWR để lấy danh sách Category
+	const { data: rawCategories, mutate } = useSWR(`${API_BASE_URL}/categories`, fetcher);
 
-	//  HOOK FILTER
+	// 2. Dùng SWR để lấy danh sách Layouts (để nạp vào Dropdown filter và Modal)
+	// Layout ít khi thay đổi, nên SWR sẽ cache rất hiệu quả
+	const { data: rawLayouts } = useSWR(`${API_BASE_URL}/gridlayouts`, fetcher);
+
+	// Chuẩn hóa dữ liệu
+	const allCategories = rawCategories ? rawCategories.map(item => categoryAdapter(item)) : [];
+	const layouts = rawLayouts || [];
+
+	// Hook Filter
 	const {
 		searchText, setSearchText,
 		filters, toggleFilter, clearFilters,
@@ -33,38 +43,10 @@ export default function CategoriesPage() {
 	const [currentPage, setCurrentPage] = useState(1);
 	const paginationRef = useRef(null);
 
-	useEffect(() => {
-		fetchCategories();
-		fetchLayouts();
-	}, []);
-
-	// Reset trang về 1 khi search/filter thay đổi
+	// Reset page khi search
 	useEffect(() => {
 		setCurrentPage(1);
 	}, [searchText, filters]);
-
-	async function fetchCategories() {
-		try {
-			const res = await fetch(`${API_BASE_URL}/categories`);
-			const rawData = await res.json();
-			if (Array.isArray(rawData)) {
-				const cleanData = rawData.map(item => categoryAdapter(item));
-				setAllCategories(cleanData);
-			}
-		} catch (err) {
-			console.error(err);
-		}
-	}
-
-	async function fetchLayouts() {
-		try {
-			const res = await fetch(`${API_BASE_URL}/gridlayouts`);
-			const data = await res.json();
-			if (Array.isArray(data)) setLayouts(data);
-		} catch (err) {
-			console.error(err);
-		}
-	}
 
 	// --- HANDLERS ---
 	const handleOpenCreate = () => {
@@ -96,7 +78,7 @@ export default function CategoriesPage() {
 
 		setShowForm(false);
 		setEditingCategory(null);
-		fetchCategories();
+		mutate(); // Reload data ngầm
 	};
 
 	const handleDelete = async (id) => {
@@ -104,16 +86,18 @@ export default function CategoriesPage() {
 		const res = await authFetch(`${API_BASE_URL}/categories/${id}`, {
 			method: "DELETE",
 		});
-		if (res.ok) fetchCategories();
+		if (res.ok) mutate(); // Reload data ngầm
 	};
 
-	// --- PAGINATION ON FILTERED DATA ---
+	// Pagination slice
 	const startIndex = (currentPage - 1) * itemsPerPage;
 	const paginatedCategories = filteredCategories.slice(startIndex, startIndex + itemsPerPage);
 
+	if (!rawCategories && !rawLayouts) return <div>Đang tải dữ liệu...</div>;
+
 	return (
 		<div className="px-4 pb-20">
-			{/* HEADER + TOOLBAR */}
+			{/* HEADER */}
 			<div className="flex justify-between items-end mb-8">
 				<div>
 					<h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
@@ -143,21 +127,18 @@ export default function CategoriesPage() {
 			/>
 
 			{/* PAGINATION */}
-			{filteredCategories.length > 0 && (
+			{filteredCategories.length > itemsPerPage && (
 				<div ref={paginationRef} className="mt-6 flex justify-center">
 					<Pagination
 						totalItems={filteredCategories.length}
 						itemsPerPage={itemsPerPage}
 						currentPage={currentPage}
-						onPageChange={(page) => {
-							setCurrentPage(page);
-							paginationRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
-						}}
+						onPageChange={setCurrentPage}
 					/>
 				</div>
 			)}
 
-			{/* MODAL FORM */}
+			{/* MODAL */}
 			<CategoryFormModal
 				isOpen={showForm}
 				onClose={() => setShowForm(false)}
