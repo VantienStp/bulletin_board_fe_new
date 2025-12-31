@@ -47,7 +47,7 @@ export default function HomePage() {
       </div>
 
       {/* Footer / Overlay */}
-      <div className="fixed bottom-0 right-0 w-[40vw] max-w-[600px] h-[66px] bg-[rgba(234,17,17,0.8)] text-slate-50 text-[26px] font-medium flex items-center justify-center rounded-tl-[20px] shadow-[0_6px_20px_rgba(0,0,0,0.25)] select-none pointer-events-none z-[9999]">
+      <div className="fixed bottom-0 right-0 w-[40vw] max-w-[600px] h-[54px] bg-[rgba(234,17,17,0.8)] text-slate-50 text-[26px] font-medium flex items-center justify-center rounded-tl-[20px] shadow-[0_6px_20px_rgba(0,0,0,0.25)] select-none pointer-events-none z-[9999]">
         Vui lòng không chạm vào màn hình
       </div>
     </>
