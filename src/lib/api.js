@@ -15,8 +15,6 @@ function detectBaseUrl() {
 export const BASE_URL = detectBaseUrl();
 export const API_BASE_URL = `${BASE_URL}/api`;
 
-console.log("🌐 BASE_URL:", BASE_URL);
-console.log("🌐 API_BASE_URL:", API_BASE_URL);
 // export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
 
 

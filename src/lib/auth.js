@@ -1,29 +1,56 @@
 // lib/auth.js
 import { API_BASE_URL } from "@/lib/api";
 
-// FE không lưu access token nữa
 export function clearToken() {
-  localStorage.removeItem("dummy"); // để tránh lỗi cũ, nhưng không dùng nữa
+  localStorage.removeItem("dummy"); 
 }
 
-// FE chỉ cần gọi API qua cookie
+/**
+ * Hàm fetch có hỗ trợ tự động làm mới Token (Silent Refresh)
+ */
 export async function authFetch(url, options = {}) {
-  const res = await fetch(url, {
+  // 1. Thực hiện gọi API lần đầu
+  let res = await fetch(url, {
     ...options,
-    credentials: "include", // luôn gửi cookie
+    credentials: "include", // Luôn gửi kèm HttpOnly Cookie (access_token)
   });
 
-  // Nếu BE trả 401 → hết hạn refresh token → logout
+  // 2. Nếu Server báo 401 (Access Token hết hạn hoặc không có)
   if (res.status === 401) {
-    console.warn("⚠️ Unauthorized → token hết hạn → logout");
-    await logout();
-    return null;
+    console.warn("🔑 Access Token hết hạn, đang thử làm mới...");
+
+    try {
+      // 3. Gọi API Refresh để đổi lấy Access Token mới
+      const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: "POST",
+        credentials: "include", // Gửi kèm refresh_token cookie
+      });
+
+      if (refreshRes.ok) {
+        console.log("✅ Làm mới Token thành công. Đang thử lại yêu cầu...");
+        
+        // 4. Nếu Refresh thành công, gọi lại API ban đầu lần nữa
+        // Lúc này Cookie access_token mới đã được Server ghi đè vào trình duyệt rồi
+        res = await fetch(url, {
+          ...options,
+          credentials: "include",
+        });
+      } else {
+        // Nếu ngay cả Refresh Token cũng hết hạn (7 ngày) -> Hết cứu, phải Login lại
+        console.error("❌ Refresh Token cũng đã hết hạn.");
+        await logout();
+        return null;
+      }
+    } catch (err) {
+      console.error("🔥 Lỗi trong quá trình Refresh:", err);
+      await logout();
+      return null;
+    }
   }
 
   return res;
 }
 
-// FE logout
 export async function logout() {
   try {
     await fetch(`${API_BASE_URL}/auth/logout`, {
@@ -34,6 +61,10 @@ export async function logout() {
     console.warn("⚠️ Lỗi logout:", err);
   } finally {
     clearToken();
-    window.location.href = "/login";
+    // Tránh dùng window.location.href nếu đang ở trang Kiosk (không cần đăng nhập)
+    // Nhưng nếu em đang ở trong Admin thì dùng được:
+    if (window.location.pathname.startsWith('/admin')) {
+        window.location.href = "/login";
+    }
   }
 }

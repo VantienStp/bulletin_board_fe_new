@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import "@/styles/tokens.css";
 import "@/styles/globals.css";
 
-// Imports từ các file đã tách
+// Imports components
 import { useKioskData } from "@/hooks/useKioskData";
 import Sidebar from "@/components/layout/user/Sidebar";
 import KioskHeader from "@/components/layout/user/KioskHeader";
@@ -16,9 +16,16 @@ export default function HomePage() {
     categories,
     selectedCategory,
     layoutConfig,
+    config,       // 👈 Chứa autoSwitch
+    timeLeft,     // 👈 Thời gian còn lại
+    totalTime,    // 👈 Tổng thời gian
     setAutoSwitch,
     handleSelectCategory
   } = useKioskData();
+
+  // 🧮 Tính phần trăm cho thanh tiến trình (Progress Bar)
+  // Nếu totalTime = 0 thì progress = 0 để tránh lỗi chia cho 0
+  const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0;
 
   // Ẩn devtools indicator (Visual Effect)
   useEffect(() => {
@@ -35,7 +42,12 @@ export default function HomePage() {
       />
 
       <div className="content-wrapper">
-        <KioskHeader toggleAutoSwitch={() => setAutoSwitch((prev) => !prev)} />
+        {/* Truyền props xuống Header để hiển thị trạng thái */}
+        <KioskHeader 
+            toggleAutoSwitch={() => setAutoSwitch(!config.autoSwitch)} 
+            isAutoSwitch={config.autoSwitch} // True/False
+            progress={progress}              // 0 -> 100
+        />
 
         <main className="main-content">
           <ContentGrid

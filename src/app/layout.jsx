@@ -15,9 +15,6 @@ export default function RootLayout({ children }) {
         <link
           rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-          integrity="sha512-D2v7dFpC9zOvM2mYVNl5xBlHfZjbxN+Nxzu3biYQYkZ9WYxQIr05o2N8SVD2jQi4cYjC2Kqk+wQgD8zO3Gm7hQ=="
-          crossOrigin="anonymous"
-          referrerPolicy="no-referrer"
         />
       </head>
       <body className="app-grid">

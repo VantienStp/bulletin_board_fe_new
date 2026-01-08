@@ -23,7 +23,7 @@ export default function DevicesTab() {
 
     // 3. Pagination State
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 8;
+    const itemsPerPage = 5;
 
     // 4. Fetch Data
     const fetchDevices = async () => {
@@ -71,30 +71,34 @@ export default function DevicesTab() {
     };
 
     const handleUpdateDevice = async (id, data) => {
-        try {
-            const res = await authFetch(`${API_BASE_URL}/devices/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    name: data.name,
-                    config: { defaultCategoryId: data.defaultCategoryId || null }
-                })
-            });
+    try {
+        const res = await authFetch(`${API_BASE_URL}/devices/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name: data.name,
+                // 👇 PHẢI GỬI ĐỦ CỤC CONFIG NÀY THÌ SERVER MỚI LƯU ĐƯỢC
+                config: { 
+                    defaultCategoryId: data.defaultCategoryId || null,
+                    autoSwitch: data.autoSwitch,         // ✅ Đừng quên dòng này
+                    switchInterval: data.switchInterval  // ✅ Và dòng này
+                }
+            })
+        });
 
-            if (res.ok) {
-                alert("✅ Cập nhật thành công!");
-                fetchDevices();
-                setShowEditModal(false);
-            } else {
-                alert("❌ Cập nhật thất bại.");
-            }
-        } catch (e) {
-            alert("❌ Lỗi kết nối.");
+        if (res.ok) {
+            alert("✅ Cập nhật thành công!");
+            fetchDevices();
+            setShowEditModal(false);
+        } else {
+            alert("❌ Cập nhật thất bại.");
         }
-    };
-
+    } catch (e) {
+        alert("❌ Lỗi kết nối.");
+    }
+};
     return (
-        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10 px-6">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 px-6">
             
             {/* HEADER + TOOLBAR */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 ml-1">

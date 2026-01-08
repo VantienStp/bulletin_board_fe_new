@@ -18,7 +18,7 @@ export default function DeviceTable({ devices, onEdit }) {
                     <tr className="bg-gray-50/80 text-gray-500 text-[11px] uppercase tracking-wider font-bold border-b border-gray-100">
                         <th className="px-6 py-4">Thiết bị</th>
                         <th className="px-6 py-4 text-center">Trạng thái</th>
-                        <th className="px-6 py-4">Đang hiển thị</th>
+                        <th className="px-6 py-4">Khởi động</th>
                         <th className="px-6 py-4">Ping cuối</th>
                         <th className="px-6 py-4 text-right">Tác vụ</th>
                     </tr>

@@ -67,7 +67,7 @@ export default function Topbar() {
 
           <div className="flex items-center gap-3 bg-green-500 text-black px-3 py-1.5 rounded-full">
             <img
-              src="/me15.png"
+              src="/avatar1.png"
               className="w-9 h-9 rounded-full object-cover border"
               alt="Avatar"
             />
