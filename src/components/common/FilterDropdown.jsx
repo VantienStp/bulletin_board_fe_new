@@ -24,7 +24,7 @@ export default function FilterDropdown({ count, children, label = "Filter" }) {
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white border rounded-2xl shadow-xl p-4 z-50">
+                <div className="absolute right-0 mt-2 w-72 bg-white border rounded-2xl shadow-xl p-4 pb-2 z-50">
                     {children}
                 </div>
             )}

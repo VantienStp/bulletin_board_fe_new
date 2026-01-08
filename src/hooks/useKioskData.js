@@ -72,7 +72,7 @@ export function useKioskData() {
             if (others.length === 0) return;
             const randomCat = others[Math.floor(Math.random() * others.length)];
             handleSelectCategory(randomCat);
-        }, 30 * 60 * 1000); // 30 phút đổi tab 1 lần
+        }, 2 * 60 * 1000); // 30 phút đổi tab 1 lần
 
         return () => clearInterval(intervalRef.current);
     }, [selectedCategory, categories, autoSwitch]);
