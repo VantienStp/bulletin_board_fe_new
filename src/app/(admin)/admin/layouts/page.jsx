@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react"; // 1. Thêm useMemo
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { FaLayerGroup } from "react-icons/fa";
@@ -12,6 +12,9 @@ import { API_BASE_URL } from "@/lib/api";
 import { layoutAdapter } from "@/data/adapters/layoutAdapter";
 
 import { useLayoutFilters } from "@/hooks/useLayoutFilters";
+import usePagination from "@/hooks/usePagination"; // 2. Import Hook Pagination
+
+// Feature Components
 import LayoutToolbar from "@/components/feature/layouts/LayoutToolbar";
 import LayoutTable from "@/components/feature/layouts/LayoutTable";
 import LayoutFormModal from "@/components/feature/layouts/LayoutFormModal";
@@ -20,8 +23,10 @@ export default function LayoutsPage() {
 	// 1. Dùng SWR để fetch
 	const { data: rawLayouts, mutate } = useSWR(`${API_BASE_URL}/gridlayouts`, fetcher);
 
-	// 2. Chuẩn hóa
-	const allLayouts = rawLayouts ? rawLayouts.map(item => layoutAdapter(item)) : [];
+	// 2. Tối ưu: Dùng useMemo để tránh map lại data liên tục
+	const allLayouts = useMemo(() => {
+		return rawLayouts ? rawLayouts.map(item => layoutAdapter(item)) : [];
+	}, [rawLayouts]);
 
 	// --- HOOK FILTER & SEARCH ---
 	const {
@@ -29,20 +34,25 @@ export default function LayoutsPage() {
 		filteredLayouts
 	} = useLayoutFilters(allLayouts);
 
+	// 3. Tối ưu: Dùng Hook Pagination thay cho code thủ công
+	const {
+		currentPage,
+		paginatedData: paginatedLayouts,
+		goToPage
+	} = usePagination(filteredLayouts, 5); // 5 item mỗi trang
+
 	// State Form & Delete
 	const [editingLayout, setEditingLayout] = useState(null);
 	const [showForm, setShowForm] = useState(false);
 	const [deleteLayoutId, setDeleteLayoutId] = useState(null);
 	const [deleteStatus, setDeleteStatus] = useState("idle");
 
-	// Pagination
-	const itemsPerPage = 5;
-	const [currentPage, setCurrentPage] = useState(1);
+	// Pagination Ref để scroll lên đầu khi chuyển trang
 	const paginationRef = useRef(null);
 
 	// Reset về trang 1 khi tìm kiếm
 	useEffect(() => {
-		setCurrentPage(1);
+		goToPage(1);
 	}, [searchText]);
 
 	// --- HANDLERS ---
@@ -104,10 +114,6 @@ export default function LayoutsPage() {
 		}
 	};
 
-	// --- PAGINATION ON FILTERED DATA ---
-	const startIndex = (currentPage - 1) * itemsPerPage;
-	const paginatedLayouts = filteredLayouts.slice(startIndex, startIndex + itemsPerPage);
-
 	if (!rawLayouts) return <div>Đang tải dữ liệu...</div>;
 
 	return (
@@ -132,21 +138,22 @@ export default function LayoutsPage() {
 
 			{/* TABLE */}
 			<LayoutTable
-				layouts={paginatedLayouts}
+				layouts={paginatedLayouts} // Data từ Hook
 				onEdit={handleOpenEdit}
 				onDelete={handleDelete}
 			/>
 
 			{/* PAGINATION */}
 			{filteredLayouts.length > 0 && (
-				<div ref={paginationRef} className="flex justify-center">
+				<div ref={paginationRef} className="flex justify-center mt-6">
 					<Pagination
 						totalItems={filteredLayouts.length}
-						itemsPerPage={itemsPerPage}
+						itemsPerPage={5}
 						currentPage={currentPage}
 						onPageChange={(page) => {
-							setCurrentPage(page);
-							paginationRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+							goToPage(page);
+							// Scroll nhẹ lên bảng khi chuyển trang
+							paginationRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
 						}}
 					/>
 				</div>

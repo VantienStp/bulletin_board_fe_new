@@ -11,7 +11,10 @@ export const contentAdapter = (data) => {
     if (!data) return null;
 
     return {
-        // Giữ index gốc nếu cần (nhưng nên dùng index của mảng khi map)
+        // 🔥 QUAN TRỌNG: Tạo ID giả nếu server chưa trả về _id
+        // Giúp React phân biệt được các item khi xóa/sửa
+        id: data._id || data.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+
         type: data.type || "image",
         url: data.url || "",
         description: data.description || "",

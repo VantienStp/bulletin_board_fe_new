@@ -1,46 +1,60 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react"; // 1. Thêm useMemo
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 
+// Components
 import DeleteModal from "@/components/common/DeleteModal";
-import Pagination from "@/components/common/Pagination";
+import Pagination from "@/components/common/Pagination"; // Component hiển thị
 import { API_BASE_URL } from "@/lib/api";
 import { authFetch } from "@/lib/auth";
 import { cardAdapter } from "@/data/adapters/cardAdapter";
 
+// Hooks
 import { useCardFilters } from "@/hooks/useCardFilters";
+import usePagination from "@/hooks/usePagination"; // 2. Import Hook Pagination
+
+// Feature Components
 import CardToolbar from "@/components/feature/cards/CardToolbar";
 import CardTable from "@/components/feature/cards/CardTable";
 import CardFormModal from "@/components/feature/cards/CardFormModal";
 
 export default function CardsPage() {
-	// 1. Dùng SWR để fetch và cache data
+	// 1. Fetch Data
 	const { data: rawCards, mutate } = useSWR(`${API_BASE_URL}/cards`, fetcher);
 
-	// 2. Chuẩn hóa data
-	const allCards = rawCards ? rawCards.map(item => cardAdapter(item)) : [];
+	// 2. Tối ưu: Chỉ map lại khi rawCards thay đổi (Tránh lag khi gõ phím)
+	const allCards = useMemo(() => {
+		return rawCards ? rawCards.map(item => cardAdapter(item)) : [];
+	}, [rawCards]);
 
+	// 3. Hook Filter
 	const {
 		searchText, setSearchText,
 		filters, toggleFilter, clearFilters,
 		filteredCards
 	} = useCardFilters(allCards);
 
+	// 4. Hook Pagination (Thay thế code thủ công cũ)
+	const {
+		currentPage,
+		paginatedData: paginatedCards,
+		goToPage
+	} = usePagination(filteredCards, 6);
+
+	// State Form & Delete
 	const [editingCard, setEditingCard] = useState(null);
 	const [showForm, setShowForm] = useState(false);
 	const [deleteCardId, setDeleteCardId] = useState(null);
 	const [deleteStatus, setDeleteStatus] = useState("idle");
 
-	const itemsPerPage = 6;
-	const [currentPage, setCurrentPage] = useState(1);
-	const paginationRef = useRef(null);
-
+	// Reset trang khi search
 	useEffect(() => {
-		setCurrentPage(1);
+		goToPage(1);
 	}, [searchText, filters]);
 
+	// --- HANDLERS ---
 	const handleOpenCreate = () => {
 		setEditingCard(null);
 		setShowForm(true);
@@ -89,7 +103,7 @@ export default function CardsPage() {
 				alert("✅ Đã xóa thẻ thành công!");
 				setDeleteCardId(null);
 				setDeleteStatus("idle");
-				mutate(); // Reload data ngầm
+				mutate();
 			} else {
 				const errorData = await res.json();
 				alert(`❌ ${errorData.message || "Xóa thất bại!"}`);
@@ -102,9 +116,6 @@ export default function CardsPage() {
 			setDeleteCardId(null);
 		}
 	}
-
-	const startIndex = (currentPage - 1) * itemsPerPage;
-	const paginatedCards = filteredCards.slice(startIndex, startIndex + itemsPerPage);
 
 	return (
 		<div className="px-4 pb-10">
@@ -129,18 +140,18 @@ export default function CardsPage() {
 			</div>
 
 			<CardTable
-				cards={paginatedCards}
+				cards={paginatedCards} // Dùng data từ Hook
 				onEdit={handleOpenEdit}
 				onDelete={handleOpenDelete}
 			/>
 
-			{filteredCards.length > itemsPerPage && (
-				<div ref={paginationRef} className=" flex justify-center">
+			{filteredCards.length > 6 && (
+				<div className="flex justify-center">
 					<Pagination
 						totalItems={filteredCards.length}
-						itemsPerPage={itemsPerPage}
+						itemsPerPage={6}
 						currentPage={currentPage}
-						onPageChange={setCurrentPage}
+						onPageChange={goToPage} // Dùng hàm từ Hook
 					/>
 				</div>
 			)}

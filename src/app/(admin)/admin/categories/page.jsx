@@ -1,51 +1,55 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 
-// Components
-import Pagination from "@/components/common/Pagination";
+// Libs & Adapters
 import { API_BASE_URL } from "@/lib/api";
 import { authFetch } from "@/lib/auth";
 import { categoryAdapter } from "@/data/adapters/categoryAdapter";
 
+// Hooks
 import { useCategoryFilters } from "@/hooks/useCategoryFilters";
+import usePagination from "@/hooks/usePagination"; // 👈 Nhớ import Hook này
+
+// Components
+import Pagination from "@/components/common/Pagination";
 import CategoryToolbar from "@/components/feature/categories/CategoryToolbar";
 import CategoryTable from "@/components/feature/categories/CategoryTable";
 import CategoryFormModal from "@/components/feature/categories/CategoryFormModal";
 
 export default function CategoriesPage() {
-	// 1. Dùng SWR để lấy danh sách Category
+	// 1. Fetch Data
 	const { data: rawCategories, mutate } = useSWR(`${API_BASE_URL}/categories`, fetcher);
-
-	// 2. Dùng SWR để lấy danh sách Layouts (để nạp vào Dropdown filter và Modal)
-	// Layout ít khi thay đổi, nên SWR sẽ cache rất hiệu quả
 	const { data: rawLayouts } = useSWR(`${API_BASE_URL}/gridlayouts`, fetcher);
 
-	// Chuẩn hóa dữ liệu
+	// 2. Chuẩn hóa dữ liệu
 	const allCategories = rawCategories ? rawCategories.map(item => categoryAdapter(item)) : [];
 	const layouts = rawLayouts || [];
 
-	// Hook Filter
+	// 3. Hook Filter (Xử lý tìm kiếm và lọc)
 	const {
 		searchText, setSearchText,
 		filters, toggleFilter, clearFilters,
 		filteredCategories
 	} = useCategoryFilters(allCategories);
 
-	// State Form
+	// 4. Hook Pagination (Thay thế cho logic thủ công cũ)
+	// 💡 Mẹo: Đổi tên 'paginatedData' thành 'paginatedCategories' để khớp với code bên dưới
+	const {
+		currentPage,
+		paginatedData: paginatedCategories,
+		goToPage
+	} = usePagination(filteredCategories, 6);
+
+	// State Form Modal
 	const [editingCategory, setEditingCategory] = useState(null);
 	const [showForm, setShowForm] = useState(false);
 
-	// Pagination
-	const itemsPerPage = 6;
-	const [currentPage, setCurrentPage] = useState(1);
-	const paginationRef = useRef(null);
-
-	// Reset page khi search
+	// Reset về trang 1 khi search hoặc filter thay đổi
 	useEffect(() => {
-		setCurrentPage(1);
+		goToPage(1);
 	}, [searchText, filters]);
 
 	// --- HANDLERS ---
@@ -86,12 +90,8 @@ export default function CategoriesPage() {
 		const res = await authFetch(`${API_BASE_URL}/categories/${id}`, {
 			method: "DELETE",
 		});
-		if (res.ok) mutate(); // Reload data ngầm
+		if (res.ok) mutate();
 	};
-
-	// Pagination slice
-	const startIndex = (currentPage - 1) * itemsPerPage;
-	const paginatedCategories = filteredCategories.slice(startIndex, startIndex + itemsPerPage);
 
 	if (!rawCategories && !rawLayouts) return <div>Đang tải dữ liệu...</div>;
 
@@ -121,19 +121,19 @@ export default function CategoriesPage() {
 
 			{/* TABLE */}
 			<CategoryTable
-				categories={paginatedCategories}
+				categories={paginatedCategories} // Biến này lấy từ usePagination
 				onEdit={handleOpenEdit}
 				onDelete={handleDelete}
 			/>
 
 			{/* PAGINATION */}
-			{filteredCategories.length > itemsPerPage && (
-				<div ref={paginationRef} className="mt-6 flex justify-center">
+			{filteredCategories.length > 6 && (
+				<div className="mt-6 flex justify-center">
 					<Pagination
 						totalItems={filteredCategories.length}
-						itemsPerPage={itemsPerPage}
+						itemsPerPage={6}
 						currentPage={currentPage}
-						onPageChange={setCurrentPage}
+						onPageChange={goToPage} // Dùng hàm của Hook
 					/>
 				</div>
 			)}

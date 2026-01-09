@@ -18,10 +18,10 @@ export default function Card({ title, contents = [], style = {} }) {
     if (!contents.length) return;
 
     const current = contents[activeIndex];
-    let intervalTime = 10000;
+    let intervalTime = 20000;
     if (current.type === "video") intervalTime = 60000;
     else if (current.type === "pdf") intervalTime = 75000;
-    else intervalTime = 5000 + Math.random() * 5000;
+    else intervalTime = 25000 + Math.random() * 15000;
 
     clearTimeout(timerRef.current);
     timerRef.current = setTimeout(() => {
@@ -41,8 +41,6 @@ export default function Card({ title, contents = [], style = {} }) {
         const { width: w, height: h } = entry.contentRect;
         const larger = Math.max(w, h);
 
-        // Đẩy các tính toán vào Biến CSS (CSS Variables)
-        // Việc này giúp trình duyệt tối ưu hóa việc vẽ (Repaint) thay vì tính toán lại Layout (Reflow)
         const container = containerRef.current;
         container.style.setProperty("--larger", `${larger}px`);
 

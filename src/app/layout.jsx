@@ -14,12 +14,17 @@ export default function RootLayout({ children }) {
 			<head>
 				<link rel="icon" href="/favicon.ico" sizes="any" />
 
+				<link
+					href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+					rel="stylesheet"
+				/>
+
 				<script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+
 				<link
 					rel="stylesheet"
 					href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
 				/>
-
 			</head>
 
 			<body className={`app-grid ${roboto.className}`}>

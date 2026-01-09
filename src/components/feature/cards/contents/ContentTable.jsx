@@ -1,18 +1,24 @@
 "use client";
 
+import { memo } from "react";
 import Link from "next/link";
 
-export default function ContentTable({ contents, onEdit, onDelete }) {
-    // Helper render preview dựa trên loại file
+function ContentTable({ contents, onEdit, onDelete }) {
+
     const renderPreview = (c) => {
         if (c.isImage) {
             return <img src={c.fullUrl} className="w-full h-full object-cover" alt="preview" />;
         }
         if (c.isVideo) {
-            return <video src={c.fullUrl} className="w-full h-full object-cover" controls />;
+            return <video src={c.fullUrl} className="w-full h-full object-cover" controls preload="none" />;
         }
         if (c.isPdf) {
-            return <iframe src={c.fullUrl} className="w-full h-full" title="pdf preview" />;
+            return (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-red-50 text-red-500">
+                    <i className="fa-solid fa-file-pdf text-3xl mb-1"></i>
+                    <span className="text-[10px] font-bold">PDF FILE</span>
+                </div>
+            );
         }
         return <div className="text-gray-400 text-xs">Unsupported type</div>;
     };
@@ -32,7 +38,7 @@ export default function ContentTable({ contents, onEdit, onDelete }) {
             <div className="divide-y">
                 {contents.map((c, i) => (
                     <div
-                        key={i}
+                        key={c.id || i}
                         className="grid grid-cols-[0.5fr_1fr_0.5fr_0.5fr_120px] px-6 py-2 items-center text-sm hover:bg-gray-50"
                     >
                         {/* 1. Preview File */}
@@ -72,7 +78,7 @@ export default function ContentTable({ contents, onEdit, onDelete }) {
                             )}
 
                             <button
-                                onClick={() => onEdit(c, i)}
+                                onClick={() => onEdit(c)}
                                 className="px-3 py-1 bg-yellow-500 text-white rounded-md text-xs hover:bg-yellow-600 w-20"
                             >
                                 Edit
@@ -91,3 +97,5 @@ export default function ContentTable({ contents, onEdit, onDelete }) {
         </div>
     );
 }
+
+export default memo(ContentTable);

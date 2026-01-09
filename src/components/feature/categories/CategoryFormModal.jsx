@@ -4,6 +4,16 @@ import { useState, useEffect } from "react";
 import Modal from "@/components/common/Modal";
 import { Select, MenuItem } from "@mui/material";
 
+const ICON_OPTIONS = [
+    "fas fa-folder", "fas fa-folder-open", "fas fa-file", "fas fa-file-alt",
+    "fas fa-file-pdf", "fas fa-file-image", "fas fa-file-video",
+    "fas fa-image", "fas fa-images", "fas fa-photo-video", "fas fa-camera",
+    "fas fa-video", "fas fa-film", "fas fa-newspaper", "fas fa-bullhorn",
+    "fas fa-bell", "fas fa-calendar", "fas fa-calendar-alt", "fas fa-clock",
+    "fas fa-user", "fas fa-user-friends", "fas fa-users",
+    "fas fa-star", "fas fa-bookmark", "fas fa-tags",
+];
+
 export default function CategoryFormModal({ isOpen, onClose, initialData, layouts, onSubmit }) {
     const [formData, setFormData] = useState({
         title: "",
@@ -11,16 +21,6 @@ export default function CategoryFormModal({ isOpen, onClose, initialData, layout
         gridLayoutId: "",
         icon: "",
     });
-
-    const iconOptions = [
-        "fas fa-folder", "fas fa-folder-open", "fas fa-file", "fas fa-file-alt",
-        "fas fa-file-pdf", "fas fa-file-image", "fas fa-file-video",
-        "fas fa-image", "fas fa-images", "fas fa-photo-video", "fas fa-camera",
-        "fas fa-video", "fas fa-film", "fas fa-newspaper", "fas fa-bullhorn",
-        "fas fa-bell", "fas fa-calendar", "fas fa-calendar-alt", "fas fa-clock",
-        "fas fa-user", "fas fa-user-friends", "fas fa-users",
-        "fas fa-star", "fas fa-bookmark", "fas fa-tags",
-    ];
 
     useEffect(() => {
         if (isOpen) {
@@ -73,7 +73,7 @@ export default function CategoryFormModal({ isOpen, onClose, initialData, layout
                     size="small"
                 >
                     <MenuItem value="">— Chọn icon —</MenuItem>
-                    {iconOptions.map((ic) => (
+                    {ICON_OPTIONS.map((ic) => (
                         <MenuItem key={ic} value={ic}>
                             <i className={`${ic} mr-2`} /> {ic}
                         </MenuItem>
