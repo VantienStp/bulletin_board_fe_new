@@ -1,10 +1,10 @@
 "use client";
-import { useEffect } from "react";
+import { useEffect, memo } from "react";
 
-export default function Sidebar({ categories, selectedCategory, onSelect }) {
-    // Logic animation highlight
+function Sidebar({ categories, selectedCategory, onSelect }) {
     useEffect(() => {
         if (!categories.length || !selectedCategory) return;
+
         const index = categories.findIndex((cat) => cat._id === selectedCategory);
         if (index < 0) return;
 
@@ -44,3 +44,5 @@ export default function Sidebar({ categories, selectedCategory, onSelect }) {
         </nav>
     );
 }
+
+export default memo(Sidebar);

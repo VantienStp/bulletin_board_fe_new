@@ -1,11 +1,10 @@
 "use client";
+import { memo } from "react";
 import Clock from "@/components/share/Clock";
 import Weather from "@/components/share/Weather";
 
-export default function KioskHeader({
-    toggleAutoSwitch,
-    isAutoSwitch,
-    progress
+function KioskHeader({
+    toggleAutoSwitch
 }) {
     return (
         <header className="relative overflow-hidden bg-[#F0F2F5] rounded-t-[1vh] rounded-tr-[0.5vw]">
@@ -27,6 +26,7 @@ export default function KioskHeader({
                     </div>
                 </div>
 
+                {/* Header Right */}
                 <div className="flex flex-col items-end text-right text-[#333] text-[var(--font-size-medium)] w-[35%] gap-[var(--gap-tiny)]">
                     <div onClick={toggleAutoSwitch} style={{ cursor: "pointer", width: "100%" }}>
                         <Weather />
@@ -34,7 +34,8 @@ export default function KioskHeader({
                     <Clock />
                 </div>
             </div>
-
         </header>
     );
 }
+
+export default memo(KioskHeader);

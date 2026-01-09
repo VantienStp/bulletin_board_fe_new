@@ -2,26 +2,11 @@
 import { useState, useEffect } from "react";
 
 export default function useWeather() {
-  const [weather, setWeather] = useState("☀️ Loading...");
-
-  // Style cho icon: w-8%, drop-shadow
-  const iconClass = "w-[8%] h-auto align-middle drop-shadow-[0.5vw_0.2vw_0.3vw_rgba(0,0,0,0.4)]";
-
-  // Style cho text: text-1.1vw, màu xám
-  const textClass = "text-[1.1vw] text-[rgb(108,107,107)]";
-
-  // Fallback cố định
-  const fallback = `
-    <img src="https://openweathermap.org/img/wn/02d.png" class="${iconClass}" />
-    <span class="${textClass}">30°C | TP.Hồ Chí Minh, Bầu trời quang đãng</span>
-  `;
+  // State giờ lưu Object chứ không lưu String HTML nữa
+  const [data, setData] = useState(null);
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      setWeather(fallback);
-      return;
-    }
-
+    // Hàm rút gọn tên thành phố (giữ nguyên logic của con)
     function shortenCityName(city) {
       const normalized = city.trim().toLowerCase();
       if (normalized === "thành phố hồ chí minh" || normalized === "hồ chí minh") {
@@ -34,40 +19,40 @@ export default function useWeather() {
       return city;
     }
 
+    if (!navigator.geolocation) {
+      setData(null); // Không có vị trí thì null để component tự fallback
+      return;
+    }
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         try {
           const { latitude, longitude } = pos.coords;
-          const apiKey = "b405235d32a7ca53648989fc7b145c87";
+          const apiKey = "b405235d32a7ca53648989fc7b145c87"; // Lưu ý: Nên đưa vào biến môi trường (.env)
 
           const res = await fetch(
             `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&lang=vi&appid=${apiKey}`
           );
 
-          if (!res.ok) {
-            setWeather(fallback);
-            return;
-          }
+          if (!res.ok) throw new Error("API Error");
 
-          const data = await res.json();
-          const temp = Math.round(data.main.temp);
-          let city = shortenCityName(data.name);
-          let desc = data.weather[0].description;
-          desc = desc.charAt(0).toUpperCase() + desc.slice(1);
-          const icon = data.weather[0].icon;
+          const result = await res.json();
 
-          // Cập nhật HTML với class Tailwind
-          setWeather(`
-            <img src="https://openweathermap.org/img/wn/${icon}.png" class="${iconClass}" />
-            <span class="${textClass}">${temp}°C | ${city} , ${desc}</span>
-          `);
+          // Trả về DỮ LIỆU SẠCH
+          setData({
+            temp: Math.round(result.main.temp),
+            city: shortenCityName(result.name),
+            desc: result.weather[0].description.charAt(0).toUpperCase() + result.weather[0].description.slice(1),
+            icon: result.weather[0].icon
+          });
+
         } catch (err) {
-          setWeather(fallback);
+          setData(null); // Lỗi thì về null
         }
       },
-      () => setWeather(fallback)
+      () => setData(null) // User từ chối quyền cũng về null
     );
   }, []);
 
-  return weather;
+  return data;
 }

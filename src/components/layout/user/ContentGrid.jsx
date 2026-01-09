@@ -1,10 +1,12 @@
 "use client";
+import { memo, useMemo } from "react";
 import Card from "@/components/user/Card";
 import { isCardActive } from "@/utils/dateUtils";
 
-export default function ContentGrid({ categories, selectedCategory, layoutConfig }) {
-    // Tính toán Grid Style
-    const gridStyle = {
+function ContentGrid({ categories, selectedCategory, layoutConfig }) {
+
+    // 1. Dùng useMemo để tính toán Style. 
+    const gridStyle = useMemo(() => ({
         display: "grid",
         gridTemplateColumns: layoutConfig
             ? layoutConfig.columns.map((c) => `${c}fr`).join(" ")
@@ -12,16 +14,21 @@ export default function ContentGrid({ categories, selectedCategory, layoutConfig
         gridTemplateRows: layoutConfig
             ? `repeat(${layoutConfig.rows || 1}, auto)`
             : "auto",
-    };
+    }), [layoutConfig]);
 
-    const currentCategory = categories.find((cat) => cat._id === selectedCategory);
-    if (!currentCategory) return null;
+    // 2. Dùng useMemo để tính toán danh sách Card cần hiển thị.
+    const visibleMappings = useMemo(() => {
+        const currentCategory = categories.find((cat) => cat._id === selectedCategory);
+        if (!currentCategory) return [];
 
-    // Lọc và tính toán danh sách Card
-    const layoutCardCount = layoutConfig?.positions?.length || 0;
-    const activeMappings = currentCategory.mappings.filter((map) => isCardActive(map.cardId));
-    const maxCards = layoutCardCount > 0 ? layoutCardCount : 9;
-    const visibleMappings = activeMappings.slice(0, maxCards);
+        const layoutCardCount = layoutConfig?.positions?.length || 0;
+        const activeMappings = currentCategory.mappings.filter((map) => isCardActive(map.cardId));
+        const maxCards = layoutCardCount > 0 ? layoutCardCount : 9;
+        return activeMappings.slice(0, maxCards);
+
+    }, [categories, selectedCategory, layoutConfig]);
+
+    if (!visibleMappings.length && categories.length > 0) return null;
 
     return (
         <div className="grid" style={gridStyle}>
@@ -41,3 +48,6 @@ export default function ContentGrid({ categories, selectedCategory, layoutConfig
         </div>
     );
 }
+
+// 4. Xuất component với memo (Quan trọng nhất)
+export default memo(ContentGrid);

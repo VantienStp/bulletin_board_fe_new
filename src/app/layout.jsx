@@ -1,29 +1,32 @@
+import { Roboto_Condensed } from "next/font/google";
 import { AuthProvider } from '../context/AuthContext';
 
+const roboto = Roboto_Condensed({
+	subsets: ["vietnamese", "latin"],
+	weight: ["300", "400", "700"],
+	display: "swap",
+	variable: "--font-roboto",
+});
+
 export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <head>
-        <link rel="icon" href="/favicon.ico" sizes="any" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
-          rel="stylesheet"
-        />
+	return (
+		<html lang="vi">
+			<head>
+				<link rel="icon" href="/favicon.ico" sizes="any" />
 
-        <script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+				<script src="https://code.iconify.design/3/3.1.1/iconify.min.js"></script>
+				<link
+					rel="stylesheet"
+					href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+				/>
 
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        />
-      </head>
-      <body className="app-grid">
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-      </body>
-    </html>
-  );
+			</head>
+
+			<body className={`app-grid ${roboto.className}`}>
+				<AuthProvider>
+					{children}
+				</AuthProvider>
+			</body>
+		</html>
+	);
 }
-
-
