@@ -8,10 +8,7 @@ export default function Card({ title, contents = [], style = {} }) {
   const [showTitle, setShowTitle] = useState(true);
   const [canClick, setCanClick] = useState(true);
 
-  const wrapperRef = useRef(null);
-  const contentBottomRef = useRef(null);
-  const qrImgRef = useRef(null);
-  const qrTextRef = useRef(null);
+  const containerRef = useRef(null);
   const timerRef = useRef(null);
 
   const activeFile = contents[activeIndex];
@@ -22,13 +19,11 @@ export default function Card({ title, contents = [], style = {} }) {
 
     const current = contents[activeIndex];
     let intervalTime = 10000;
-
     if (current.type === "video") intervalTime = 60000;
-    else if (current.type === "pdf") intervalTime = 60000 + Math.random() * 30000;
+    else if (current.type === "pdf") intervalTime = 75000;
     else intervalTime = 5000 + Math.random() * 5000;
 
     clearTimeout(timerRef.current);
-
     timerRef.current = setTimeout(() => {
       setActiveIndex((prev) => (prev + 1) % contents.length);
     }, intervalTime);
@@ -36,160 +31,109 @@ export default function Card({ title, contents = [], style = {} }) {
     return () => clearTimeout(timerRef.current);
   }, [activeIndex, contents]);
 
-
-  /* ======================== DYNAMIC SIZES ======================== */
+  /* ======================== DYNAMIC SIZES (OPTIMIZED) ======================== */
   useEffect(() => {
-    setDynamicSizes();
-    window.addEventListener("resize", setDynamicSizes);
-    return () => window.removeEventListener("resize", setDynamicSizes);
-  }, [activeFile]);
+    if (!containerRef.current) return;
 
+    // Sử dụng ResizeObserver để theo dõi thay đổi kích thước hiệu quả hơn window resize
+    const observer = new ResizeObserver((entries) => {
+      for (let entry of entries) {
+        const { width: w, height: h } = entry.contentRect;
+        const larger = Math.max(w, h);
 
-  function setDynamicSizes() {
-    const wrapper = wrapperRef.current;
-    const bottom = contentBottomRef.current;
-    const qrImg = qrImgRef.current;
-    const qrText = qrTextRef.current;
+        // Đẩy các tính toán vào Biến CSS (CSS Variables)
+        // Việc này giúp trình duyệt tối ưu hóa việc vẽ (Repaint) thay vì tính toán lại Layout (Reflow)
+        const container = containerRef.current;
+        container.style.setProperty("--larger", `${larger}px`);
 
-    if (!wrapper || !bottom || !qrImg || !qrText) return;
+        // Tính maxLines và đẩy vào CSS
+        const fontSize = Math.min(Math.max(larger * 0.029, 12), 100);
+        const bottomH = Math.min(Math.max(larger * 0.2, 80), 500);
+        const maxLines = Math.floor(bottomH / (fontSize * 1.4)) - 1;
+        container.style.setProperty("--max-lines", maxLines);
+      }
+    });
 
-    const w = wrapper.offsetWidth;
-    const h = wrapper.offsetHeight;
-    const larger = Math.max(w, h);
-
-    // const bottomH = larger * 0.15;
-    // const qrSize = larger * 0.15;
-    // const fontSize = larger * 0.025;
-    const padmin = Math.min(Math.max(8000 / larger, 8), 12);
-    const padmax = Math.min(Math.max(larger * 0.029, 8), 16);
-
-    bottom.style.padding = `${padmax}px`;
-    bottom.style.gap = `${padmax}px`;
-
-
-    const bottomH = Math.min(Math.max(larger * 0.2, 80), 500);
-    const qrSize = Math.min(Math.max(larger * 0.2, 60), 360);
-    const fontSize = Math.min(Math.max(larger * 0.029, 12), 100);
-
-
-    bottom.style.height = `${bottomH}px`;
-    qrImg.style.width = `${qrSize}px`;
-    qrImg.style.height = `${qrSize}px`;
-    qrText.style.fontSize = `${fontSize}px`;
-
-    const lineH = fontSize * 1.4;
-    const maxLines = Math.floor(bottomH / lineH) - 1;
-
-    qrText.style.display = "-webkit-box";
-    qrText.style.webkitBoxOrient = "vertical";
-    qrText.style.overflow = "hidden";
-    qrText.style.webkitLineClamp = maxLines;
-  }
-
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   function handleClick() {
     if (!canClick) return;
-
     clearTimeout(timerRef.current);
     setActiveIndex((prev) => (prev + 1) % contents.length);
-
     setCanClick(false);
-    setTimeout(() => setCanClick(true), 3000);
+    setTimeout(() => setCanClick(true), 2000); // Giảm xuống 2s để trải nghiệm mượt hơn
   }
-
 
   const getFullUrl = (p) => (!p ? null : p.startsWith("http") ? p : p.replace(/^\/+/, ""));
 
-
   return (
-    <div className="flex flex-col relative" style={style}>
+    <div className="flex flex-col relative card-dynamic-container" style={style} ref={containerRef}>
       {/* TITLE */}
       <div className="title">
         <span>{title}</span>
       </div>
 
-      {/* IMAGE + QR */}
-      <div className="relative flex flex-col flex-1" ref={wrapperRef}>
-
-        {/* IMAGE CONTAINER */}
+      <div className="relative flex flex-col flex-1">
+        {/* MEDIA CONTAINER */}
         <div
           className="relative flex-1 overflow-hidden cursor-pointer rounded-[1vw]"
           onClick={handleClick}
         >
           {contents.length ? (
-            <AnimatePresence mode="sync" initial={false}>
+            <AnimatePresence mode="wait">
               <motion.div
                 key={activeIndex}
-                initial={{ y: 100, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -100, opacity: 0 }}
-                transition={{ duration: 0.9, ease: [0.45, 0, 0.55, 1] }}
+                initial={{ opacity: 0, scale: 1.05 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
                 className="absolute inset-0 w-full h-full z-[1]"
               >
-                {/* IMAGE */}
                 {activeFile?.type === "image" && (
                   <img
                     src={getFullUrl(activeFile.url)}
                     className="absolute inset-0 w-full h-full object-cover object-top"
+                    alt=""
                   />
                 )}
-
-                {/* VIDEO */}
                 {activeFile?.type === "video" && (
                   <video
                     src={getFullUrl(activeFile.url)}
-                    muted loop autoPlay controls playsInline
+                    muted loop autoPlay playsInline
                     className="absolute inset-0 w-full h-full object-cover bg-black"
                   />
                 )}
-
-                {/* PDF */}
                 {activeFile?.type === "pdf" && (
                   <iframe
-                    className="absolute inset-0 w-full h-full rounded-[1vw] object-contain z-[20]"
-                    src={encodeURI(activeFile.url)}
+                    className="absolute inset-0 w-full h-full rounded-[1vw] z-[20]"
+                    src={`${encodeURI(activeFile.url)}#toolbar=0&navpanes=0`}
                     frameBorder="0"
-                  ></iframe>
+                  />
                 )}
               </motion.div>
             </AnimatePresence>
           ) : (
-            <span>❌ Không có dữ liệu</span>
+            <div className="flex items-center justify-center h-full">❌ Trống</div>
           )}
-        </div>
-
-        {/* ACTION BUTTONS */}
-        <div className="absolute top-[2%] right-[2%] z-[1] pointer-events-none">
-          <i
-            className="text-white opacity-70 text-[1vw] p-[0.5vw] cursor-pointer pointer-events-auto [text-shadow:0_0_0.5vw_rgba(0,0,0,0.5)] hover:scale-110"
-            onClick={() => setShowTitle(!showTitle)}
-          ></i>
         </div>
 
         {/* QR + DESCRIPTION */}
         {showTitle && activeFile?.qrCode && (
-          <div
-            ref={contentBottomRef}
-            className="absolute bottom-0 left-0 w-full flex items-start box-border rounded-b-[1vw] z-[10] "
-            style={{
-              background: "var(--overlay-bg)",
-              height: "12%",
-              minHeight: "10vh",
-              maxHeight: "18vh",
-            }}
-          >
-            {/* QR */}
-            <div className="flex items-center h-full aspect-square">
+          <div className="qr-overlay-dynamic shadow-2xl">
+            {/* QR WRAPPER */}
+            <div className="qr-image-wrapper">
               <img
-                ref={qrImgRef}
                 src={getFullUrl(activeFile.qrCode)}
-                className="w-auto h-full max-w-full max-h-full min-h-full mt-auto rounded-[0.5vw] opacity-90"
+                className="qr-img-file"
+                alt="qr"
               />
             </div>
 
-            {/* TEXT */}
-            <div className="w-full h-full overflow-hidden text-left [direction:ltr]">
-              <span ref={qrTextRef} className="font-semibold text-white block leading-[1.4] text-[0.8vw]">
+            {/* DESCRIPTION TEXT */}
+            <div className="qr-text-container">
+              <span className="qr-description-text">
                 {activeFile.description}
               </span>
             </div>

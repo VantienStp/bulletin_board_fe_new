@@ -347,3 +347,71 @@ body {
 #devtools-indicator {
     display: none !important;
 }
+
+
+
+
+
+.card-dynamic-container {
+  --larger: 400px;
+  --max-lines: 2;
+}
+
+.qr-overlay-dynamic {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  
+  z-index: 10;
+  display: flex;
+  align-items: flex-start;
+  box-sizing: border-box;
+  background: var(--overlay-bg, rgba(0,0,0,0.7));
+  border-bottom-left-radius: 1vw;
+  border-bottom-right-radius: 1vw;
+
+  height: clamp(80px, calc(var(--larger) * 0.2), 140px);
+
+  padding: clamp(8px, calc(var(--larger) * 0.029), 16px);
+  gap: clamp(8px, calc(var(--larger) * 0.029), 16px);
+}
+
+.qr-image-wrapper {
+  flex-shrink: 0;
+  height: 100%;
+  aspect-ratio: 1/1;
+  display: flex;
+  align-items: center;
+}
+
+.qr-img-file {
+  /* Công thức: qrSize = Math.min(Math.max(larger * 0.2, 60), 360) */
+  width: clamp(60px, calc(var(--larger) * 0.2), 360px);
+  height: clamp(60px, calc(var(--larger) * 0.2), 360px);
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0.5vw;
+  opacity: 0.95;
+  background: white; /* Thường QR nên có nền trắng để dễ quét */
+  padding: 2px;
+}
+
+.qr-text-container {
+  flex: 1;
+  height: 100%;
+  overflow: hidden;
+  text-align: left;
+}
+
+.qr-description-text {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: white;
+  font-weight: 600;
+  line-height: 1.4;
+  
+  font-size: clamp(12px, calc(var(--larger) * 0.029), 32px);
+  -webkit-line-clamp: var(--max-lines);
+}
