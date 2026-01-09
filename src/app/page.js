@@ -16,14 +16,13 @@ export default function HomePage() {
     categories,
     selectedCategory,
     layoutConfig,
-    config,       // 👈 Chứa autoSwitch
-    timeLeft,     // 👈 Thời gian còn lại
-    totalTime,    // 👈 Tổng thời gian
+    config,
+    timeLeft,
+    totalTime,
     setAutoSwitch,
     handleSelectCategory
   } = useKioskData();
 
-  // 🧮 Tính phần trăm cho thanh tiến trình (Progress Bar)
   // Nếu totalTime = 0 thì progress = 0 để tránh lỗi chia cho 0
   const progress = totalTime > 0 ? ((totalTime - timeLeft) / totalTime) * 100 : 0;
 
@@ -43,10 +42,10 @@ export default function HomePage() {
 
       <div className="content-wrapper">
         {/* Truyền props xuống Header để hiển thị trạng thái */}
-        <KioskHeader 
-            toggleAutoSwitch={() => setAutoSwitch(!config.autoSwitch)} 
-            isAutoSwitch={config.autoSwitch} // True/False
-            progress={progress}              // 0 -> 100
+        <KioskHeader
+          toggleAutoSwitch={() => setAutoSwitch(!config.autoSwitch)}
+          isAutoSwitch={config.autoSwitch} // True/False
+          progress={progress}              // 0 -> 100
         />
 
         <main className="main-content">
@@ -59,7 +58,7 @@ export default function HomePage() {
       </div>
 
       {/* Footer / Overlay */}
-      <div className="fixed bottom-0 right-0 w-[40vw] max-w-[600px] h-[54px] bg-[rgba(234,17,17,0.8)] text-slate-50 text-[26px] font-medium flex items-center justify-center rounded-tl-[20px] shadow-[0_6px_20px_rgba(0,0,0,0.25)] select-none pointer-events-none z-[9999]">
+      <div className="fixed bottom-0 right-0 w-[25%] min-w-[40px] h-[6%] min-h-[46px] bg-[rgba(234,17,17,0.8)] text-slate-50 text-[20px] font-medium flex items-center justify-center rounded-tl-[20px] shadow-[0_6px_20px_rgba(0,0,0,0.25)] select-none pointer-events-none z-[9999]">
         Vui lòng không chạm vào màn hình
       </div>
     </>

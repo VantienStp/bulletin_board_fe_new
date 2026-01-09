@@ -57,7 +57,7 @@ export default function Pagination({
     return (
         <div
             ref={containerRef}
-            className="flex justify-center items-center gap-3"
+            className="flex justify-center items-center gap-3 pt-6"
         >
             {/* PREVIOUS */}
             <button
