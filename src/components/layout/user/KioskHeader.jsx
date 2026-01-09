@@ -2,27 +2,22 @@
 import Clock from "@/components/share/Clock";
 import Weather from "@/components/share/Weather";
 
-export default function KioskHeader({ 
-    toggleAutoSwitch, 
-    isAutoSwitch, // Trạng thái: Có đang chạy tự động không?
-    progress      // Số % tiến trình (0-100)
+export default function KioskHeader({
+    toggleAutoSwitch,
+    isAutoSwitch,
+    progress
 }) {
     return (
-        <header className="main-header relative overflow-hidden">
-            <div className="header-content">
-                <div className="header-left">
+        <header className="relative overflow-hidden bg-[#F0F2F5] rounded-t-[1vh] rounded-tr-[0.5vw]">
+            <div className="flex justify-between px-[2vw] pt-[0.8vw]">
+                {/* Header Left */}
+                <div className="flex flex-col items-start w-[65%] gap-[var(--gap-small)]">
                     <div className="title-block">
-                        <span className="main-title flex items-center gap-3">
-                            {/* {!isAutoSwitch && (
-                                <span className="inline-flex items-center px-3 py-1 rounded-lg text-[0.8vw] font-bold bg-red-100 text-red-600 border border-red-200 animate-pulse">
-                                    <i className="fas fa-lock mr-2"></i> Đang Khóa
-                                </span>
-                            )} */}
-                            
-                            <span className="highlight">Bản Tin Hoạt Động</span> Toà Án Nhân Dân
+                        <span className="flex items-center gap-3 font-normal text-[28px]">
+                            <span className="font-bold">Bản Tin Hoạt Động</span> Toà Án Nhân Dân
                         </span>
-                        
-                        <div className="time-line">
+
+                        <div className="text-[1.1vw] opacity-95 text-[#6c6b6b]">
                             {(() => {
                                 const d = new Date();
                                 const weekdays = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
@@ -31,9 +26,8 @@ export default function KioskHeader({
                         </div>
                     </div>
                 </div>
-                
-                <div className="header-right">
-                    {/* Bấm vào thời tiết để test bật/tắt thủ công (ẩn) */}
+
+                <div className="flex flex-col items-end text-right text-[#333] text-[var(--font-size-medium)] w-[35%] gap-[var(--gap-tiny)]">
                     <div onClick={toggleAutoSwitch} style={{ cursor: "pointer", width: "100%" }}>
                         <Weather />
                     </div>
@@ -41,8 +35,6 @@ export default function KioskHeader({
                 </div>
             </div>
 
-            {/* 👇 THANH TIẾN TRÌNH: Chỉ hiện khi đang chạy AutoSwitch */}
-            
         </header>
     );
 }

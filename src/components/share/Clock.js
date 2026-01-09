@@ -1,4 +1,3 @@
-// components/Clock.js
 "use client";
 import { useState, useEffect } from "react";
 
@@ -18,5 +17,6 @@ export default function Clock() {
     return () => clearInterval(interval);
   }, []);
 
-  return <span id="clock">{time}</span>;
+  // Tailwind: font-bold, text-[1.1vw]
+  return <span className="font-bold text-[1.1vw]">{time}</span>;
 }

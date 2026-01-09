@@ -206,14 +206,6 @@ body {
     border-radius: 1vh 0.5vw 0 0;
 }
 
-.main-title {
-    font-weight: 400;
-}
-
-.main-title .highlight {
-    font-weight: 700;
-}
-
 .header-content {
     display: flex;
     justify-content: space-between;
@@ -353,6 +345,7 @@ body {
 
 
 .card-dynamic-container {
+  /* Khởi tạo giá trị mặc định tránh lỗi */
   --larger: 400px;
   --max-lines: 2;
 }
