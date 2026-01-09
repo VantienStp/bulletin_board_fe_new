@@ -8,10 +8,22 @@
 ├── 📄 package.json
 ├── 📄 postcss.config.js
 ├── 📁 public
+│   ├── 📄 avatar1.png
+│   ├── 📄 avatar2.png
+│   ├── 📄 avatar3.png
+│   ├── 📄 blob-haikei.svg
+│   ├── 📄 file copy.svg
 │   ├── 📄 file.svg
+│   ├── 📄 globe copy.svg
 │   ├── 📄 globe.svg
+│   ├── 📄 hero.png
 │   ├── 📄 law_bg.png
+│   ├── 📄 logo copy.png
 │   ├── 📄 logo.png
+│   ├── 📄 logo_no_bg.png
+│   ├── 📄 me1.png
+│   ├── 📄 me2.png
+│   ├── 📄 me3.png
 │   ├── 📄 next.svg
 │   ├── 📄 vercel.svg
 │   └── 📄 window.svg
@@ -28,63 +40,148 @@
 │   │   │       │   ├── 📄 page.jsx
 │   │   │       │   └── 📁 [id]
 │   │   │       │       └── 📄 page.jsx
-│   │   │       ├── 📄 layout.js
+│   │   │       ├── 📄 layout.jsx
 │   │   │       ├── 📁 layouts
 │   │   │       │   ├── 📄 page.jsx
 │   │   │       │   └── 📁 [id]
 │   │   │       │       └── 📄 page.jsx
-│   │   │       ├── 📄 page.js
-│   │   │       ├── 📁 settings
+│   │   │       ├── 📄 loading.jsx
+│   │   │       ├── 📄 page.jsx
+│   │   │       ├── 📁 profile
 │   │   │       │   ├── 📄 page.jsx
-│   │   │       │   └── 📄 settings.css
+│   │   │       │   └── 📁 tabs
+│   │   │       │       ├── 📄 BillingTab.jsx
+│   │   │       │       ├── 📄 NotificationsTab.jsx
+│   │   │       │       ├── 📄 ProfileTab.jsx
+│   │   │       │       ├── 📄 SecurityTab.jsx
+│   │   │       │       └── 📄 SessionsTab.jsx
+│   │   │       ├── 📁 settings
+│   │   │       │   └── 📄 page.jsx
 │   │   │       └── 📁 users
 │   │   │           └── 📄 page.jsx
 │   │   ├── 📁 (auth)
 │   │   │   ├── 📁 forgot-password
-│   │   │   │   └── 📄 page.js
-│   │   │   ├── 📄 layout.js
+│   │   │   │   └── 📄 page.jsx
+│   │   │   ├── 📄 layout.jsx
 │   │   │   ├── 📁 login
-│   │   │   │   └── 📄 page.js
+│   │   │   │   └── 📄 page.jsx
 │   │   │   ├── 📁 reset-password
-│   │   │   │   └── 📄 page.js
+│   │   │   │   └── 📄 page.jsx
 │   │   │   ├── 📁 signup
-│   │   │   │   └── 📄 page.js
+│   │   │   │   └── 📄 page.jsx
 │   │   │   └── 📁 verify-pin
-│   │   │       └── 📄 page.js
-│   │   ├── 📄 favicon.ico
+│   │   │       └── 📄 page.jsx
+│   │   ├── 📄 icon.ico
 │   │   ├── 📄 layout.jsx
 │   │   └── 📄 page.js
 │   ├── 📁 components
-│   │   ├── 📁 admin
-│   │   │   ├── 📄 Footer.jsx
-│   │   │   ├── 📄 Header.jsx
-│   │   │   ├── 📄 LayoutEditor.jsx
-│   │   │   └── 📄 Modal.jsx
+│   │   ├── 📁 common
+│   │   │   ├── 📄 CircularProgress.jsx
+│   │   │   ├── 📄 DeleteModal.jsx
+│   │   │   ├── 📄 FilterDropdown.jsx
+│   │   │   ├── 📄 Modal.jsx
+│   │   │   ├── 📄 Pagination.jsx
+│   │   │   ├── 📄 ProjectCard.jsx
+│   │   │   ├── 📄 SearchInput.jsx
+│   │   │   └── 📄 TurnstileClient.jsx
+│   │   ├── 📁 feature
+│   │   │   ├── 📁 cards
+│   │   │   │   ├── 📄 CardFormModal.jsx
+│   │   │   │   ├── 📄 CardTable.jsx
+│   │   │   │   ├── 📄 CardToolbar.jsx
+│   │   │   │   └── 📁 contents
+│   │   │   │       ├── 📄 ContentFormModal.jsx
+│   │   │   │       ├── 📄 ContentTable.jsx
+│   │   │   │       └── 📄 ContentToolbar.jsx
+│   │   │   ├── 📁 categories
+│   │   │   │   ├── 📄 CategoryFormModal.jsx
+│   │   │   │   ├── 📄 CategoryTable.jsx
+│   │   │   │   ├── 📄 CategoryToolbar.jsx
+│   │   │   │   └── 📁 detail
+│   │   │   │       ├── 📄 AddCardModal.jsx
+│   │   │   │       ├── 📄 CategoryCardTable.jsx
+│   │   │   │       └── 📄 CategoryDetailToolbar.jsx
+│   │   │   ├── 📁 dashboard
+│   │   │   │   ├── 📄 AnalyticsCard.jsx
+│   │   │   │   ├── 📄 ProjectList.jsx
+│   │   │   │   ├── 📄 ReminderCard.jsx
+│   │   │   │   ├── 📄 StatCard.jsx
+│   │   │   │   ├── 📄 TeamList.jsx
+│   │   │   │   └── 📄 TimeTracker.jsx
+│   │   │   ├── 📁 layouts
+│   │   │   │   ├── 📁 detail
+│   │   │   │   │   ├── 📄 EditorToolbar.jsx
+│   │   │   │   │   └── 📄 GridWorkspace.jsx
+│   │   │   │   ├── 📄 LayoutEditor.jsx
+│   │   │   │   ├── 📄 LayoutFormModal.jsx
+│   │   │   │   ├── 📄 LayoutTable.jsx
+│   │   │   │   └── 📄 LayoutToolbar.jsx
+│   │   │   ├── 📁 settings
+│   │   │   │   ├── 📄 DeviceFormModal.jsx
+│   │   │   │   ├── 📄 DeviceTable.jsx
+│   │   │   │   └── 📄 DeviceToolbar.jsx
+│   │   │   └── 📁 users
+│   │   │       ├── 📄 UserFormModal.jsx
+│   │   │       ├── 📄 UserTable.jsx
+│   │   │       └── 📄 UserToolbar.jsx
+│   │   ├── 📁 layout
+│   │   │   ├── 📁 admin
+│   │   │   │   ├── 📄 Sidebar.jsx
+│   │   │   │   └── 📄 Topbar.jsx
+│   │   │   └── 📁 user
+│   │   │       ├── 📄 ContentGrid.jsx
+│   │   │       ├── 📄 KioskHeader.jsx
+│   │   │       └── 📄 Sidebar.jsx
 │   │   ├── 📁 share
 │   │   │   ├── 📄 Clock.js
-│   │   │   ├── 📄 Lightbox.js
 │   │   │   └── 📄 Weather.js
+│   │   ├── 📁 ui
+│   │   │   ├── 📄 AutoPlaceholderInput.jsx
+│   │   │   ├── 📄 BackButton.jsx
+│   │   │   ├── 📄 BackToTop.jsx
+│   │   │   ├── 📄 FilterOption.jsx
+│   │   │   ├── 📄 RandomDropText.jsx
+│   │   │   ├── 📄 Reveal.jsx
+│   │   │   └── 📄 TypingText.jsx
 │   │   └── 📁 user
 │   │       └── 📄 Card.jsx
 │   ├── 📁 context
 │   │   └── 📄 AuthContext.js
+│   ├── 📁 data
+│   │   └── 📁 adapters
+│   │       ├── 📄 cardAdapter.js
+│   │       ├── 📄 categoryAdapter.js
+│   │       ├── 📄 contentAdapter.js
+│   │       ├── 📄 layoutAdapter.js
+│   │       └── 📄 userAdapter.js
 │   ├── 📁 hooks
+│   │   ├── 📄 useArrowNavigation.js
+│   │   ├── 📄 useCardFilters.js
+│   │   ├── 📄 useCategoryDetailFilters.js
+│   │   ├── 📄 useCategoryFilters.js
+│   │   ├── 📄 useContentFilters.js
+│   │   ├── 📄 useDeviceFilters.js
+│   │   ├── 📄 useKioskData.js
+│   │   ├── 📄 useLayoutEditor.js
+│   │   ├── 📄 useLayoutFilters.js
+│   │   ├── 📄 useOutsideClick.js
 │   │   ├── 📄 usePagination.js
 │   │   ├── 📄 useSlideshow.js
+│   │   ├── 📄 useUserFilters.js
 │   │   └── 📄 useWeather.js
 │   ├── 📁 lib
 │   │   ├── 📄 api.js
-│   │   └── 📄 auth.js
+│   │   ├── 📄 auth.js
+│   │   └── 📄 fetcher.js
 │   ├── 📁 styles
 │   │   ├── 📄 admin.css
 │   │   ├── 📄 auth.css
-│   │   ├── 📄 core.css
 │   │   ├── 📄 globals.css
 │   │   ├── 📄 LayoutEditor.css
 │   │   ├── 📄 modal.css
 │   │   └── 📄 tokens.css
 │   └── 📁 utils
+│       ├── 📄 dateUtils.js
 │       └── 📄 formatters.js
 ├── 📄 tailwind.config.js
-├── 📄 tree.cjs
-└── 📄 tree.txt
+└── 📄 tree.cjs

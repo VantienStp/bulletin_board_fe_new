@@ -1,3 +1,4 @@
+import { authFetch } from "@/lib/auth";
 function detectBaseUrl() {
     if (typeof window !== "undefined") {
         const host = window.location.hostname;
@@ -57,42 +58,36 @@ export async function fetchCardsByCategory(categoryId) {
     return result;
 }
 
-export async function createCard(cardData, token) {
-    const response = await fetch(`${API_BASE_URL}/cards`, {
+export async function createCard(cardData) {
+    const response = await authFetch(`${API_BASE_URL}/cards`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(cardData),
     });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.message || 'Lỗi khi tạo card');
-    return result;
+    if (!response || !response.ok) throw new Error('Lỗi khi tạo card');
+    return await response.json();
 }
 
-export async function updateCard(id, cardData, token) {
-    const response = await fetch(`${API_BASE_URL}/cards/${id}`, {
+export async function updateCard(id, cardData) {
+    const response = await authFetch(`${API_BASE_URL}/cards/${id}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(cardData),
     });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.message || 'Lỗi khi cập nhật card');
-    return result;
+    if (!response || !response.ok) throw new Error('Lỗi khi cập nhật card');
+    return await response.json();
 }
 
-export async function deleteCard(id, token) {
-    const response = await fetch(`${API_BASE_URL}/cards/${id}`, {
+export async function deleteCard(id) {
+    const response = await authFetch(`${API_BASE_URL}/cards/${id}`, {
         method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${token}` }
     });
-    const result = await response.json();
-    if (!response.ok) throw new Error(result.message || 'Lỗi khi xóa card');
-    return result;
+    if (!response || !response.ok) throw new Error('Lỗi khi xóa card');
+    return await response.json();
 }
 // #endregion
 

@@ -2,7 +2,8 @@
 import { API_BASE_URL } from "@/lib/api";
 
 export function clearToken() {
-  localStorage.removeItem("dummy"); 
+  // Xóa các thông tin liên quan đến session nếu có
+  localStorage.removeItem("user_status"); 
 }
 
 /**
@@ -15,8 +16,9 @@ export async function authFetch(url, options = {}) {
     credentials: "include", // Luôn gửi kèm HttpOnly Cookie (access_token)
   });
 
-  // 2. Nếu Server báo 401 (Access Token hết hạn hoặc không có)
-  if (res.status === 401) {
+  // 2. Nếu Server báo 401 và không phải là đang gọi chính API refresh/logout
+  const isAuthRequest = url.includes("/auth/refresh") || url.includes("/auth/logout");
+  if (res.status === 401 && !isAuthRequest) {
     console.warn("🔑 Access Token hết hạn, đang thử làm mới...");
 
     try {
