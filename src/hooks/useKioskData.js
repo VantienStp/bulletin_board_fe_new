@@ -16,7 +16,7 @@ export function useKioskData() {
 
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [layoutConfig, setLayoutConfig] = useState(null);
-    const [config, setConfig] = useState({ autoSwitch: true, switchInterval: 30 });
+    const [config, setConfig] = useState({ autoSwitch: true, switchInterval: 2 });
     const [avoidIds, setAvoidIds] = useState([]);
     const [timeLeft, setTimeLeft] = useState(0);
     const [totalTime, setTotalTime] = useState(0);
@@ -74,8 +74,9 @@ export function useKioskData() {
                     setConfig(prev => ({
                         ...prev,
                         autoSwitch: data.config.autoSwitch,
-                        switchInterval: data.config.switchInterval || 15
+                        switchInterval: data.config.switchInterval || 2
                     }));
+                    console.log(config);
 
                     // Logic Boot vào trang mặc định
                     if (!hasBooted.current && data.config.defaultCategoryId) {
