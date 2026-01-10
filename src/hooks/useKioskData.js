@@ -16,7 +16,7 @@ export function useKioskData() {
 
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [layoutConfig, setLayoutConfig] = useState(null);
-    const [config, setConfig] = useState({ autoSwitch: true, switchInterval: 2 });
+    const [config, setConfig] = useState({ autoSwitch: true, switchInterval: 15 });
     const [avoidIds, setAvoidIds] = useState([]);
     const [timeLeft, setTimeLeft] = useState(0);
     const [totalTime, setTotalTime] = useState(0);
@@ -71,11 +71,23 @@ export function useKioskData() {
                 const data = await res.json();
 
                 if (data.config) {
-                    setConfig(prev => ({
-                        ...prev,
-                        autoSwitch: data.config.autoSwitch,
-                        switchInterval: data.config.switchInterval || 2
-                    }));
+                    setConfig(prev => {
+                        // 1. Kiểm tra xem dữ liệu mới có khác dữ liệu cũ không
+                        const newInterval = data.config.switchInterval || 2;
+                        const newAutoSwitch = data.config.autoSwitch;
+
+                        if (prev.autoSwitch === newAutoSwitch && prev.switchInterval === newInterval) {
+                            return prev; // 🚩 QUAN TRỌNG: Trả về object cũ -> React sẽ không re-render, không reset Timer
+                        }
+
+                        // 2. Nếu khác thì mới cập nhật
+                        console.log("Cấu hình thay đổi, reset timer!"); // Log để debug
+                        return {
+                            ...prev,
+                            autoSwitch: newAutoSwitch,
+                            switchInterval: newInterval
+                        };
+                    });
                     console.log(config);
 
                     // Logic Boot vào trang mặc định
@@ -112,7 +124,7 @@ export function useKioskData() {
     useEffect(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
 
-        const intervalMs = config.switchInterval * 60 * 1000;
+        const intervalMs = config.switchInterval * 1 * 1000;
         setTotalTime(intervalMs);
         setTimeLeft(intervalMs);
 
