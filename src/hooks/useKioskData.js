@@ -74,7 +74,7 @@ export function useKioskData() {
                     setConfig(prev => ({
                         ...prev,
                         autoSwitch: data.config.autoSwitch,
-                        switchInterval: data.config.switchInterval || 30
+                        switchInterval: data.config.switchInterval || 15
                     }));
 
                     // Logic Boot vào trang mặc định
