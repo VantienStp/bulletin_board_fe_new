@@ -6,13 +6,15 @@ import FilterDropdown from "@/components/common/FilterDropdown";
 import FilterOption from "@/components/ui/FilterOption";
 import { FaPlusSquare } from "react-icons/fa";
 
+// 1. Nhận prop onSearchFocusChange
 export default function CardToolbar({
     searchText,
     setSearchText,
     filters,
     toggleFilter,
     clearFilters,
-    onAdd
+    onAdd,
+    onSearchFocusChange
 }) {
     const activeFilterCount = (filters.status?.length || 0) + (filters.type?.length || 0);
 
@@ -23,6 +25,10 @@ export default function CardToolbar({
                 onChange={setSearchText}
                 placeholder="Tìm kiếm tiêu đề..."
                 className="w-80"
+
+                // 2. Báo cáo trạng thái Focus
+                onFocus={() => onSearchFocusChange(true)}
+                onBlur={() => onSearchFocusChange(false)}
             />
 
             <FilterDropdown count={activeFilterCount} label="Filter">

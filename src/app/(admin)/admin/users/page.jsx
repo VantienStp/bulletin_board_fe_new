@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { FaUsers } from "react-icons/fa";
@@ -12,15 +12,15 @@ import { authFetch } from "@/lib/auth";
 import { userAdapter } from "@/data/adapters/userAdapter";
 
 import { useUserFilters } from "@/hooks/useUserFilters";
+import useArrowNavigation from "@/hooks/useArrowNavigation";
+
 import UserToolbar from "@/components/feature/users/UserToolbar";
 import UserTable from "@/components/feature/users/UserTable";
 import UserFormModal from "@/components/feature/users/UserFormModal";
 
 export default function UsersPage() {
-  // 1. Dùng SWR để fetch
-  const { data: rawUsers, mutate } = useSWR(`${API_BASE_URL}/users`, fetcher);
 
-  // 2. Chuẩn hóa
+  const { data: rawUsers, mutate } = useSWR(`${API_BASE_URL}/users`, fetcher);
   const allUsers = rawUsers ? rawUsers.map(item => userAdapter(item)) : [];
 
   // Hook Filter
@@ -40,6 +40,23 @@ export default function UsersPage() {
   const itemsPerPage = 6;
   const [currentPage, setCurrentPage] = useState(1);
   const paginationRef = useRef(null);
+
+  const [tableActive, setTableActive] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+
+  const pagesArray = useMemo(() =>
+    Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
+    [totalPages]);
+
+  useArrowNavigation({
+    items: pagesArray,
+    activeId: currentPage,
+    setActiveId: setCurrentPage,
+    direction: "horizontal",
+    enabled: tableActive && !searchFocused && totalPages > 1,
+  });
 
   // Reset trang khi search
   useEffect(() => {
@@ -131,32 +148,44 @@ export default function UsersPage() {
           toggleFilter={toggleFilter}
           clearFilters={clearFilters}
           onAdd={handleOpenCreate}
+          onSearchFocusChange={setSearchFocused}
         />
       </div>
 
-      {/* TABLE */}
-      <UserTable
-        users={paginatedUsers}
-        onEdit={handleOpenEdit}
-        onDelete={handleDelete}
-      />
+      {/* 6. BỌC VÙNG BẢNG (FOCUS TRAP AREA) */}
+      <div
+        tabIndex={0}
+        onFocus={() => setTableActive(true)}
+        onBlur={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget)) {
+            setTableActive(false);
+          }
+        }}
+        className="outline-none scroll-mt-4"
+        ref={paginationRef}
+      >
+        {/* TABLE */}
+        <UserTable
+          users={paginatedUsers}
+          onEdit={handleOpenEdit}
+          onDelete={handleDelete}
+        />
 
-      {/* PAGINATION */}
-      {filteredUsers.length > itemsPerPage && (
-        <div ref={paginationRef} className="mt-6 flex justify-center">
+        {/* PAGINATION */}
+        <div className="flex justify-center">
           <Pagination
             totalItems={filteredUsers.length}
             itemsPerPage={itemsPerPage}
             currentPage={currentPage}
             onPageChange={(page) => {
               setCurrentPage(page);
-              paginationRef.current?.scrollIntoView({ behavior: "auto", block: "start" });
+              paginationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
             }}
           />
         </div>
-      )}
+      </div>
 
-      {/* MODAL FORM */}
+      {/* MODALS (Giữ nguyên) */}
       <UserFormModal
         isOpen={showForm}
         onClose={() => setShowForm(false)}
@@ -164,22 +193,11 @@ export default function UsersPage() {
         onSubmit={handleSubmitForm}
       />
 
-      {/* DELETE MODAL */}
       <DeleteModal
         open={!!deleteUserId}
         title="Xóa người dùng?"
-        message={
-          deleteStatus === "loading" ? "Đang xóa..." :
-            deleteStatus === "success" ? "✅ Đã xóa thành công" :
-              deleteStatus === "error" ? "❌ Xóa thất bại!" :
-                "Bạn có chắc muốn xóa người dùng này không?"
-        }
-        onCancel={() => {
-          if (deleteStatus !== "loading") {
-            setDeleteUserId(null);
-            setDeleteStatus("idle");
-          }
-        }}
+        message={deleteStatus === "loading" ? "Đang xóa..." : "Bạn có chắc muốn xóa?"}
+        onCancel={() => setDeleteUserId(null)}
         onConfirm={handleDeleteConfirmed}
       />
     </div>

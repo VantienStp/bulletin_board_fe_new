@@ -13,7 +13,7 @@ export default function LayoutTable({ layouts, onEdit, onDelete }) {
         ">
                 <div className="text-left">Tên bố cục</div>
                 <div>Slug</div>
-                <div>Số card</div>
+                <div>Số Khung</div>
                 <div>Xem nhanh</div>
                 <div>Actions</div>
             </div>

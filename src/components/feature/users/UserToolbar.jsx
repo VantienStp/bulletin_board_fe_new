@@ -6,13 +6,15 @@ import FilterDropdown from "@/components/common/FilterDropdown";
 import FilterOption from "@/components/ui/FilterOption";
 import { FaUserPlus } from "react-icons/fa";
 
+// 1. Nhận thêm prop onSearchFocusChange
 export default function UserToolbar({
     searchText,
     setSearchText,
     filters,
     toggleFilter,
     clearFilters,
-    onAdd
+    onAdd,
+    onSearchFocusChange
 }) {
     const activeFilterCount = filters.role?.length || 0;
 
@@ -23,10 +25,13 @@ export default function UserToolbar({
                 onChange={setSearchText}
                 placeholder="Tìm user, email..."
                 className="w-80"
+
+                // 2. Gắn sự kiện báo trạng thái Focus
+                onFocus={() => onSearchFocusChange(true)}
+                onBlur={() => onSearchFocusChange(false)}
             />
 
             <FilterDropdown count={activeFilterCount} label="Filter">
-                {/* LỌC ROLE */}
                 <div className="mb-2">
                     <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Role</p>
                     {["admin", "editor", "user", "viewer"].map(role => (

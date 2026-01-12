@@ -13,7 +13,8 @@ import { cardAdapter } from "@/data/adapters/cardAdapter";
 
 // Hooks
 import { useCardFilters } from "@/hooks/useCardFilters";
-import usePagination from "@/hooks/usePagination"; // 2. Import Hook Pagination
+import usePagination from "@/hooks/usePagination";
+import useArrowNavigation from "@/hooks/useArrowNavigation";
 
 // Feature Components
 import CardToolbar from "@/components/feature/cards/CardToolbar";
@@ -37,11 +38,31 @@ export default function CardsPage() {
 	} = useCardFilters(allCards);
 
 	// 4. Hook Pagination (Thay thế code thủ công cũ)
+	const ITEMS_PER_PAGE = 6;
 	const {
 		currentPage,
 		paginatedData: paginatedCards,
 		goToPage
-	} = usePagination(filteredCards, 6);
+	} = usePagination(filteredCards, ITEMS_PER_PAGE);
+
+	// --- 2. STATE CHIA VÙNG (CONTEXT AWARE) ---
+	const [tableActive, setTableActive] = useState(false);
+	const [searchFocused, setSearchFocused] = useState(false);
+	const paginationRef = useRef(null);
+
+	// --- 3. CẤU HÌNH NAVIGATION ---
+	const totalPages = Math.ceil(filteredCards.length / ITEMS_PER_PAGE);
+	const pagesArray = useMemo(() =>
+		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
+		[totalPages]);
+
+	useArrowNavigation({
+		items: pagesArray,
+		activeId: currentPage,
+		setActiveId: goToPage,
+		direction: "horizontal",
+		enabled: tableActive && !searchFocused && totalPages > 1,
+	});
 
 	// State Form & Delete
 	const [editingCard, setEditingCard] = useState(null);
@@ -136,26 +157,42 @@ export default function CardsPage() {
 					toggleFilter={toggleFilter}
 					clearFilters={clearFilters}
 					onAdd={handleOpenCreate}
+					onSearchFocusChange={setSearchFocused}
 				/>
 			</div>
 
-			<CardTable
-				cards={paginatedCards} // Dùng data từ Hook
-				onEdit={handleOpenEdit}
-				onDelete={handleOpenDelete}
-			/>
+			{/* BỌC VÙNG BẢNG (FOCUS AREA) */}
+			<div
+				tabIndex={0}
+				onFocus={() => setTableActive(true)}
+				onBlur={(e) => {
+					if (!e.currentTarget.contains(e.relatedTarget)) {
+						setTableActive(false);
+					}
+				}}
+				className="outline-none scroll-mt-4"
+				ref={paginationRef}
+			>
+				<CardTable
+					cards={paginatedCards}
+					onEdit={handleOpenEdit}
+					onDelete={handleOpenDelete}
+				/>
 
-			{filteredCards.length > 6 && (
 				<div className="flex justify-center">
 					<Pagination
 						totalItems={filteredCards.length}
-						itemsPerPage={6}
+						itemsPerPage={ITEMS_PER_PAGE}
 						currentPage={currentPage}
-						onPageChange={goToPage} // Dùng hàm từ Hook
+						onPageChange={(page) => {
+							goToPage(page);
+							paginationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+						}}
 					/>
 				</div>
-			)}
+			</div>
 
+			{/* MODALS */}
 			<CardFormModal
 				isOpen={showForm}
 				onClose={() => setShowForm(false)}

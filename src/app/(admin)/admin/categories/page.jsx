@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 
@@ -11,7 +11,8 @@ import { categoryAdapter } from "@/data/adapters/categoryAdapter";
 
 // Hooks
 import { useCategoryFilters } from "@/hooks/useCategoryFilters";
-import usePagination from "@/hooks/usePagination"; // 👈 Nhớ import Hook này
+import usePagination from "@/hooks/usePagination";
+import useArrowNavigation from "@/hooks/useArrowNavigation";
 
 // Components
 import Pagination from "@/components/common/Pagination";
@@ -28,20 +29,40 @@ export default function CategoriesPage() {
 	const allCategories = rawCategories ? rawCategories.map(item => categoryAdapter(item)) : [];
 	const layouts = rawLayouts || [];
 
-	// 3. Hook Filter (Xử lý tìm kiếm và lọc)
+	// 3. Hook Filter
 	const {
 		searchText, setSearchText,
 		filters, toggleFilter, clearFilters,
 		filteredCategories
 	} = useCategoryFilters(allCategories);
 
-	// 4. Hook Pagination (Thay thế cho logic thủ công cũ)
-	// 💡 Mẹo: Đổi tên 'paginatedData' thành 'paginatedCategories' để khớp với code bên dưới
+	// 4. Hook Pagination
+	const ITEMS_PER_PAGE = 6;
 	const {
 		currentPage,
 		paginatedData: paginatedCategories,
 		goToPage
-	} = usePagination(filteredCategories, 6);
+	} = usePagination(filteredCategories, ITEMS_PER_PAGE);
+
+	// --- 5. STATE CHIA VÙNG (CONTEXT AWARE) ---
+	const [tableActive, setTableActive] = useState(false);
+	const [searchFocused, setSearchFocused] = useState(false);
+	const paginationRef = useRef(null);
+
+	// --- 6. CẤU HÌNH NAVIGATION ---
+	const totalPages = Math.ceil(filteredCategories.length / ITEMS_PER_PAGE);
+	const pagesArray = useMemo(() =>
+		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
+		[totalPages]);
+
+	useArrowNavigation({
+		items: pagesArray,
+		activeId: currentPage,
+		setActiveId: goToPage,
+		direction: "horizontal",
+		// Logic: Bật khi focus bảng + KHÔNG focus search + có nhiều trang
+		enabled: tableActive && !searchFocused && totalPages > 1,
+	});
 
 	// State Form Modal
 	const [editingCategory, setEditingCategory] = useState(null);
@@ -116,27 +137,43 @@ export default function CategoriesPage() {
 					clearFilters={clearFilters}
 					layouts={layouts}
 					onAdd={handleOpenCreate}
+					// 7. Truyền hàm bắt sự kiện focus
+					onSearchFocusChange={setSearchFocused}
 				/>
 			</div>
 
-			{/* TABLE */}
-			<CategoryTable
-				categories={paginatedCategories} // Biến này lấy từ usePagination
-				onEdit={handleOpenEdit}
-				onDelete={handleDelete}
-			/>
+			{/* 8. BỌC VÙNG BẢNG (FOCUS AREA) */}
+			<div
+				tabIndex={0}
+				onFocus={() => setTableActive(true)}
+				onBlur={(e) => {
+					if (!e.currentTarget.contains(e.relatedTarget)) {
+						setTableActive(false);
+					}
+				}}
+				className="outline-none scroll-mt-4"
+				ref={paginationRef}
+			>
+				{/* TABLE */}
+				<CategoryTable
+					categories={paginatedCategories}
+					onEdit={handleOpenEdit}
+					onDelete={handleDelete}
+				/>
 
-			{/* PAGINATION */}
-			{filteredCategories.length > 6 && (
-				<div className="mt-6 flex justify-center">
+				{/* PAGINATION */}
+				<div className="flex justify-center">
 					<Pagination
 						totalItems={filteredCategories.length}
-						itemsPerPage={6}
+						itemsPerPage={ITEMS_PER_PAGE}
 						currentPage={currentPage}
-						onPageChange={goToPage} // Dùng hàm của Hook
+						onPageChange={(page) => {
+							goToPage(page);
+							paginationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+						}}
 					/>
 				</div>
-			)}
+			</div>
 
 			{/* MODAL */}
 			<CategoryFormModal

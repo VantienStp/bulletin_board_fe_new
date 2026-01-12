@@ -6,14 +6,16 @@ import FilterDropdown from "@/components/common/FilterDropdown";
 import FilterOption from "@/components/ui/FilterOption";
 import { FaPlusSquare } from "react-icons/fa";
 
+// 1. Nhận thêm prop onSearchFocusChange
 export default function CategoryToolbar({
     searchText,
     setSearchText,
     filters,
     toggleFilter,
     clearFilters,
-    layouts, // Danh sách layout để tạo option lọc
-    onAdd
+    layouts,
+    onAdd,
+    onSearchFocusChange
 }) {
     const activeFilterCount = filters.layout?.length || 0;
 
@@ -24,6 +26,10 @@ export default function CategoryToolbar({
                 onChange={setSearchText}
                 placeholder="Tìm kiếm danh mục..."
                 className="w-80"
+
+                // 2. Báo cáo trạng thái Focus
+                onFocus={() => onSearchFocusChange(true)}
+                onBlur={() => onSearchFocusChange(false)}
             />
 
             <FilterDropdown count={activeFilterCount} label="Filter">
@@ -33,7 +39,7 @@ export default function CategoryToolbar({
                     <div className="max-h-48 overflow-y-auto pr-1">
                         {layouts.map(l => (
                             <FilterOption
-                                key={l._id} // Layouts raw data dùng _id
+                                key={l._id}
                                 label={l.title}
                                 checked={filters.layout?.includes(l._id)}
                                 onChange={() => toggleFilter("layout", l._id)}

@@ -1,18 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams } from "next/navigation";
 import useSWR from "swr"; // 👈 Import SWR
 import { fetcher } from "@/lib/fetcher"; // Import fetcher
 
-import { FaArrowLeft, FaFolderOpen } from "react-icons/fa";
-import Link from "next/link"; // Đừng quên import Link nếu dùng nút Back
-
 // Libs & Hooks & Adapters
 import { API_BASE_URL } from "@/lib/api";
 import { authFetch } from "@/lib/auth";
-import usePagination from "@/hooks/usePagination";
 import { cardAdapter } from "@/data/adapters/cardAdapter";
+
+import usePagination from "@/hooks/usePagination";
+import useArrowNavigation from "@/hooks/useArrowNavigation";
 
 // Import Components
 import { useCategoryDetailFilters } from "@/hooks/useCategoryDetailFilters";
@@ -46,25 +45,40 @@ export default function CategoryDetailPage() {
 	const [showModal, setShowModal] = useState(false);
 
 	// --- HOOK FILTER ---
-	const {
-		searchText, setSearchText,
-		filteredCards
-	} = useCategoryDetailFilters(cards);
+	const { searchText, setSearchText, filteredCards } = useCategoryDetailFilters(cards);
 
-	// Pagination
+	// Hook Pagination
+	const ITEMS_PER_PAGE = 4;
 	const {
 		currentPage,
 		paginatedData: currentCards,
 		goToPage,
-	} = usePagination(filteredCards, 4);
+	} = usePagination(filteredCards, ITEMS_PER_PAGE);
+
+	// --- 3. STATE CHIA VÙNG (CONTEXT AWARE) ---
+	const [tableActive, setTableActive] = useState(false);
+	const [searchFocused, setSearchFocused] = useState(false);
+	const paginationRef = useRef(null);
+
+	// --- 4. CẤU HÌNH NAVIGATION ---
+	const totalPages = Math.ceil(filteredCards.length / ITEMS_PER_PAGE);
+	const pagesArray = useMemo(() =>
+		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
+		[totalPages]);
+
+	useArrowNavigation({
+		items: pagesArray,
+		activeId: currentPage,
+		setActiveId: goToPage,
+		direction: "horizontal",
+		// Logic: Bật khi focus bảng + KHÔNG focus search + có nhiều trang
+		enabled: tableActive && !searchFocused && totalPages > 1,
+	});
 
 	// Reset trang về 1 khi search
-	useEffect(() => {
-		goToPage(1);
-	}, [searchText]);
+	useEffect(() => { goToPage(1); }, [searchText]);
 
 	// --- HANDLERS ---
-
 	const handleAddCard = async (cardId) => {
 		const res = await authFetch(
 			`${API_BASE_URL}/categories/${id}/add-card`,
@@ -114,17 +128,10 @@ export default function CategoryDetailPage() {
 	return (
 		<div className="px-4 pb-10">
 			{/* HEADER */}
-			<div className="flex justify-between items-center mb-6">
+			<div className="flex justify-between items-center">
 				<h1 className="text-2xl font-bold flex items-center gap-2">
-					<FaFolderOpen className="text-yellow-500" /> Danh mục: {category.title}
+					<i className={"fa-solid fa-tags"} /> Danh mục: {category.title}
 				</h1>
-
-				<Link
-					href="/admin/categories"
-					className="px-4 py-2 bg-gray-200 rounded-lg text-sm hover:bg-gray-300 flex items-center gap-2 transition"
-				>
-					<FaArrowLeft /> Quay lại
-				</Link>
 			</div>
 
 			{/* HEADER DƯỚI: THÔNG TIN & TOOLBAR */}
@@ -137,26 +144,42 @@ export default function CategoryDetailPage() {
 					searchText={searchText}
 					setSearchText={setSearchText}
 					onAdd={() => setShowModal(true)}
+					// 5. Truyền hàm bắt sự kiện focus
+					onSearchFocusChange={setSearchFocused}
 				/>
 			</div>
 
-			{/* LIST WRAPPER */}
-			<CategoryCardTable
-				cards={currentCards}
-				onRemove={handleRemoveCard}
-			/>
+			{/* 6. BỌC VÙNG BẢNG (FOCUS AREA) */}
+			<div
+				tabIndex={0}
+				onFocus={() => setTableActive(true)}
+				onBlur={(e) => {
+					if (!e.currentTarget.contains(e.relatedTarget)) {
+						setTableActive(false);
+					}
+				}}
+				className="outline-none scroll-mt-4"
+				ref={paginationRef}
+			>
+				{/* LIST WRAPPER */}
+				<CategoryCardTable
+					cards={currentCards}
+					onRemove={handleRemoveCard}
+				/>
 
-			{/* PAGINATION */}
-			{filteredCards.length > 4 && (
-				<div className="mt-6 flex justify-center">
+				{/* PAGINATION */}
+				<div className="flex justify-center">
 					<Pagination
 						totalItems={filteredCards.length}
-						itemsPerPage={4}
+						itemsPerPage={ITEMS_PER_PAGE}
 						currentPage={currentPage}
-						onPageChange={goToPage}
+						onPageChange={(page) => {
+							goToPage(page);
+							paginationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+						}}
 					/>
 				</div>
-			)}
+			</div>
 
 			{/* ADD MODAL */}
 			<AddCardModal

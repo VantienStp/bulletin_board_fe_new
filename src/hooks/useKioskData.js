@@ -124,7 +124,7 @@ export function useKioskData() {
     useEffect(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
 
-        const intervalMs = config.switchInterval * 60 * 1000;
+        const intervalMs = config.switchInterval * 1 * 1000;
         setTotalTime(intervalMs);
         setTimeLeft(intervalMs);
 

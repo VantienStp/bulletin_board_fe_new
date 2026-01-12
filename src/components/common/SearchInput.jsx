@@ -28,7 +28,7 @@ export default function SearchInput({
             {value && (
                 <button
                     onClick={() => onChange("")}
-                    className="ml-2 text-gray-400 hover:text-gray-600 transition"
+                    className="ml-2 text-gray-400 hover:text-gray-600 transition flex items-center"
                 >
                     <span className="material-symbols-outlined text-base">
                         close

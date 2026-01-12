@@ -13,6 +13,7 @@ import { layoutAdapter } from "@/data/adapters/layoutAdapter";
 
 import { useLayoutFilters } from "@/hooks/useLayoutFilters";
 import usePagination from "@/hooks/usePagination"; // 2. Import Hook Pagination
+import useArrowNavigation from "@/hooks/useArrowNavigation";
 
 // Feature Components
 import LayoutToolbar from "@/components/feature/layouts/LayoutToolbar";
@@ -35,11 +36,29 @@ export default function LayoutsPage() {
 	} = useLayoutFilters(allLayouts);
 
 	// 3. Tối ưu: Dùng Hook Pagination thay cho code thủ công
+	const ITEMS_PER_PAGE = 5;
 	const {
 		currentPage,
 		paginatedData: paginatedLayouts,
 		goToPage
-	} = usePagination(filteredLayouts, 5); // 5 item mỗi trang
+	} = usePagination(filteredLayouts, ITEMS_PER_PAGE);
+
+	const [tableActive, setTableActive] = useState(false);
+	const [searchFocused, setSearchFocused] = useState(false);
+
+	const totalPages = Math.ceil(filteredLayouts.length / ITEMS_PER_PAGE);
+	const pagesArray = useMemo(() =>
+		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
+		[totalPages]);
+
+	useArrowNavigation({
+		items: pagesArray,
+		activeId: currentPage,
+		setActiveId: goToPage,
+		direction: "horizontal", // Phím Left/Right
+		// 4. QUAN TRỌNG: Chỉ bật khi đang focus bảng VÀ KHÔNG gõ tìm kiếm
+		enabled: tableActive && !searchFocused && totalPages > 1,
+	});
 
 	// State Form & Delete
 	const [editingLayout, setEditingLayout] = useState(null);
@@ -133,33 +152,45 @@ export default function LayoutsPage() {
 					searchText={searchText}
 					setSearchText={setSearchText}
 					onAdd={handleOpenCreate}
+					// 5. TRUYỀN HÀM BẮT SỰ KIỆN FOCUS SEARCH
+					onSearchFocusChange={setSearchFocused}
 				/>
 			</div>
 
-			{/* TABLE */}
-			<LayoutTable
-				layouts={paginatedLayouts} // Data từ Hook
-				onEdit={handleOpenEdit}
-				onDelete={handleDelete}
-			/>
+			<div
+				tabIndex={0} // Cho phép div nhận focus
+				onFocus={() => setTableActive(true)} // Vào vùng -> Bật navigation
+				onBlur={(e) => {
+					// Ra khỏi vùng -> Tắt navigation
+					if (!e.currentTarget.contains(e.relatedTarget)) {
+						setTableActive(false);
+					}
+				}}
+				className="outline-none scroll-mt-4" // outline-none để bỏ viền xanh xấu xí mặc định
+				ref={paginationRef}
+			>
+				{/* TABLE */}
+				<LayoutTable
+					layouts={paginatedLayouts}
+					onEdit={handleOpenEdit}
+					onDelete={handleDelete}
+				/>
 
-			{/* PAGINATION */}
-			{filteredLayouts.length > 0 && (
-				<div ref={paginationRef} className="flex justify-center mt-6">
+				{/* PAGINATION */}
+				<div className="flex justify-center">
 					<Pagination
 						totalItems={filteredLayouts.length}
-						itemsPerPage={5}
+						itemsPerPage={ITEMS_PER_PAGE}
 						currentPage={currentPage}
 						onPageChange={(page) => {
 							goToPage(page);
-							// Scroll nhẹ lên bảng khi chuyển trang
-							paginationRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+							paginationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 						}}
 					/>
 				</div>
-			)}
+			</div>
 
-			{/* MODALS */}
+			{/* MODALS (Giữ nguyên) */}
 			<LayoutFormModal
 				isOpen={showForm}
 				onClose={() => setShowForm(false)}
@@ -170,18 +201,8 @@ export default function LayoutsPage() {
 			<DeleteModal
 				open={!!deleteLayoutId}
 				title="Delete Layout?"
-				message={
-					deleteStatus === "loading" ? "Đang xóa bố cục..." :
-						deleteStatus === "success" ? "✅ Xóa bố cục thành công" :
-							deleteStatus !== "idle" ? `❌ ${deleteStatus}` :
-								"Bạn có chắc muốn xóa bố cục này không?"
-				}
-				onCancel={() => {
-					if (deleteStatus !== "loading") {
-						setDeleteLayoutId(null);
-						setDeleteStatus("idle");
-					}
-				}}
+				message={deleteStatus === "loading" ? "Đang xóa..." : "Bạn có chắc muốn xóa?"}
+				onCancel={() => setDeleteLayoutId(null)}
 				onConfirm={handleDeleteConfirmed}
 			/>
 		</div>
