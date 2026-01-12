@@ -96,7 +96,6 @@ export function useKioskData() {
                             ? data.config.defaultCategoryId._id
                             : data.config.defaultCategoryId;
 
-                        // Tìm category trong danh sách hiện có (biến categories ở ngoài scope này có thể rỗng lúc đầu, cần check kỹ)
                         // Tuy nhiên vì categories là dependency của useEffect khác, ta xử lý ở useEffect fallback bên dưới sẽ an toàn hơn
                         // Hoặc ta có thể access trực tiếp rawCategories nếu cần thiết.
                         // Ở đây ta giữ nguyên logic cũ: đánh dấu đã nhận config

@@ -2,7 +2,33 @@
 
 import { useState, useEffect } from "react";
 import Modal from "@/components/common/Modal";
-import { Select, MenuItem } from "@mui/material";
+import { FaUser, FaEnvelope, FaLock, FaUserShield } from "react-icons/fa";
+
+// 👉 ĐƯA COMPONENT NÀY RA NGOÀI (Để tránh lỗi mất focus khi gõ)
+const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeholder, required = false, note }) => (
+    <div className="">
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+            {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        <div className="relative">
+            {/* Icon */}
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <Icon className="text-lg" />
+            </div>
+
+            {/* Input */}
+            <input
+                type={type}
+                className="w-full !pl-10 !py-3 border border-gray-300 rounded-lg text-sm "
+                placeholder={placeholder}
+                value={value}
+                onChange={onChange}
+                required={required}
+            />
+        </div>
+        {note && <p className="text-xs text-gray-400 mt-1">{note}</p>}
+    </div>
+);
 
 export default function UserFormModal({ isOpen, onClose, initialData, onSubmit }) {
     const [formData, setFormData] = useState({
@@ -18,7 +44,7 @@ export default function UserFormModal({ isOpen, onClose, initialData, onSubmit }
                 setFormData({
                     username: initialData.username,
                     email: initialData.email,
-                    password: "", // Không hiển thị password cũ
+                    password: "",
                     role: initialData.role,
                 });
             } else {
@@ -41,63 +67,93 @@ export default function UserFormModal({ isOpen, onClose, initialData, onSubmit }
 
     return (
         <Modal
-            title={initialData ? "Sửa người dùng" : "Thêm người dùng mới"}
+            title={initialData ? "Chỉnh sửa thành viên" : "Thêm thành viên mới"}
             onClose={onClose}
         >
-            <form onSubmit={handleSubmit}>
-                <label className="block mb-1 font-medium text-sm">Tên tài khoản</label>
-                <input
-                    className="w-full border rounded-lg p-2 text-sm mb-3"
+            <form onSubmit={handleSubmit} className="p-1">
+                <InputField
+                    label="Tên hiển thị"
+                    icon={FaUser}
+                    placeholder="Ví dụ: Nguyen Van A"
                     value={formData.username}
                     onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                     required
                 />
 
-                <label className="block mb-1 font-medium text-sm">Email</label>
-                <input
-                    className="w-full border rounded-lg p-2 text-sm mb-3"
+                <InputField
+                    label="Địa chỉ Email"
+                    icon={FaEnvelope}
                     type="email"
+                    placeholder="user@example.com"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
                 />
 
-                <label className="block mb-1 font-medium text-sm">
-                    Mật khẩu <span className="text-gray-400 font-normal text-xs">{initialData && "(để trống nếu không đổi)"}</span>
-                </label>
-                <input
-                    className="w-full border rounded-lg p-2 text-sm mb-3"
-                    type="password"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    // Chỉ require khi tạo mới
-                    required={!initialData}
-                />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Password */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                            Mật khẩu {initialData ? "" : <span className="text-red-500">*</span>}
+                        </label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <FaLock className="text-lg" />
+                            </div>
+                            <input
+                                type="password"
+                                className="w-full !pl-10 !py-3 border border-gray-300 rounded-lg text-sm
+                                focus:border-black focus:ring-1 focus:ring-black outline-none appearance-none bg-white cursor-pointer"
+                                placeholder={initialData ? "••••••••" : "Nhập mật khẩu..."}
+                                value={formData.password}
+                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                required={!initialData}
+                            />
+                        </div>
+                        {initialData && <p className="text-xs text-gray-400 mt-1">Để trống nếu giữ nguyên.</p>}
+                    </div>
 
-                <label className="block mb-1 font-medium text-sm">Quyền hạn</label>
-                <Select
-                    value={formData.role}
-                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                    fullWidth
-                    size="small"
-                    className="mb-6"
-                >
-                    <MenuItem value="admin">Admin</MenuItem>
-                    <MenuItem value="editor">Editor</MenuItem>
-                    <MenuItem value="user">User</MenuItem>
-                    <MenuItem value="viewer">Viewer</MenuItem>
-                </Select>
+                    {/* Role Select */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                            Phân quyền <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <FaUserShield className="text-lg" />
+                            </div>
+                            <select
+                                // 👇 Dùng !pl-12 ở đây nữa
+                                className="w-full !pl-10 !py-3 border border-gray-300 rounded-lg text-sm 
+                                    focus:border-black focus:ring-1 focus:ring-black outline-none appearance-none bg-white cursor-pointer"
+                                value={formData.role}
+                                onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                            >
+                                <option value="admin">Admin (Quản trị viên)</option>
+                                <option value="editor">Editor (Biên tập viên)</option>
+                                <option value="user">User (Người dùng)</option>
+                                <option value="viewer">Viewer (Chỉ xem)</option>
+                            </select>
+                            <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
+                                <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" fillRule="evenodd"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <div className="modal-actions flex justify-end gap-2">
-                    <button type="submit" className="btn-primary px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        {initialData ? "Cập nhật" : "Thêm mới"}
-                    </button>
+                <div className="flex items-center justify-end gap-3 pt-6 mt-2 border-t border-gray-100">
                     <button
                         type="button"
-                        className="btn-cancel px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
                         onClick={onClose}
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
                     >
-                        Hủy
+                        Hủy bỏ
+                    </button>
+                    <button
+                        type="submit"
+                        className="px-6 py-2 text-sm font-medium text-white bg-black rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-all"
+                    >
+                        {initialData ? "Lưu thay đổi" : "Tạo tài khoản"}
                     </button>
                 </div>
             </form>

@@ -1,17 +1,17 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { API_BASE_URL, BASE_URL } from "@/lib/api";
+// import { useRouter } from "next/navigation"; // 👈 Có thể bỏ cái này nếu dùng window.location
+import { API_BASE_URL } from "@/lib/api";
 
 export default function LoginPage() {
+    // ... (các state giữ nguyên)
     const [email, setEmail] = useState("admin@gmail.com");
     const [password, setPassword] = useState("123456");
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    const router = useRouter();
+    // const router = useRouter(); 👈 Không cần dùng router nữa
 
-    // Load email nếu đã remember
     useEffect(() => {
         const savedEmail = localStorage.getItem("rememberedEmail");
         if (savedEmail) {
@@ -35,44 +35,47 @@ export default function LoginPage() {
             const res = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include", // QUAN TRỌNG: cookie set từ BE
+                credentials: "include",
                 body: JSON.stringify({ email, password, rememberMe }),
             });
 
             const data = await res.json();
+
             if (!res.ok) {
                 setError(data.message || "Đăng nhập thất bại");
-                return;
+                return; // 👈 Nhớ return ở đây để không chạy tiếp logic bên dưới
             }
 
-            // Ghi nhớ email
+            // Lưu thông tin user
+            if (data.user) {
+                localStorage.setItem("currentUser", JSON.stringify(data.user));
+            }
+
+            // Xử lý Ghi nhớ email
             if (rememberMe) localStorage.setItem("rememberedEmail", email);
             else localStorage.removeItem("rememberedEmail");
 
-            // Không lưu token nữa → BE đã set cookie
+            // 🔥 SỬA TẠI ĐÂY: Dùng window.location.href để vào Admin
+            // Giúp refresh lại toàn bộ Context và đảm bảo không bị đá ngược về Login
             window.location.href = "/admin";
 
         } catch (err) {
             console.error("❌ Fetch error:", err);
             setError("Không thể kết nối tới server.");
         } finally {
-            setLoading(false);
+            // Không cần setLoading(false) nếu đã redirect bằng window.location
+            // Nhưng để an toàn cứ giữ lại cũng được
+            if (window.location.pathname === "/login") {
+                setLoading(false);
+            }
         }
     };
 
     return (
         <div className="auth-wrapper">
-            <img
-                src={'/law_bg.png'}
-                alt="background shape"
-                className="background-shape"
-            />
-
+            <img src={'/law_bg.png'} alt="background shape" className="background-shape" />
             <div className="auth-card">
-                <h1>
-                    Welcome to <span>TANDKV1</span>
-                </h1>
-
+                <h1>Welcome to <span>TANDKV1</span></h1>
                 {error && <div className="error-box">{error}</div>}
 
                 <form onSubmit={handleLogin}>
@@ -104,8 +107,7 @@ export default function LoginPage() {
                             <span className="circle"></span>
                             Ghi nhớ đăng nhập
                         </label>
-
-                        <a onClick={() => router.push("/forgot-password")} className="forgot a-button">
+                        <a onClick={() => router.push("/forgot-password")} className="forgot a-button cursor-pointer">
                             Quên mật khẩu?
                         </a>
                     </div>

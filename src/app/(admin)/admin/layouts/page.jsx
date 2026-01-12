@@ -138,12 +138,12 @@ export default function LayoutsPage() {
 	return (
 		<div className="px-4 pb-10">
 			{/* HEADER + TOOLBAR */}
-			<div className="flex justify-between items-end mb-8">
+			<div className="flex justify-between items-end mb-6">
 				<div>
 					<h1 className="text-2xl font-bold flex items-center gap-2">
 						<FaLayerGroup /> Bố cục hiển thị
 					</h1>
-					<p className="text-sm text-gray-500 mt-2">
+					<p className="text-sm text-gray-500 mt-1">
 						Hiển thị {filteredLayouts.length} bố cục phù hợp.
 					</p>
 				</div>

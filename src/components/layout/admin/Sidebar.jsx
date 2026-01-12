@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useMemo } from "react"; // Thêm useMemo nếu cần, nhưng mang ra ngoài là tốt nhất
+import { useEffect, useRef, useState, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import useArrowNavigation from "@/hooks/useArrowNavigation";
 
-// 1. MANG CẤU HÌNH RA NGOÀI (Biến tĩnh)
-// React sẽ không phải tạo lại nó mỗi lần render nữa.
 const MENU_CONFIG = {
     MAIN: [
         { id: "dashboard", href: "/admin", label: "Dashboard", icon: "fa-table-columns" },
@@ -21,7 +19,6 @@ const MENU_CONFIG = {
     ],
 };
 
-// Helper function cũng mang ra ngoài luôn cho sạch
 const findSectionById = (id) => {
     for (const [section, items] of Object.entries(MENU_CONFIG)) {
         if (items.some(item => item.id === id)) {
@@ -54,7 +51,6 @@ export default function Sidebar({ onLogout }) {
 
     // ================= SYNC ACTIVE BY URL =================
     useEffect(() => {
-        // Dùng MENU_CONFIG tĩnh bên ngoài
         const allItems = Object.values(MENU_CONFIG).flat();
         const current = allItems.find(item =>
             item.href === "/admin"
@@ -66,7 +62,7 @@ export default function Sidebar({ onLogout }) {
 
     // ================= KEYBOARD NAV (MAIN) =================
     useArrowNavigation({
-        items: MENU_CONFIG, // Truyền biến tĩnh -> Hook sẽ không bị chạy lại vô cớ
+        items: MENU_CONFIG,
         activeId,
         setActiveId: (newId) => {
             setActiveId(newId);
@@ -88,7 +84,7 @@ export default function Sidebar({ onLogout }) {
         }
 
         const section = findSectionById(activeId);
-        if (!section) return; // Safety check
+        if (!section) return;
 
         const isOpen = openSection[section];
         const wasJustOpened = !prevOpenSectionRef.current[section] && isOpen;
@@ -127,7 +123,6 @@ export default function Sidebar({ onLogout }) {
     }, [activeId, openSection]);
 
     // ================= RENDER SECTION =================
-    // Hàm này giữ trong render cũng được vì nó dùng state openSection
     const renderSection = (title, items) => {
         const isOpen = openSection[title];
         return (
@@ -155,7 +150,6 @@ export default function Sidebar({ onLogout }) {
                                     ref={el => { if (el) itemRefs.current[item.id] = el; }}
                                     onClick={() => setActiveId(item.id)}
 
-                                    // Thêm outline-none để khi tab vào không bị viền xấu
                                     className={`relative z-10 flex items-center gap-3 px-2 py-3 rounded-xl outline-none
                                         transition-all ease-linear
                                         ${isOpen ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2 pointer-events-none"}

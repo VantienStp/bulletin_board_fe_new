@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react"; // 1. Thêm useMemo
+import { useState, useRef, useEffect, useMemo } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 
 // Components
 import DeleteModal from "@/components/common/DeleteModal";
-import Pagination from "@/components/common/Pagination"; // Component hiển thị
+import Pagination from "@/components/common/Pagination";
+import Toast from "@/components/ui/Toast";
+import ToastContainer from "@/components/ui/ToastContainer";
 import { API_BASE_URL } from "@/lib/api";
 import { authFetch } from "@/lib/auth";
 import { cardAdapter } from "@/data/adapters/cardAdapter";
@@ -22,22 +24,17 @@ import CardTable from "@/components/feature/cards/CardTable";
 import CardFormModal from "@/components/feature/cards/CardFormModal";
 
 export default function CardsPage() {
-	// 1. Fetch Data
 	const { data: rawCards, mutate } = useSWR(`${API_BASE_URL}/cards`, fetcher);
-
-	// 2. Tối ưu: Chỉ map lại khi rawCards thay đổi (Tránh lag khi gõ phím)
 	const allCards = useMemo(() => {
 		return rawCards ? rawCards.map(item => cardAdapter(item)) : [];
 	}, [rawCards]);
 
-	// 3. Hook Filter
 	const {
 		searchText, setSearchText,
 		filters, toggleFilter, clearFilters,
 		filteredCards
 	} = useCardFilters(allCards);
 
-	// 4. Hook Pagination (Thay thế code thủ công cũ)
 	const ITEMS_PER_PAGE = 6;
 	const {
 		currentPage,
@@ -45,12 +42,10 @@ export default function CardsPage() {
 		goToPage
 	} = usePagination(filteredCards, ITEMS_PER_PAGE);
 
-	// --- 2. STATE CHIA VÙNG (CONTEXT AWARE) ---
 	const [tableActive, setTableActive] = useState(false);
 	const [searchFocused, setSearchFocused] = useState(false);
 	const paginationRef = useRef(null);
 
-	// --- 3. CẤU HÌNH NAVIGATION ---
 	const totalPages = Math.ceil(filteredCards.length / ITEMS_PER_PAGE);
 	const pagesArray = useMemo(() =>
 		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
@@ -64,13 +59,25 @@ export default function CardsPage() {
 		enabled: tableActive && !searchFocused && totalPages > 1,
 	});
 
+	const [toasts, setToasts] = useState([]);
+
+	// --- 2. HÀM THÊM TOAST ---
+	const addToast = (type, message) => {
+		const id = Date.now(); // Tạo ID duy nhất bằng thời gian
+		setToasts((prev) => [...prev, { id, type, message }]);
+	};
+
+	// --- 3. HÀM XÓA TOAST (Được gọi từ bên trong Toast con) ---
+	const removeToast = (id) => {
+		setToasts((prev) => prev.filter((t) => t.id !== id));
+	};
+
 	// State Form & Delete
 	const [editingCard, setEditingCard] = useState(null);
 	const [showForm, setShowForm] = useState(false);
 	const [deleteCardId, setDeleteCardId] = useState(null);
 	const [deleteStatus, setDeleteStatus] = useState("idle");
 
-	// Reset trang khi search
 	useEffect(() => {
 		goToPage(1);
 	}, [searchText, filters]);
@@ -92,20 +99,23 @@ export default function CardsPage() {
 			? `${API_BASE_URL}/cards/${editingCard.id}`
 			: `${API_BASE_URL}/cards`;
 
-		const res = await authFetch(url, {
-			method,
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(formData),
-		});
+		try {
+			const res = await authFetch(url, {
+				method,
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(formData),
+			});
 
-		if (!res.ok) {
-			alert("❌ Lưu thất bại");
-			return;
+			if (!res.ok) throw new Error("Lỗi khi lưu");
+
+			setShowForm(false);
+			setEditingCard(null);
+			mutate();
+			addToast("success", editingCard ? "Cập nhật thẻ thành công!" : "Tạo thẻ mới thành công!");
+
+		} catch (error) {
+			addToast("error", "Có lỗi xảy ra, vui lòng thử lại.");
 		}
-
-		setShowForm(false);
-		setEditingCard(null);
-		mutate(); // Reload data ngầm
 	};
 
 	const handleOpenDelete = (id) => {
@@ -121,31 +131,44 @@ export default function CardsPage() {
 			const res = await authFetch(`${API_BASE_URL}/cards/${deleteCardId}`, { method: "DELETE" });
 
 			if (res.ok) {
-				alert("✅ Đã xóa thẻ thành công!");
 				setDeleteCardId(null);
 				setDeleteStatus("idle");
 				mutate();
+				addToast("success", "Đã xóa thẻ nội dung thành công!");
 			} else {
 				const errorData = await res.json();
-				alert(`❌ ${errorData.message || "Xóa thất bại!"}`);
 				setDeleteStatus("idle");
 				setDeleteCardId(null);
+				addToast("error", errorData.message || "Xóa thất bại!");
 			}
 		} catch (error) {
-			alert("❌ Lỗi kết nối đến server!");
 			setDeleteStatus("idle");
 			setDeleteCardId(null);
+			addToast("error", "Lỗi kết nối đến server!");
 		}
 	}
 
 	return (
 		<div className="px-4 pb-10">
+			{/* 4. HIỂN THỊ TOAST NẾU CÓ */}
+			<ToastContainer>
+				{toasts.map((toast) => (
+					<Toast
+						key={toast.id} // Quan trọng: Key giúp React phân biệt
+						id={toast.id}
+						type={toast.type}
+						message={toast.message}
+						onClose={removeToast} // Truyền hàm xóa xuống
+					/>
+				))}
+			</ToastContainer>
+
 			<div className="flex justify-between items-end mb-6">
 				<div>
-					<h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+					<h1 className="text-2xl font-bold flex items-center gap-2">
 						<i className={"fa-solid fa-clone"} /> Thẻ nội dung
 					</h1>
-					<p className="text-sm text-gray-500 mt-2">
+					<p className="text-sm text-gray-500 mt-1">
 						Hiển thị {filteredCards.length} thẻ phù hợp.
 					</p>
 				</div>
@@ -161,7 +184,6 @@ export default function CardsPage() {
 				/>
 			</div>
 
-			{/* BỌC VÙNG BẢNG (FOCUS AREA) */}
 			<div
 				tabIndex={0}
 				onFocus={() => setTableActive(true)}
@@ -192,7 +214,6 @@ export default function CardsPage() {
 				</div>
 			</div>
 
-			{/* MODALS */}
 			<CardFormModal
 				isOpen={showForm}
 				onClose={() => setShowForm(false)}
@@ -203,9 +224,12 @@ export default function CardsPage() {
 			<DeleteModal
 				open={!!deleteCardId}
 				title="Xóa thẻ nội dung"
-				message="Hành động này sẽ xóa thẻ và toàn bộ file đính kèm vĩnh viễn khỏi server. Bạn có chắc chắn không?"
-				onCancel={() => setDeleteCardId(null)}
+				message="Hành động này sẽ xóa thẻ và toàn bộ file đính kèm..."
+				onCancel={() => {
+					if (deleteStatus !== "deleting") setDeleteCardId(null);
+				}}
 				onConfirm={handleDeleteConfirmed}
+				isLoading={deleteStatus === "deleting"}
 			/>
 		</div>
 	);

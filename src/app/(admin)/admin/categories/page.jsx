@@ -19,6 +19,11 @@ import Pagination from "@/components/common/Pagination";
 import CategoryToolbar from "@/components/feature/categories/CategoryToolbar";
 import CategoryTable from "@/components/feature/categories/CategoryTable";
 import CategoryFormModal from "@/components/feature/categories/CategoryFormModal";
+import DeleteModal from "@/components/common/DeleteModal"; // 1. Import DeleteModal
+
+// 2. Import Toast System
+import Toast from "@/components/ui/Toast";
+import ToastContainer from "@/components/ui/ToastContainer";
 
 export default function CategoriesPage() {
 	// 1. Fetch Data
@@ -26,7 +31,10 @@ export default function CategoriesPage() {
 	const { data: rawLayouts } = useSWR(`${API_BASE_URL}/gridlayouts`, fetcher);
 
 	// 2. Chuẩn hóa dữ liệu
-	const allCategories = rawCategories ? rawCategories.map(item => categoryAdapter(item)) : [];
+	const allCategories = useMemo(() => {
+		return rawCategories ? rawCategories.map(item => categoryAdapter(item)) : [];
+	}, [rawCategories]);
+
 	const layouts = rawLayouts || [];
 
 	// 3. Hook Filter
@@ -60,13 +68,27 @@ export default function CategoriesPage() {
 		activeId: currentPage,
 		setActiveId: goToPage,
 		direction: "horizontal",
-		// Logic: Bật khi focus bảng + KHÔNG focus search + có nhiều trang
 		enabled: tableActive && !searchFocused && totalPages > 1,
 	});
 
-	// State Form Modal
+	// --- 7. TOAST STATE ---
+	const [toasts, setToasts] = useState([]);
+
+	const addToast = (type, message) => {
+		const id = Date.now();
+		setToasts((prev) => [...prev, { id, type, message }]);
+	};
+
+	const removeToast = (id) => {
+		setToasts((prev) => prev.filter((t) => t.id !== id));
+	};
+
+	// State Form & Delete Modal
 	const [editingCategory, setEditingCategory] = useState(null);
 	const [showForm, setShowForm] = useState(false);
+
+	const [deleteCategoryId, setDeleteCategoryId] = useState(null);
+	const [deleteStatus, setDeleteStatus] = useState("idle");
 
 	// Reset về trang 1 khi search hoặc filter thay đổi
 	useEffect(() => {
@@ -90,41 +112,81 @@ export default function CategoriesPage() {
 			? `${API_BASE_URL}/categories/${editingCategory.id}`
 			: `${API_BASE_URL}/categories`;
 
-		const res = await authFetch(url, {
-			method,
-			headers: { "Content-Type": "application/json" },
-			body: JSON.stringify(formData),
-		});
+		try {
+			const res = await authFetch(url, {
+				method,
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(formData),
+			});
 
-		if (!res.ok) {
-			alert("❌ Lưu thất bại");
-			return;
+			if (!res.ok) throw new Error("Lỗi lưu");
+
+			setShowForm(false);
+			setEditingCategory(null);
+			mutate();
+			addToast("success", editingCategory ? "Cập nhật danh mục thành công!" : "Tạo danh mục mới thành công!");
+
+		} catch (error) {
+			addToast("error", "Có lỗi xảy ra, vui lòng thử lại.");
 		}
-
-		setShowForm(false);
-		setEditingCategory(null);
-		mutate(); // Reload data ngầm
 	};
 
-	const handleDelete = async (id) => {
-		if (!confirm("Bạn có chắc muốn xóa danh mục này?")) return;
-		const res = await authFetch(`${API_BASE_URL}/categories/${id}`, {
-			method: "DELETE",
-		});
-		if (res.ok) mutate();
+	// Thay thế window.confirm bằng DeleteModal
+	const handleDelete = (id) => {
+		setDeleteCategoryId(id);
+		setDeleteStatus("confirming");
+	};
+
+	const handleDeleteConfirmed = async () => {
+		if (!deleteCategoryId) return;
+		setDeleteStatus("deleting");
+
+		try {
+			const res = await authFetch(`${API_BASE_URL}/categories/${deleteCategoryId}`, {
+				method: "DELETE",
+			});
+
+			if (res.ok) {
+				setDeleteCategoryId(null);
+				setDeleteStatus("idle");
+				mutate();
+				addToast("success", "Đã xóa danh mục thành công!");
+			} else {
+				setDeleteStatus("idle");
+				setDeleteCategoryId(null);
+				addToast("error", "Xóa thất bại!");
+			}
+		} catch (error) {
+			setDeleteStatus("idle");
+			setDeleteCategoryId(null);
+			addToast("error", "Lỗi kết nối đến server!");
+		}
 	};
 
 	if (!rawCategories && !rawLayouts) return <div>Đang tải dữ liệu...</div>;
 
 	return (
 		<div className="px-4 pb-20">
+			{/* 8. HIỂN THỊ TOAST CONTAINER */}
+			<ToastContainer>
+				{toasts.map((toast) => (
+					<Toast
+						key={toast.id}
+						id={toast.id}
+						type={toast.type}
+						message={toast.message}
+						onClose={removeToast}
+					/>
+				))}
+			</ToastContainer>
+
 			{/* HEADER */}
-			<div className="flex justify-between items-end mb-8">
+			<div className="flex justify-between items-end mb-6">
 				<div>
-					<h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+					<h1 className="text-2xl font-bold flex items-center gap-2">
 						<i className={"fa-solid fa-tags"} /> Danh mục
 					</h1>
-					<p className="text-sm text-gray-500 mt-2">
+					<p className="text-sm text-gray-500 mt-1">
 						Hiển thị {filteredCategories.length} danh mục phù hợp.
 					</p>
 				</div>
@@ -137,12 +199,11 @@ export default function CategoriesPage() {
 					clearFilters={clearFilters}
 					layouts={layouts}
 					onAdd={handleOpenCreate}
-					// 7. Truyền hàm bắt sự kiện focus
 					onSearchFocusChange={setSearchFocused}
 				/>
 			</div>
 
-			{/* 8. BỌC VÙNG BẢNG (FOCUS AREA) */}
+			{/* BỌC VÙNG BẢNG (FOCUS AREA) */}
 			<div
 				tabIndex={0}
 				onFocus={() => setTableActive(true)}
@@ -162,7 +223,7 @@ export default function CategoriesPage() {
 				/>
 
 				{/* PAGINATION */}
-				<div className="flex justify-center">
+				<div className="flex justify-center mt-6">
 					<Pagination
 						totalItems={filteredCategories.length}
 						itemsPerPage={ITEMS_PER_PAGE}
@@ -175,13 +236,22 @@ export default function CategoriesPage() {
 				</div>
 			</div>
 
-			{/* MODAL */}
+			{/* MODAL FORM */}
 			<CategoryFormModal
 				isOpen={showForm}
 				onClose={() => setShowForm(false)}
 				initialData={editingCategory}
 				layouts={layouts}
 				onSubmit={handleSubmitForm}
+			/>
+
+			{/* DELETE MODAL */}
+			<DeleteModal
+				open={!!deleteCategoryId}
+				title="Xóa danh mục?"
+				message="Bạn có chắc chắn muốn xóa danh mục này không? Hành động này không thể hoàn tác."
+				onCancel={() => setDeleteCategoryId(null)}
+				onConfirm={handleDeleteConfirmed}
 			/>
 		</div>
 	);

@@ -5,201 +5,254 @@ import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { FaUsers } from "react-icons/fa";
 
-import Pagination from "@/components/common/Pagination";
-import DeleteModal from "@/components/common/DeleteModal";
+// Libs & Adapters
 import { API_BASE_URL } from "@/lib/api";
 import { authFetch } from "@/lib/auth";
 import { userAdapter } from "@/data/adapters/userAdapter";
 
+// Hooks
 import { useUserFilters } from "@/hooks/useUserFilters";
 import useArrowNavigation from "@/hooks/useArrowNavigation";
+import usePagination from "@/hooks/usePagination";
 
+// Components
+import Pagination from "@/components/common/Pagination";
+import DeleteModal from "@/components/common/DeleteModal";
 import UserToolbar from "@/components/feature/users/UserToolbar";
 import UserTable from "@/components/feature/users/UserTable";
 import UserFormModal from "@/components/feature/users/UserFormModal";
 
+// Toast System
+import Toast from "@/components/ui/Toast";
+import ToastContainer from "@/components/ui/ToastContainer";
+
 export default function UsersPage() {
 
-  const { data: rawUsers, mutate } = useSWR(`${API_BASE_URL}/users`, fetcher);
-  const allUsers = rawUsers ? rawUsers.map(item => userAdapter(item)) : [];
+	const { data: rawUsers, mutate } = useSWR(`${API_BASE_URL}/users`, fetcher);
 
-  // Hook Filter
-  const {
-    searchText, setSearchText,
-    filters, toggleFilter, clearFilters,
-    filteredUsers
-  } = useUserFilters(allUsers);
+	// Chuẩn hóa dữ liệu
+	const allUsers = useMemo(() => {
+		return rawUsers ? rawUsers.map(item => userAdapter(item)) : [];
+	}, [rawUsers]);
 
-  // State Form & Delete
-  const [editingUser, setEditingUser] = useState(null);
-  const [showForm, setShowForm] = useState(false);
-  const [deleteUserId, setDeleteUserId] = useState(null);
-  const [deleteStatus, setDeleteStatus] = useState("idle");
+	// Hook Filter
+	const {
+		searchText, setSearchText,
+		filters, toggleFilter, clearFilters,
+		filteredUsers
+	} = useUserFilters(allUsers);
 
-  // Pagination
-  const itemsPerPage = 6;
-  const [currentPage, setCurrentPage] = useState(1);
-  const paginationRef = useRef(null);
+	// HOOK USEPAGINATION 
+	const ITEMS_PER_PAGE = 6;
+	const {
+		currentPage,
+		paginatedData: paginatedUsers,
+		goToPage
+	} = usePagination(filteredUsers, ITEMS_PER_PAGE);
 
-  const [tableActive, setTableActive] = useState(false);
-  const [searchFocused, setSearchFocused] = useState(false);
+	// Focus Management
+	const [tableActive, setTableActive] = useState(false);
+	const [searchFocused, setSearchFocused] = useState(false);
+	const paginationRef = useRef(null);
 
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+	// Cấu hình Arrow Navigation
+	const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
+	const pagesArray = useMemo(() =>
+		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
+		[totalPages]);
 
-  const pagesArray = useMemo(() =>
-    Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
-    [totalPages]);
+	useArrowNavigation({
+		items: pagesArray,
+		activeId: currentPage,
+		setActiveId: goToPage,
+		direction: "horizontal",
+		enabled: tableActive && !searchFocused && totalPages > 1,
+	});
 
-  useArrowNavigation({
-    items: pagesArray,
-    activeId: currentPage,
-    setActiveId: setCurrentPage,
-    direction: "horizontal",
-    enabled: tableActive && !searchFocused && totalPages > 1,
-  });
+	// --- TOAST STATE ---
+	const [toasts, setToasts] = useState([]);
 
-  // Reset trang khi search
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchText, filters]);
+	const addToast = (type, message) => {
+		const id = Date.now();
+		setToasts((prev) => [...prev, { id, type, message }]);
+	};
 
-  // --- HANDLERS ---
-  const handleOpenCreate = () => {
-    setEditingUser(null);
-    setShowForm(true);
-  };
+	const removeToast = (id) => {
+		setToasts((prev) => prev.filter((t) => t.id !== id));
+	};
 
-  const handleOpenEdit = (user) => {
-    setEditingUser(user);
-    setShowForm(true);
-  };
+	// State Form & Delete
+	const [editingUser, setEditingUser] = useState(null);
+	const [showForm, setShowForm] = useState(false);
 
-  const handleSubmitForm = async (formData) => {
-    const method = editingUser ? "PUT" : "POST";
-    const url = editingUser
-      ? `${API_BASE_URL}/users/${editingUser.id}`
-      : `${API_BASE_URL}/users`;
+	const [deleteUserId, setDeleteUserId] = useState(null);
+	const [deleteStatus, setDeleteStatus] = useState("idle");
 
-    const payload = { ...formData };
-    if (!payload.password) delete payload.password;
+	// Reset trang khi search
+	useEffect(() => {
+		goToPage(1);
+	}, [searchText, filters]);
 
-    const res = await authFetch(url, {
-      method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+	// --- HANDLERS ---
+	const handleOpenCreate = () => {
+		setEditingUser(null);
+		setShowForm(true);
+	};
 
-    if (res?.ok) {
-      setShowForm(false);
-      setEditingUser(null);
-      mutate(); // Reload data
-    } else {
-      alert("❌ Lưu thất bại");
-    }
-  };
+	const handleOpenEdit = (user) => {
+		setEditingUser(user);
+		setShowForm(true);
+	};
 
-  const handleDelete = (id) => {
-    setDeleteUserId(id);
-    setDeleteStatus("idle");
-  };
+	const handleSubmitForm = async (formData) => {
+		const method = editingUser ? "PUT" : "POST";
+		const url = editingUser
+			? `${API_BASE_URL}/users/${editingUser.id}`
+			: `${API_BASE_URL}/users`;
 
-  const handleDeleteConfirmed = async () => {
-    if (!deleteUserId) return;
-    setDeleteStatus("loading");
+		const payload = { ...formData };
+		if (!payload.password) delete payload.password;
 
-    try {
-      const res = await authFetch(`${API_BASE_URL}/users/${deleteUserId}`, { method: "DELETE" });
-      if (!res?.ok) throw new Error("Delete failed");
+		try {
+			const res = await authFetch(url, {
+				method,
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(payload),
+			});
 
-      mutate(); // Reload data
-      setDeleteStatus("success");
+			if (res?.ok) {
+				setShowForm(false);
+				setEditingUser(null);
+				mutate();
+				addToast("success", editingUser ? "Cập nhật người dùng thành công!" : "Thêm người dùng mới thành công!");
+			} else {
+				// 👇 SỬA Ở ĐÂY: Đọc message lỗi từ server gửi về
+				const errorData = await res.json();
+				addToast("error", errorData.message || "Lưu thất bại, vui lòng thử lại.");
+			}
+		} catch (error) {
+			addToast("error", "Lỗi kết nối server!");
+		}
+	};
+	const handleDelete = (id) => {
+		setDeleteUserId(id);
+		setDeleteStatus("confirming");
+	};
 
-      setTimeout(() => {
-        setDeleteUserId(null);
-        setDeleteStatus("idle");
-      }, 800);
-    } catch (err) {
-      setDeleteStatus("error");
-    }
-  };
+	const handleDeleteConfirmed = async () => {
+		if (!deleteUserId) return;
+		setDeleteStatus("loading");
 
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedUsers = filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+		try {
+			const res = await authFetch(`${API_BASE_URL}/users/${deleteUserId}`, { method: "DELETE" });
 
-  if (!rawUsers) return <div>Đang tải dữ liệu...</div>;
+			if (res?.ok) {
+				setDeleteUserId(null);
+				setDeleteStatus("idle");
+				mutate();
+				addToast("success", "Đã xóa người dùng thành công!");
+			} else {
+				setDeleteStatus("idle");
+				setDeleteUserId(null);
+				addToast("error", "Xóa thất bại!");
+			}
+		} catch (err) {
+			setDeleteStatus("idle");
+			setDeleteUserId(null);
+			addToast("error", "Lỗi kết nối server!");
+		}
+	};
 
-  return (
-    <div className="px-4 pb-20">
-      {/* HEADER + TOOLBAR */}
-      <div className="flex justify-between items-end mb-8">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <FaUsers /> Quản lý người dùng
-          </h1>
-          <p className="text-sm text-gray-500 mt-2">
-            Hiển thị {filteredUsers.length} người dùng phù hợp.
-          </p>
-        </div>
+	if (!rawUsers) return <div>Đang tải dữ liệu...</div>;
 
-        <UserToolbar
-          searchText={searchText}
-          setSearchText={setSearchText}
-          filters={filters}
-          toggleFilter={toggleFilter}
-          clearFilters={clearFilters}
-          onAdd={handleOpenCreate}
-          onSearchFocusChange={setSearchFocused}
-        />
-      </div>
+	return (
+		<div className="px-4 pb-20">
+			{/* TOAST CONTAINER */}
+			<ToastContainer>
+				{toasts.map((toast) => (
+					<Toast
+						key={toast.id}
+						id={toast.id}
+						type={toast.type}
+						message={toast.message}
+						onClose={removeToast}
+					/>
+				))}
+			</ToastContainer>
 
-      {/* 6. BỌC VÙNG BẢNG (FOCUS TRAP AREA) */}
-      <div
-        tabIndex={0}
-        onFocus={() => setTableActive(true)}
-        onBlur={(e) => {
-          if (!e.currentTarget.contains(e.relatedTarget)) {
-            setTableActive(false);
-          }
-        }}
-        className="outline-none scroll-mt-4"
-        ref={paginationRef}
-      >
-        {/* TABLE */}
-        <UserTable
-          users={paginatedUsers}
-          onEdit={handleOpenEdit}
-          onDelete={handleDelete}
-        />
+			{/* HEADER + TOOLBAR */}
+			<div className="flex justify-between items-end mb-6">
+				<div>
+					<h1 className="text-2xl font-bold flex items-center gap-2">
+						<FaUsers /> Quản lý người dùng
+					</h1>
+					<p className="text-sm text-gray-500 mt-1">
+						Hiển thị {filteredUsers.length} người dùng phù hợp.
+					</p>
+				</div>
 
-        {/* PAGINATION */}
-        <div className="flex justify-center">
-          <Pagination
-            totalItems={filteredUsers.length}
-            itemsPerPage={itemsPerPage}
-            currentPage={currentPage}
-            onPageChange={(page) => {
-              setCurrentPage(page);
-              paginationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }}
-          />
-        </div>
-      </div>
+				<UserToolbar
+					searchText={searchText}
+					setSearchText={setSearchText}
+					filters={filters}
+					toggleFilter={toggleFilter}
+					clearFilters={clearFilters}
+					onAdd={handleOpenCreate}
+					onSearchFocusChange={setSearchFocused}
+				/>
+			</div>
 
-      {/* MODALS (Giữ nguyên) */}
-      <UserFormModal
-        isOpen={showForm}
-        onClose={() => setShowForm(false)}
-        initialData={editingUser}
-        onSubmit={handleSubmitForm}
-      />
+			{/* VÙNG BẢNG (FOCUS AREA) */}
+			<div
+				tabIndex={0}
+				onFocus={() => setTableActive(true)}
+				onBlur={(e) => {
+					if (!e.currentTarget.contains(e.relatedTarget)) {
+						setTableActive(false);
+					}
+				}}
+				className="outline-none scroll-mt-4"
+				ref={paginationRef}
+			>
+				{/* TABLE */}
+				<UserTable
+					users={paginatedUsers}
+					onEdit={handleOpenEdit}
+					onDelete={handleDelete}
+				/>
 
-      <DeleteModal
-        open={!!deleteUserId}
-        title="Xóa người dùng?"
-        message={deleteStatus === "loading" ? "Đang xóa..." : "Bạn có chắc muốn xóa?"}
-        onCancel={() => setDeleteUserId(null)}
-        onConfirm={handleDeleteConfirmed}
-      />
-    </div>
-  );
+				{/* PAGINATION */}
+				<div className="flex justify-center mt-6">
+					<Pagination
+						totalItems={filteredUsers.length}
+						itemsPerPage={ITEMS_PER_PAGE}
+						currentPage={currentPage}
+						onPageChange={(page) => {
+							goToPage(page);
+							paginationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+						}}
+					/>
+				</div>
+			</div>
+
+			{/* MODALS */}
+			<UserFormModal
+				isOpen={showForm}
+				onClose={() => setShowForm(false)}
+				initialData={editingUser}
+				onSubmit={handleSubmitForm}
+			/>
+
+			<DeleteModal
+				open={!!deleteUserId}
+				title="Xóa người dùng?"
+				message="Hành động này không thể hoàn tác. Bạn có chắc chắn muốn xóa?"
+				onCancel={() => {
+					if (deleteStatus !== "loading") setDeleteUserId(null);
+				}}
+				onConfirm={handleDeleteConfirmed}
+				isLoading={deleteStatus === "loading"}
+			/>
+		</div>
+	);
 }
