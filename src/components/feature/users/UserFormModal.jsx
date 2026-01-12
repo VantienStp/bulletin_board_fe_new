@@ -3,32 +3,7 @@
 import { useState, useEffect } from "react";
 import Modal from "@/components/common/Modal";
 import { FaUser, FaEnvelope, FaLock, FaUserShield } from "react-icons/fa";
-
-// 👉 ĐƯA COMPONENT NÀY RA NGOÀI (Để tránh lỗi mất focus khi gõ)
-const InputField = ({ label, icon: Icon, type = "text", value, onChange, placeholder, required = false, note }) => (
-    <div className="">
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-            {label} {required && <span className="text-red-500">*</span>}
-        </label>
-        <div className="relative">
-            {/* Icon */}
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                <Icon className="text-lg" />
-            </div>
-
-            {/* Input */}
-            <input
-                type={type}
-                className="w-full !pl-10 !py-3 border border-gray-300 rounded-lg text-sm "
-                placeholder={placeholder}
-                value={value}
-                onChange={onChange}
-                required={required}
-            />
-        </div>
-        {note && <p className="text-xs text-gray-400 mt-1">{note}</p>}
-    </div>
-);
+import FormInput from "@/components/ui/FormInput";
 
 export default function UserFormModal({ isOpen, onClose, initialData, onSubmit }) {
     const [formData, setFormData] = useState({
@@ -71,7 +46,7 @@ export default function UserFormModal({ isOpen, onClose, initialData, onSubmit }
             onClose={onClose}
         >
             <form onSubmit={handleSubmit} className="p-1">
-                <InputField
+                <FormInput
                     label="Tên hiển thị"
                     icon={FaUser}
                     placeholder="Ví dụ: Nguyen Van A"
@@ -80,7 +55,7 @@ export default function UserFormModal({ isOpen, onClose, initialData, onSubmit }
                     required
                 />
 
-                <InputField
+                <FormInput
                     label="Địa chỉ Email"
                     icon={FaEnvelope}
                     type="email"

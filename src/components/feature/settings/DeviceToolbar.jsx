@@ -10,8 +10,9 @@ export default function DeviceToolbar({
     searchText,
     setSearchText,
     filters,
-    toggleStatusFilter, 
-    clearFilters,     
+    toggleStatusFilter,
+    onSearchFocusChange,
+    clearFilters,
     onRefresh,
     loading
 }) {
@@ -25,36 +26,33 @@ export default function DeviceToolbar({
                 onChange={setSearchText}
                 placeholder="Tìm tên, ID..."
                 className="w-64"
+                onFocus={() => onSearchFocusChange && onSearchFocusChange(true)}
+                onBlur={() => onSearchFocusChange && onSearchFocusChange(false)}
             />
 
             {/* Filter Dropdown */}
             <FilterDropdown count={activeFilterCount} label="Trạng thái">
                 <div className="mb-2">
                     <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2">Kết nối</p>
-                    
-                    {/* ✅ Option 1: Online */}
                     <FilterOption
-                        type="radio" // Chuyển sang Radio
+                        type="radio"
                         label="Online (Live)"
                         checked={filters.status.includes("online")}
                         onChange={() => toggleStatusFilter("online")}
-                        color="#22c55e" // Thêm màu xanh cho đẹp (tùy chọn)
+                        color="#22c55e"
                     />
-
-                    {/* ✅ Option 2: Offline */}
                     <FilterOption
-                        type="radio" // Chuyển sang Radio
+                        type="radio"
                         label="Offline"
                         checked={filters.status.includes("offline")}
                         onChange={() => toggleStatusFilter("offline")}
-                        color="#9ca3af" // Thêm màu xám (tùy chọn)
+                        color="#9ca3af"
                     />
                 </div>
 
-                {/* ✅ NÚT CLEAR FILTER (Lúc nãy bạn thiếu đoạn này nên nó không hiện) */}
                 {activeFilterCount > 0 && (
-                    <button 
-                        onClick={clearFilters} 
+                    <button
+                        onClick={clearFilters}
                         className="mt-2 pt-2 border-t w-full text-left text-xs text-red-500 hover:underline font-medium"
                     >
                         Xóa bộ lọc

@@ -1,193 +1,134 @@
 "use client";
 
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react"; // Thêm useRef
 import useSWR from "swr";
-import { fetcher } from "@/lib/fetcher";
+import { FaDesktop } from "react-icons/fa";
+import { API_BASE_URL } from "@/lib/api";
+import { authFetch } from "@/lib/auth";
+
+// Hooks
+import { useDeviceFilters } from "@/hooks/useDeviceFilters";
+import usePagination from "@/hooks/usePagination";
+import useArrowNavigation from "@/hooks/useArrowNavigation"; // ✅ Import Hook này
 
 // Components
-import DeleteModal from "@/components/common/DeleteModal";
+import DeviceToolbar from "@/components/feature/settings/DeviceToolbar";
+import DeviceTable from "@/components/feature/settings/DeviceTable";
+import DeviceFormModal from "@/components/feature/settings/DeviceFormModal";
 import Pagination from "@/components/common/Pagination";
 import Toast from "@/components/ui/Toast";
 import ToastContainer from "@/components/ui/ToastContainer";
-import { API_BASE_URL } from "@/lib/api";
-import { authFetch } from "@/lib/auth";
-import { cardAdapter } from "@/data/adapters/cardAdapter";
 
-// Hooks
-import { useCardFilters } from "@/hooks/useCardFilters";
-import usePagination from "@/hooks/usePagination";
-import useArrowNavigation from "@/hooks/useArrowNavigation";
+const fetcher = (url) => authFetch(url).then((res) => res.json());
 
-// Feature Components
-import CardToolbar from "@/components/feature/cards/CardToolbar";
-import CardTable from "@/components/feature/cards/CardTable";
-import CardFormModal from "@/components/feature/cards/CardFormModal";
+export default function DevicesTab() {
+	// 1. Data Fetching
+	const { data: devices = [], mutate, isLoading } = useSWR(
+		`${API_BASE_URL}/devices`,
+		fetcher,
+		{ refreshInterval: 30000 }
+	);
 
-export default function CardsPage() {
-	const { data: rawCards, mutate } = useSWR(`${API_BASE_URL}/cards`, fetcher);
-	const allCards = useMemo(() => {
-		return rawCards ? rawCards.map(item => cardAdapter(item)) : [];
-	}, [rawCards]);
-
+	// 2. Filter Logic
 	const {
 		searchText, setSearchText,
-		filters, toggleFilter, clearFilters,
-		filteredCards
-	} = useCardFilters(allCards);
+		filters, setStatusFilter, clearFilters,
+		filteredDevices
+	} = useDeviceFilters(devices);
 
-	const ITEMS_PER_PAGE = 6;
+	// 3. Pagination Logic
+	const ITEMS_PER_PAGE = 5;
 	const {
 		currentPage,
-		paginatedData: paginatedCards,
+		paginatedData: paginatedDevices,
 		goToPage
-	} = usePagination(filteredCards, ITEMS_PER_PAGE);
+	} = usePagination(filteredDevices, ITEMS_PER_PAGE);
 
-	const [tableActive, setTableActive] = useState(false);
-	const [searchFocused, setSearchFocused] = useState(false);
-	const paginationRef = useRef(null);
+	// --- 🆕 LOGIC NAVIGATION (MỚI THÊM) ---
+	const [tableActive, setTableActive] = useState(false);   // Đang focus vào vùng bảng?
+	const [searchFocused, setSearchFocused] = useState(false); // Đang gõ tìm kiếm?
+	const paginationRef = useRef(null); // Để scroll lên đầu khi chuyển trang
 
-	const totalPages = Math.ceil(filteredCards.length / ITEMS_PER_PAGE);
+	const totalPages = Math.ceil(filteredDevices.length / ITEMS_PER_PAGE);
+
+	// Tạo mảng page để Hook hiểu: [{id: 1}, {id: 2},...]
 	const pagesArray = useMemo(() =>
 		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
-		[totalPages]);
+		[totalPages]
+	);
 
+	// Kích hoạt Hook
 	useArrowNavigation({
 		items: pagesArray,
 		activeId: currentPage,
 		setActiveId: goToPage,
 		direction: "horizontal",
-		enabled: tableActive && !searchFocused && totalPages > 1,
+		enabled: tableActive && !searchFocused && totalPages > 1, // Chỉ bật khi không search
 	});
+	// ---------------------------------------
 
+	// 4. Modal & Toast
+	const [editingDevice, setEditingDevice] = useState(null);
+	const [showEditModal, setShowEditModal] = useState(false);
 	const [toasts, setToasts] = useState([]);
 
-	// --- 2. HÀM THÊM TOAST ---
-	const addToast = (type, message) => {
-		const id = Date.now(); // Tạo ID duy nhất bằng thời gian
-		setToasts((prev) => [...prev, { id, type, message }]);
-	};
+	const addToast = (type, message) => setToasts((prev) => [...prev, { id: Date.now(), type, message }]);
+	const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
 
-	// --- 3. HÀM XÓA TOAST (Được gọi từ bên trong Toast con) ---
-	const removeToast = (id) => {
-		setToasts((prev) => prev.filter((t) => t.id !== id));
-	};
-
-	// State Form & Delete
-	const [editingCard, setEditingCard] = useState(null);
-	const [showForm, setShowForm] = useState(false);
-	const [deleteCardId, setDeleteCardId] = useState(null);
-	const [deleteStatus, setDeleteStatus] = useState("idle");
-
+	// Reset về trang 1 khi filter
 	useEffect(() => {
 		goToPage(1);
 	}, [searchText, filters]);
 
-	// --- HANDLERS ---
-	const handleOpenCreate = () => {
-		setEditingCard(null);
-		setShowForm(true);
+	// Handlers
+	const handleEdit = (device) => {
+		setEditingDevice(device);
+		setShowEditModal(true);
 	};
 
-	const handleOpenEdit = (card) => {
-		setEditingCard(card);
-		setShowForm(true);
+	const handleUpdateDevice = async (id, formData) => {
+		// ... (Giữ nguyên logic update cũ)
+		// Code update gọi API ở đây...
+		// Sau khi update xong nhớ gọi:
+		// mutate();
+		// setShowEditModal(false);
 	};
-
-	const handleSubmitForm = async (formData) => {
-		const method = editingCard ? "PUT" : "POST";
-		const url = editingCard
-			? `${API_BASE_URL}/cards/${editingCard.id}`
-			: `${API_BASE_URL}/cards`;
-
-		try {
-			const res = await authFetch(url, {
-				method,
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(formData),
-			});
-
-			if (!res.ok) throw new Error("Lỗi khi lưu");
-
-			setShowForm(false);
-			setEditingCard(null);
-			mutate();
-			addToast("success", editingCard ? "Cập nhật thẻ thành công!" : "Tạo thẻ mới thành công!");
-
-		} catch (error) {
-			addToast("error", "Có lỗi xảy ra, vui lòng thử lại.");
-		}
-	};
-
-	const handleOpenDelete = (id) => {
-		setDeleteCardId(id);
-		setDeleteStatus("confirming");
-	};
-
-	async function handleDeleteConfirmed() {
-		if (!deleteCardId) return;
-		setDeleteStatus("deleting");
-
-		try {
-			const res = await authFetch(`${API_BASE_URL}/cards/${deleteCardId}`, { method: "DELETE" });
-
-			if (res.ok) {
-				setDeleteCardId(null);
-				setDeleteStatus("idle");
-				mutate();
-				addToast("success", "Đã xóa thẻ nội dung thành công!");
-			} else {
-				const errorData = await res.json();
-				setDeleteStatus("idle");
-				setDeleteCardId(null);
-				addToast("error", errorData.message || "Xóa thất bại!");
-			}
-		} catch (error) {
-			setDeleteStatus("idle");
-			setDeleteCardId(null);
-			addToast("error", "Lỗi kết nối đến server!");
-		}
-	}
 
 	return (
-		<div className="px-4 pb-10">
-			{/* 4. HIỂN THỊ TOAST NẾU CÓ */}
+		<div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 px-6 pb-10">
 			<ToastContainer>
-				{toasts.map((toast) => (
-					<Toast
-						key={toast.id} // Quan trọng: Key giúp React phân biệt
-						id={toast.id}
-						type={toast.type}
-						message={toast.message}
-						onClose={removeToast} // Truyền hàm xóa xuống
-					/>
-				))}
+				{toasts.map((t) => <Toast key={t.id} {...t} onClose={removeToast} />)}
 			</ToastContainer>
 
-			<div className="flex justify-between items-end mb-6">
+			<div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 ml-1">
 				<div>
-					<h1 className="text-2xl font-bold flex items-center gap-2">
-						<i className={"fa-solid fa-clone"} /> Thẻ nội dung
-					</h1>
+					<h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+						<FaDesktop className="text-gray-400" /> Quản lý Kiosk
+					</h3>
 					<p className="text-sm text-gray-500 mt-1">
-						Hiển thị {filteredCards.length} thẻ phù hợp.
+						Giám sát trạng thái và cấu hình hiển thị cho {filteredDevices.length} thiết bị.
 					</p>
 				</div>
 
-				<CardToolbar
+				{/* ✅ Truyền prop onSearchFocusChange xuống Toolbar */}
+				<DeviceToolbar
 					searchText={searchText}
 					setSearchText={setSearchText}
 					filters={filters}
-					toggleFilter={toggleFilter}
+					toggleStatusFilter={setStatusFilter}
 					clearFilters={clearFilters}
-					onAdd={handleOpenCreate}
-					onSearchFocusChange={setSearchFocused}
+					onRefresh={() => mutate()}
+					loading={isLoading}
+					onSearchFocusChange={setSearchFocused} // 👈 Mới thêm
 				/>
 			</div>
 
+			{/* ✅ BỌC VÙNG NÀY ĐỂ BẮT SỰ KIỆN FOCUS */}
 			<div
-				tabIndex={0}
+				tabIndex={0} // Để div này nhận được focus
 				onFocus={() => setTableActive(true)}
 				onBlur={(e) => {
+					// Nếu click ra ngoài vùng này thì set false
 					if (!e.currentTarget.contains(e.relatedTarget)) {
 						setTableActive(false);
 					}
@@ -195,41 +136,30 @@ export default function CardsPage() {
 				className="outline-none scroll-mt-4"
 				ref={paginationRef}
 			>
-				<CardTable
-					cards={paginatedCards}
-					onEdit={handleOpenEdit}
-					onDelete={handleOpenDelete}
+				<DeviceTable
+					devices={paginatedDevices}
+					onEdit={handleEdit}
 				/>
 
-				<div className="flex justify-center">
+				<div className="mt-6 flex justify-center">
 					<Pagination
-						totalItems={filteredCards.length}
+						totalItems={filteredDevices.length}
 						itemsPerPage={ITEMS_PER_PAGE}
 						currentPage={currentPage}
 						onPageChange={(page) => {
 							goToPage(page);
+							// Scroll nhẹ lên đầu bảng khi chuyển trang
 							paginationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 						}}
 					/>
 				</div>
 			</div>
 
-			<CardFormModal
-				isOpen={showForm}
-				onClose={() => setShowForm(false)}
-				initialData={editingCard}
-				onSubmit={handleSubmitForm}
-			/>
-
-			<DeleteModal
-				open={!!deleteCardId}
-				title="Xóa thẻ nội dung"
-				message="Hành động này sẽ xóa thẻ và toàn bộ file đính kèm..."
-				onCancel={() => {
-					if (deleteStatus !== "deleting") setDeleteCardId(null);
-				}}
-				onConfirm={handleDeleteConfirmed}
-				isLoading={deleteStatus === "deleting"}
+			<DeviceFormModal
+				isOpen={showEditModal}
+				onClose={() => setShowEditModal(false)}
+				device={editingDevice}
+				onUpdate={handleUpdateDevice}
 			/>
 		</div>
 	);

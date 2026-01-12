@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Modal from "@/components/common/Modal"; 
+import Modal from "@/components/common/Modal";
 import { API_BASE_URL } from "@/lib/api";
+import { FaDesktop, FaLayerGroup, FaStopwatch, FaInfoCircle } from "react-icons/fa";
 
 export default function DeviceFormModal({ isOpen, onClose, device, onUpdate }) {
     // State form
@@ -13,10 +14,9 @@ export default function DeviceFormModal({ isOpen, onClose, device, onUpdate }) {
         switchInterval: 30
     });
 
-    // State danh mục để đổ vào dropdown
     const [categories, setCategories] = useState([]);
 
-    // 1. Load danh mục khi mở Modal
+    // 1. Load danh mục
     useEffect(() => {
         if (isOpen) {
             fetch(`${API_BASE_URL}/categories`)
@@ -28,14 +28,13 @@ export default function DeviceFormModal({ isOpen, onClose, device, onUpdate }) {
         }
     }, [isOpen]);
 
-    // 2. Fill dữ liệu cũ của Device vào Form
+    // 2. Fill dữ liệu
     useEffect(() => {
         if (device) {
             setFormData({
                 name: device.name || "",
-                // Lấy ID an toàn (vì có thể population hoặc không)
                 defaultCategoryId: device.config?.defaultCategoryId?._id || device.config?.defaultCategoryId || "",
-                autoSwitch: device.config?.autoSwitch ?? true, 
+                autoSwitch: device.config?.autoSwitch ?? true,
                 switchInterval: device.config?.switchInterval || 30
             });
         }
@@ -43,88 +42,148 @@ export default function DeviceFormModal({ isOpen, onClose, device, onUpdate }) {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        // Gọi hàm update ở cha
         onUpdate(device._id, formData);
     };
 
     if (!isOpen) return null;
 
     return (
-        <Modal title="Cấu hình thiết bị Kiosk" onClose={onClose} width="500px">
-            <form onSubmit={handleSubmit} className="space-y-5">
-                
-                {/* Tên & ID */}
-                <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Tên thiết bị</label>
-                    <input
-                        type="text"
-                        required
-                        className="w-full border rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    />
-                    <p className="text-[10px] text-gray-400 mt-1 font-mono">ID: {device?.deviceId}</p>
-                </div>
+        <Modal title="Cấu hình thiết bị" onClose={onClose} width="500px">
+            <form onSubmit={handleSubmit} className="space-y-6">
 
-                {/* Danh mục mặc định */}
-                <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-1">Danh mục khởi động</label>
-                    <select
-                        className="w-full border rounded-lg p-2.5 text-sm bg-white"
-                        value={formData.defaultCategoryId}
-                        onChange={(e) => setFormData({ ...formData, defaultCategoryId: e.target.value })}
-                    >
-                        <option value="">-- Mặc định hệ thống --</option>
-                        {categories.map(cat => (
-                            <option key={cat._id} value={cat._id}>{cat.title}</option>
-                        ))}
-                    </select>
-                </div>
-
-                {/* --- KHU VỰC CẤU HÌNH AUTO SWITCH --- */}
-                <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-4">
-                    <h4 className="text-xs font-bold text-blue-800 uppercase tracking-wider">Chế độ trình chiếu</h4>
-                    
-                    {/* Toggle Bật/Tắt */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <span className="text-sm font-medium text-gray-900">Tự động chuyển trang</span>
-                            <p className="text-[11px] text-gray-500">Nếu tắt, máy sẽ bị KHÓA ở trang hiện tại.</p>
-                        </div>
-                        <label className="relative inline-flex items-center cursor-pointer">
-                            <input 
-                                type="checkbox" 
-                                className="sr-only peer"
-                                checked={formData.autoSwitch}
-                                onChange={(e) => setFormData({...formData, autoSwitch: e.target.checked})}
-                            />
-                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                {/* --- PHẦN 1: THÔNG TIN CƠ BẢN --- */}
+                <div className="space-y-4">
+                    {/* Tên thiết bị */}
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                            Tên hiển thị
                         </label>
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <FaDesktop className="text-gray-400 group-focus-within:text-black transition-colors" />
+                            </div>
+                            <input
+                                type="text"
+                                required
+                                className="w-full !pl-10 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:ring-2 focus:ring-black focus:border-transparent outline-none transition-all bg-gray-50 focus:bg-white"
+                                placeholder="Ví dụ: Kiosk Sảnh Chính..."
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                            />
+                        </div>
+                        <div className="flex items-center gap-1 mt-1.5 ml-1">
+                            <FaInfoCircle className="text-[10px] text-gray-400" />
+                            <p className="text-[10px] text-gray-400 font-mono">ID Hệ thống: {device?.deviceId}</p>
+                        </div>
                     </div>
 
-                    {/* Input Thời gian (chỉ hiện khi Bật) */}
-                    {formData.autoSwitch && (
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Thời gian mỗi trang (Phút)
-                            </label>
-                            <div className="flex items-center gap-2">
-                                <input
-                                    type="number"
-                                    min="1"
-                                    className="w-20 border rounded-lg p-2 text-sm text-center"
-                                    value={formData.switchInterval}
-                                    onChange={(e) => setFormData({...formData, switchInterval: parseInt(e.target.value) || 1})}
-                                />
-                                <span className="text-sm text-gray-500">phút</span>
+                    {/* Danh mục */}
+                    <div>
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
+                            Nội dung mặc định
+                        </label>
+                        <div className="relative group">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <FaLayerGroup className="text-gray-400 group-focus-within:text-black transition-colors" />
+                            </div>
+                            <select
+                                className="w-full !pl-10 py-2 border border-gray-200 rounded-xl text-sm text-gray-700 bg-white
+                                outline-none appearance-none transition-all cursor-pointer hover:bg-gray-50"
+                                value={formData.defaultCategoryId}
+                                onChange={(e) => setFormData({ ...formData, defaultCategoryId: e.target.value })}
+                            >
+                                <option value="">-- Mặc định của hệ thống --</option>
+                                {categories.map(cat => (
+                                    <option key={cat._id} value={cat._id}>{cat.title}</option>
+                                ))}
+                            </select>
+                            {/* Custom Arrow for Select */}
+                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
                         </div>
-                    )}
+                    </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t">
-                    <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200 transition">Hủy</button>
-                    <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-lg shadow-blue-200">Lưu cấu hình</button>
+                <hr className="border-gray-100" />
+
+                <div className="bg-gray-50/50 border border-gray-100 rounded-xl p-4 transition-all hover:bg-gray-50 hover:border-gray-200">
+                    <div
+                        className="flex items-center justify-between cursor-pointer group"
+                        onClick={() => setFormData(prev => ({ ...prev, autoSwitch: !prev.autoSwitch }))}
+                    >
+                        <div>
+                            <div className="flex items-center gap-2 mb-0.5">
+                                <FaStopwatch className={`text-sm ${formData.autoSwitch ? 'text-black' : 'text-gray-400'}`} />
+                                <span className="font-semibold text-sm text-gray-900">Tự động chuyển trang</span>
+                            </div>
+                            <p className="text-xs text-gray-500 leading-relaxed">
+                                Kiosk sẽ tự động lật qua lại giữa các nội dung.
+                            </p>
+                        </div>
+
+                        {/* UI Switch */}
+                        <div className={`
+                            relative w-11 h-6 rounded-full transition-colors duration-150 ease-in-out shrink-0
+                            ${formData.autoSwitch ? 'bg-black' : 'bg-gray-200 group-hover:bg-gray-300'}
+                        `}>
+                            <span className={`
+                                absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm 
+                                transform transition-transform duration-150 ease-[cubic-bezier(0.4,0.0,0.2,1)]
+                                ${formData.autoSwitch ? 'translate-x-5' : 'translate-x-0'}
+                            `} />
+                        </div>
+                    </div>
+
+                    {/* Input Thời gian (Animation trượt xuống) */}
+                    <div className={`
+                        grid transition-all duration-150 ease-in-out overflow-hidden
+                        ${formData.autoSwitch ? 'grid-rows-[1fr] opacity-100 mt-4 pt-4 border-t border-gray-200' : 'grid-rows-[0fr] opacity-0'}
+                    `}>
+                        <div className="min-h-0">
+                            <div className="flex items-center justify-between">
+                                <label className="text-sm font-medium text-gray-600">Thời gian chờ (giây)</label>
+                                <div className="flex items-center">
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(p => ({ ...p, switchInterval: Math.max(5, p.switchInterval - 5) }))}
+                                        className="w-8 h-8 rounded-l-lg border border-gray-300 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-600 transition"
+                                    >-</button>
+                                    <input
+                                        type="number"
+                                        className="w-16 h-8 border-y border-gray-300 text-center text-sm font-bold text-black focus:outline-none"
+                                        value={formData.switchInterval}
+                                        onChange={(e) => setFormData({ ...formData, switchInterval: parseInt(e.target.value) || 0 })}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(p => ({ ...p, switchInterval: p.switchInterval + 5 }))}
+                                        className="w-8 h-8 rounded-r-lg border border-gray-300 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-600 transition"
+                                    >+</button>
+                                </div>
+                            </div>
+                            <p className="text-[10px] text-right text-gray-400 mt-1 italic">
+                                *Tối thiểu 5 giây để tránh giật lag.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* --- FOOTER BUTTONS --- */}
+                <div className="flex justify-end gap-3 pt-2">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-5 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 hover:text-black hover:border-gray-300 transition-all focus:outline-none"
+                    >
+                        Hủy bỏ
+                    </button>
+                    <button
+                        type="submit"
+                        className="px-6 py-2.5 text-sm font-bold text-white bg-black rounded-lg hover:bg-gray-800 shadow-md hover:shadow-lg transition-all transform active:scale-95"
+                    >
+                        Lưu thay đổi
+                    </button>
                 </div>
             </form>
         </Modal>

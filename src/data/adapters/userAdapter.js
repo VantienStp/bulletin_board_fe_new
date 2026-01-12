@@ -7,6 +7,8 @@ export const userAdapter = (data) => {
         email: data.email || "",
         role: data.role || "user",
 
+        avatar: data.avatar || "",
+
         avatarInitial: data.username ? data.username[0].toUpperCase() : "?",
         roleLabel: (data.role || "user").charAt(0).toUpperCase() + (data.role || "user").slice(1),
     };
