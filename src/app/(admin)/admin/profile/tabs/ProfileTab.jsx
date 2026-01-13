@@ -52,7 +52,6 @@ export default function ProfileTab() {
             const previewUrl = URL.createObjectURL(file);
             setAvatarPreview(previewUrl);
             setAvatarFile(file);
-            console.log(previewUrl)
         }
     };
 

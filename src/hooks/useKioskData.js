@@ -72,7 +72,6 @@ export function useKioskData() {
 
                 if (data.config) {
                     setConfig(prev => {
-                        // 1. Kiểm tra xem dữ liệu mới có khác dữ liệu cũ không
                         const newInterval = data.config.switchInterval || 2;
                         const newAutoSwitch = data.config.autoSwitch;
 
@@ -80,16 +79,12 @@ export function useKioskData() {
                             return prev;
                         }
 
-                        // 2. Nếu khác thì mới cập nhật
-                        console.log("Cấu hình thay đổi, reset timer!");
                         return {
                             ...prev,
                             autoSwitch: newAutoSwitch,
                             switchInterval: newInterval
                         };
                     });
-                    console.log(config);
-
                     if (!hasBooted.current && data.config.defaultCategoryId) {
                         const defaultId = typeof data.config.defaultCategoryId === 'object'
                             ? data.config.defaultCategoryId._id

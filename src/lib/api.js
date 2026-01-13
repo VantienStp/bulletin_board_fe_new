@@ -16,12 +16,6 @@ function detectBaseUrl() {
 export const BASE_URL = detectBaseUrl();
 export const API_BASE_URL = `${BASE_URL}/api`;
 
-// export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
-
-
-// export const API_BASE_URL = `${BASE_URL}/api`;
-// console.log('API_BASE_URL: hahaah', API_BASE_URL);
-
 export async function loginUser(username, password) {
     const response = await fetch(`${API_BASE_URL}/users/login`, { // ⭐ Thay đổi endpoint
         method: 'POST',

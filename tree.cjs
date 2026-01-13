@@ -1,12 +1,8 @@
 const fs = require("fs");
 const path = require("path");
 
-// 🧹 Danh sách thư mục cần bỏ qua
 const ignoreDirs = ["node_modules", ".git", "dist", "build", ".next", ".vscode", "coverage", "out"];
 
-/**
- * Hàm 1️⃣: Hiển thị chỉ CÁC THƯ MỤC
- */
 function showFolders(dir, prefix = "") {
   const items = fs.readdirSync(dir, { withFileTypes: true });
 
@@ -20,9 +16,6 @@ function showFolders(dir, prefix = "") {
   }
 }
 
-/**
- * Hàm 2️⃣: Hiển thị CẢ THƯ MỤC VÀ FILE
- */
 function showFoldersAndFiles(dir, prefix = "") {
   const items = fs.readdirSync(dir, { withFileTypes: true });
 
@@ -42,10 +35,8 @@ function showFoldersAndFiles(dir, prefix = "") {
   }
 }
 
-// 🏁 Lấy đối số từ command line
-// Cú pháp: node tree.js [đường_dẫn] [mode]
 const startDir = process.argv[2] || "./";
-const mode = process.argv[3] || "both"; // "folders" hoặc "both"
+const mode = process.argv[3] || "both";
 
 // 🔄 Ghi kết quả vào file
 const originalConsoleLog = console.log;
@@ -62,6 +53,3 @@ console.log = originalConsoleLog;
 fs.writeFileSync("tree.txt", output.join("\n"), "utf8");
 
 console.log(`✅ Đã tạo cây thư mục (${mode === "folders" ? "chỉ thư mục" : "thư mục + file"}) trong tree.txt`);
-
-// node tree.js ./src folders (for run)
-// node tree.js ./src both (for run)

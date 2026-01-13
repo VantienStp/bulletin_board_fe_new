@@ -19,10 +19,8 @@ export default function AdminLayout({ children }) {
 	}, []);
 
 	useEffect(() => {
-		console.log("🛡️ Check Layout - Loading:", loading, "User:", user);
 		if (isMounted) {
 			if (!loading && !user) {
-				console.warn("🚨 Layout đá user về login vì không thấy user!");
 				router.push("/login");
 			}
 		}

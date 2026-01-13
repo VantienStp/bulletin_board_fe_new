@@ -29,8 +29,6 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            console.log("🚀 Bắt đầu gửi yêu cầu đăng nhập...");
-
             const res = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -41,17 +39,10 @@ export default function LoginPage() {
             const data = await res.json();
 
             if (!res.ok) {
-                console.error("❌ Đăng nhập thất bại (Server Response):", {
-                    status: res.status,
-                    statusText: res.statusText,
-                    errorData: data
-                });
-
                 setError(data.message || "Đăng nhập thất bại");
                 return;
             }
 
-            console.log("✅ Đăng nhập thành công:", data);
             if (data.user) {
                 localStorage.setItem("currentUser", JSON.stringify(data.user));
             }
@@ -61,7 +52,6 @@ export default function LoginPage() {
             window.location.href = "/admin";
 
         } catch (err) {
-            console.error("❌ Lỗi kết nối (Network/Code Error):", err);
             setError("Không thể kết nối tới server. Vui lòng kiểm tra mạng hoặc API.");
         } finally {
             if (window.location.pathname === "/login") {
