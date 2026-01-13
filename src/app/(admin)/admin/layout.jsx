@@ -23,7 +23,7 @@ export default function AdminLayout({ children }) {
 		if (isMounted) {
 			if (!loading && !user) {
 				console.warn("🚨 Layout đá user về login vì không thấy user!");
-				router.push("/login");
+				// router.push("/login");
 			}
 		}
 	}, [user, loading, router, isMounted]);
