@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { API_BASE_URL } from "@/lib/api";
 
 export default function LoginPage() {
@@ -9,7 +8,6 @@ export default function LoginPage() {
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
-    const router = useRouter();
 
     useEffect(() => {
         const savedEmail = localStorage.getItem("rememberedEmail");
@@ -60,9 +58,7 @@ export default function LoginPage() {
             if (rememberMe) localStorage.setItem("rememberedEmail", email);
             else localStorage.removeItem("rememberedEmail");
 
-
-            await refreshUser();
-            router.push("/admin");
+            window.location.href = "/admin";
 
         } catch (err) {
             console.error("❌ Lỗi kết nối (Network/Code Error):", err);
