@@ -7,7 +7,7 @@ import { FaLayerGroup } from "react-icons/fa";
 
 // Components
 import Pagination from "@/components/common/Pagination";
-import ConfirmModal from "@/components/common/ConfirmModal"; // ✅ ĐÃ ĐỔI TÊN
+import ConfirmModal from "@/components/common/ConfirmModal";
 import { authFetch } from "@/lib/auth";
 import { API_BASE_URL } from "@/lib/api";
 import { layoutAdapter } from "@/data/adapters/layoutAdapter";
@@ -26,14 +26,18 @@ import LayoutFormModal from "@/components/feature/layouts/LayoutFormModal";
 export default function LayoutsPage() {
 	const { addToast } = useToast();
 
+	// 1. Fetch Data
 	const { data: rawLayouts, mutate } = useSWR(`${API_BASE_URL}/gridlayouts`, fetcher);
 
+	// 2. Adapter
 	const allLayouts = useMemo(() => {
 		return rawLayouts ? rawLayouts.map(item => layoutAdapter(item)) : [];
 	}, [rawLayouts]);
 
+	// 3. Filter Hook
 	const { searchText, setSearchText, filteredLayouts } = useLayoutFilters(allLayouts);
 
+	// 4. Pagination Hook
 	const ITEMS_PER_PAGE = 5;
 	const {
 		currentPage,
@@ -41,6 +45,7 @@ export default function LayoutsPage() {
 		goToPage
 	} = usePagination(filteredLayouts, ITEMS_PER_PAGE);
 
+	// 5. Navigation State
 	const [tableActive, setTableActive] = useState(false);
 	const [searchFocused, setSearchFocused] = useState(false);
 	const paginationRef = useRef(null);
@@ -50,6 +55,7 @@ export default function LayoutsPage() {
 		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
 		[totalPages]);
 
+	// Hook điều hướng mũi tên
 	useArrowNavigation({
 		items: pagesArray,
 		activeId: currentPage,
@@ -58,14 +64,19 @@ export default function LayoutsPage() {
 		enabled: tableActive && !searchFocused && totalPages > 1,
 	});
 
+	// 6. Form & Delete State
 	const [editingLayout, setEditingLayout] = useState(null);
 	const [showForm, setShowForm] = useState(false);
 	const [deleteLayoutId, setDeleteLayoutId] = useState(null);
 	const [deleteStatus, setDeleteStatus] = useState("idle");
 
+	// --- 🔴 SỬA LỖI Ở ĐÂY ---
+	// Trước đó: [searchText, goToPage] -> Gây lặp vô tận vì goToPage thay đổi sau mỗi lần render
+	// Sửa thành: [searchText] -> Chỉ reset trang về 1 khi người dùng tìm kiếm
 	useEffect(() => {
 		goToPage(1);
-	}, [searchText, goToPage]);
+	}, [searchText]);
+	// ------------------------
 
 	// --- HANDLERS ---
 	const handleOpenCreate = () => {
@@ -135,10 +146,10 @@ export default function LayoutsPage() {
 
 	return (
 		<div className="">
-			<div className="flex justify-between items-end mb-4">
+			<div className="flex justify-between items-end mb-6">
 				<div>
 					<h1 className="text-2xl font-bold flex items-center gap-2 text-gray-800">
-						<FaLayerGroup className="" /> Bố cục hiển thị
+						<FaLayerGroup className="text-indigo-500" /> Bố cục hiển thị
 					</h1>
 					<p className="text-sm text-gray-500 mt-1">
 						Hiển thị {filteredLayouts.length} bố cục phù hợp.
@@ -161,7 +172,7 @@ export default function LayoutsPage() {
 						setTableActive(false);
 					}
 				}}
-				className="outline-none scroll-mt-4 focus:ring-1 focus:ring-indigo-100 rounded-lg p-1 transition-all"
+				className="outline-none scroll-mt-40 rounded-lg p-1 transition-all"
 				ref={paginationRef}
 			>
 				<LayoutTable
@@ -190,7 +201,6 @@ export default function LayoutsPage() {
 				onSubmit={handleSubmitForm}
 			/>
 
-			{/* ✅ SỬA: Chuyển sang ConfirmModal chuyên nghiệp */}
 			<ConfirmModal
 				open={!!deleteLayoutId}
 				title="Xóa bố cục?"
