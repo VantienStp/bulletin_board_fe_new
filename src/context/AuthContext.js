@@ -13,12 +13,21 @@ export function AuthProvider({ children }) {
 
 	const refreshUser = async () => {
 		try {
+			console.log("🔄 Đang gọi /auth/me để kiểm tra trạng thái...");
 			const res = await fetch(`${API_BASE_URL}/auth/me`, {
 				credentials: "include",
 			});
 			if (res.ok) {
+
 				const data = await res.json();
+				console.log("📥 Dữ liệu thô từ Server:", data);
+
 				const adaptedUser = userAdapter(data.user);
+				console.log("👤 Dữ liệu User sau khi qua Adapter:", adaptedUser);
+
+				if (!adaptedUser || !adaptedUser.id) {
+					console.error("⚠️ Adapter trả về dữ liệu thiếu ID!");
+				}
 
 				setUser(adaptedUser);
 
@@ -26,13 +35,14 @@ export function AuthProvider({ children }) {
 					localStorage.setItem("currentUser", JSON.stringify(adaptedUser));
 				}
 			} else {
+				console.warn("🚫 Server từ chối Token hoặc chưa đăng nhập.");
 				setUser(null);
 				if (typeof window !== "undefined") {
 					localStorage.removeItem("currentUser");
 				}
 			}
 		} catch (err) {
-			console.error("❌ Auth load failed:", err);
+			console.error("❌ Lỗi kết nối Auth Context:", err);
 			setUser(null);
 		}
 	};
