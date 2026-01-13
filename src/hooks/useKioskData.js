@@ -77,11 +77,11 @@ export function useKioskData() {
                         const newAutoSwitch = data.config.autoSwitch;
 
                         if (prev.autoSwitch === newAutoSwitch && prev.switchInterval === newInterval) {
-                            return prev; // 🚩 QUAN TRỌNG: Trả về object cũ -> React sẽ không re-render, không reset Timer
+                            return prev;
                         }
 
                         // 2. Nếu khác thì mới cập nhật
-                        console.log("Cấu hình thay đổi, reset timer!"); // Log để debug
+                        console.log("Cấu hình thay đổi, reset timer!");
                         return {
                             ...prev,
                             autoSwitch: newAutoSwitch,
@@ -90,15 +90,12 @@ export function useKioskData() {
                     });
                     console.log(config);
 
-                    // Logic Boot vào trang mặc định
                     if (!hasBooted.current && data.config.defaultCategoryId) {
                         const defaultId = typeof data.config.defaultCategoryId === 'object'
                             ? data.config.defaultCategoryId._id
                             : data.config.defaultCategoryId;
 
-                        // Tuy nhiên vì categories là dependency của useEffect khác, ta xử lý ở useEffect fallback bên dưới sẽ an toàn hơn
-                        // Hoặc ta có thể access trực tiếp rawCategories nếu cần thiết.
-                        // Ở đây ta giữ nguyên logic cũ: đánh dấu đã nhận config
+
                     }
                 }
 
@@ -111,11 +108,10 @@ export function useKioskData() {
             }
         };
 
-        syncDevice(); // Gọi lần đầu
-        const timer = setInterval(syncDevice, 60 * 1000); // Gọi định kỳ 60s
-
+        syncDevice();
+        const timer = setInterval(syncDevice, 60 * 1000);
         return () => clearInterval(timer);
-    }, []); // 🚩 Dependency Rỗng: Timer chạy bền bỉ, không bao giờ bị reset khi chuyển trang
+    }, []);
 
     // ==========================================
     // 3. LOGIC AUTO SWITCH
@@ -123,7 +119,7 @@ export function useKioskData() {
     useEffect(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
 
-        const intervalMs = config.switchInterval * 1 * 1000;
+        const intervalMs = config.switchInterval * 60 * 1000;
         setTotalTime(intervalMs);
         setTimeLeft(intervalMs);
 
