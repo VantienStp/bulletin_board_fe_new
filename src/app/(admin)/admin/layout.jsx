@@ -19,23 +19,19 @@ export default function AdminLayout({ children }) {
 	}, []);
 
 	useEffect(() => {
+		console.log("🛡️ Check Layout - Loading:", loading, "User:", user);
 		if (isMounted) {
 			if (!loading && !user) {
+				console.warn("🚨 Layout đá user về login vì không thấy user!");
 				router.push("/login");
 			}
 		}
 	}, [user, loading, router, isMounted]);
 
-	// ✅ SỬA LOGIC LOGOUT TẠI ĐÂY
 	const handleLogout = () => {
-		// 1. Xóa thông tin hiển thị UI
 		localStorage.removeItem("currentUser");
 
-		// 2. Gọi hàm logout của AuthContext
 		if (logout) logout();
-
-		// 3. 🔥 DÙNG window.location.href THAY VÌ router.push
-		// Để ép trình duyệt xóa sạch CSS của trang Admin và reset lại trạng thái Auth
 		window.location.href = "/login";
 	};
 
@@ -44,7 +40,6 @@ export default function AdminLayout({ children }) {
 	}
 
 	return (
-		// ... (phần render giữ nguyên)
 		<div className="h-screen w-screen bg-black">
 			<div className="h-full w-full rounded-xl overflow-hidden grid grid-cols-[160px_1fr] bg-gray-100">
 				<aside className="bg-softYellow h-full">
