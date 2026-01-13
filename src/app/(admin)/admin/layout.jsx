@@ -32,7 +32,7 @@ export default function AdminLayout({ children }) {
 		localStorage.removeItem("currentUser");
 
 		if (logout) logout();
-		window.location.href = "/login";
+		// window.location.href = "/login";
 	};
 
 	if (!isMounted || loading || !user) {
