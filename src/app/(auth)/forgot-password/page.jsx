@@ -1,17 +1,18 @@
 "use client";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { API_BASE_URL, BASE_URL } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/api";
+import { useToast } from "@/context/ToastContext";
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState("");
-    const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
+    const { addToast } = useToast();
     const router = useRouter();
 
     const handleSendEmail = async (e) => {
         e.preventDefault();
-        setMessage("");
         setLoading(true);
 
         try {
@@ -22,14 +23,18 @@ export default function ForgotPasswordPage() {
             });
 
             const data = await res.json();
-            if (!res.ok) throw new Error(data.message || "Không thể gửi email");
 
-            setMessage("✅ Mã xác minh đã được gửi đến email của bạn!");
+            if (!res.ok) {
+                throw new Error(data.message || "Không thể gửi email");
+            }
+
+            addToast("success", "Mã xác minh đã được gửi đến email của bạn!");
+
             setTimeout(() => {
                 router.push(`/verify-pin?email=${email}`);
-            }, 1500);
+            }, 1000);
         } catch (err) {
-            setMessage("❌ " + err.message);
+            addToast("error", err.message || "Đã xảy ra lỗi, vui lòng thử lại.");
         } finally {
             setLoading(false);
         }
@@ -47,8 +52,6 @@ export default function ForgotPasswordPage() {
                 <h1>Khôi phục mật khẩu</h1>
                 <p className="a-text">Nhập địa chỉ email của bạn để nhận mã xác minh</p>
 
-                {message && <div className="message-box">{message}</div>}
-
                 <form onSubmit={handleSendEmail}>
                     <label>Email</label>
                     <input
@@ -57,16 +60,22 @@ export default function ForgotPasswordPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
+                        disabled={loading}
                     />
 
-                    <button type="submit" disabled={loading}>
+                    <button type="submit" disabled={loading} className="font-bold transition-colors ml-1 py-2.5">
                         {loading ? "Đang gửi..." : "Gửi mã xác minh"}
                     </button>
                 </form>
 
                 <p className="redirect-text">
                     Nhớ mật khẩu rồi?{" "}
-                    <a className="highlight-text a-button" onClick={() => router.push(`/login`)}>Quay lại đăng nhập</a>
+                    <a
+                        className="highlight-text a-button"
+                        onClick={() => !loading && router.push(`/login`)}
+                    >
+                        Quay lại đăng nhập
+                    </a>
                 </p>
             </div>
         </div>

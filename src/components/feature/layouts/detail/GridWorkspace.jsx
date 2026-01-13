@@ -48,7 +48,7 @@ export default function GridWorkspace({
             <div
                 style={{
                     position: 'relative',
-                    height: rows * rowHeight + (rows - 1) * gap, // Tính chiều cao chính xác
+                    height: rows * rowHeight + (rows - 1) * gap,
                     width: '100%'
                 }}
             >

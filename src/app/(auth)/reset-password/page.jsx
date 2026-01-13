@@ -1,28 +1,28 @@
 "use client";
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { API_BASE_URL, BASE_URL } from "@/lib/api";
-
+import { useRouter } from "next/navigation";
+import { API_BASE_URL } from "@/lib/api";
+import { useToast } from "@/context/ToastContext"; // ✅ 1. Kết nối Toast toàn cục
+import Link from "next/link";
 export default function ResetPasswordPage() {
     const [newPassword, setNewPassword] = useState("");
     const [confirm, setConfirm] = useState("");
-    const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
     const [userEmail, setUserEmail] = useState(null);
 
+    const { addToast } = useToast(); // ✅ 2. Lấy hàm addToast
     const router = useRouter();
-    const params = useSearchParams();
-    const email = params.get("email");
-
-
 
     const handleReset = async (e) => {
         e.preventDefault();
-        if (newPassword !== confirm)
-            return setMessage("❌ Mật khẩu nhập lại không khớp");
+
+        // ✅ 3. Kiểm tra mật khẩu khớp qua Toast
+        if (newPassword !== confirm) {
+            addToast("error", "Mật khẩu xác nhận không khớp!");
+            return;
+        }
 
         setLoading(true);
-        setMessage("");
 
         try {
             const res = await fetch(`${API_BASE_URL}/auth/reset-password`, {
@@ -37,10 +37,13 @@ export default function ResetPasswordPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || "Đặt lại mật khẩu thất bại");
 
-            setMessage("✅ Đặt lại mật khẩu thành công!");
+            // ✅ 4. Thông báo thành công chuyên nghiệp
+            addToast("success", "Đặt lại mật khẩu thành công! Đang chuyển hướng...");
+
             setTimeout(() => router.push("/login"), 1500);
         } catch (err) {
-            setMessage("❌ " + err.message);
+            // ✅ 5. Thông báo lỗi API qua Toast
+            addToast("error", err.message || "Đã xảy ra lỗi, vui lòng thử lại.");
         } finally {
             setLoading(false);
         }
@@ -50,14 +53,15 @@ export default function ResetPasswordPage() {
         if (typeof window !== 'undefined') {
             const email = sessionStorage.getItem("userEmailForDisplay");
             if (!email) {
-                setMessage("⚠️ Phiên đặt lại mật khẩu không hợp lệ. Vui lòng bắt đầu lại từ bước 'Quên mật khẩu'.");
+                // ✅ 6. Cảnh báo phiên làm việc không hợp lệ qua Toast
+                addToast("info", "Phiên làm việc hết hạn. Vui lòng bắt đầu lại.");
                 sessionStorage.removeItem("userEmailForDisplay");
-                setTimeout(() => router.replace(`/forgot-password`), 3000);
+                router.replace(`/forgot-password`);
                 return;
             }
             setUserEmail(email);
         }
-    }, [router]);
+    }, [router, addToast]);
 
     return (
         <div className="auth-wrapper">
@@ -71,7 +75,7 @@ export default function ResetPasswordPage() {
                 <h1>Đặt lại mật khẩu</h1>
                 <p>Cho tài khoản: <b>{userEmail}</b></p>
 
-                {message && <div className="message-box">{message}</div>}
+                {/* ✅ ĐÃ LOẠI BỎ MESSAGE-BOX CŨ ĐỂ DÙNG TOAST TOÀN CỤC */}
 
                 <form onSubmit={handleReset}>
                     <label>Mật khẩu mới</label>
@@ -81,6 +85,7 @@ export default function ResetPasswordPage() {
                         value={newPassword}
                         onChange={(e) => setNewPassword(e.target.value)}
                         required
+                        disabled={loading} // ✅ Khóa khi đang xử lý
                     />
 
                     <label>Nhập lại mật khẩu</label>
@@ -90,6 +95,7 @@ export default function ResetPasswordPage() {
                         value={confirm}
                         onChange={(e) => setConfirm(e.target.value)}
                         required
+                        disabled={loading} // ✅ Khóa khi đang xử lý
                     />
 
                     <button type="submit" disabled={loading}>
@@ -97,9 +103,15 @@ export default function ResetPasswordPage() {
                     </button>
                 </form>
 
-                <p className="redirect-text">
-                    Quay lại <a href="/login">Đăng nhập</a>
-                </p>
+                <div className="flex items-center justify-center gap-2 mt-6 text-sm">
+                    <span className="text-gray-500">Quay lại</span>
+                    <Link
+                        href="/login"
+                        className="text-[#2d7a5d] font-semibold hover:underline transition-all"
+                    >
+                        Đăng nhập
+                    </Link>
+                </div>
             </div>
         </div>
     );

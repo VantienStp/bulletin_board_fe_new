@@ -5,29 +5,27 @@ import { useParams } from "next/navigation";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 
-// Libs & Hooks & Adapters
+// 1. Libs & Hooks & Adapters
 import { API_BASE_URL } from "@/lib/api";
 import { authFetch } from "@/lib/auth";
 import usePagination from "@/hooks/usePagination";
 import { cardAdapter } from "@/data/adapters/cardAdapter";
 import useArrowNavigation from "@/hooks/useArrowNavigation";
+import { useToast } from "@/context/ToastContext";
 
-// Import Components
+// 2. Import Components
 import { useCategoryDetailFilters } from "@/hooks/useCategoryDetailFilters";
 import CategoryDetailToolbar from "@/components/feature/categories/detail/CategoryDetailToolbar";
 import Pagination from "@/components/common/Pagination";
 import CategoryCardTable from "@/components/feature/categories/detail/CategoryCardTable";
 import AddCardModal from "@/components/feature/categories/detail/AddCardModal";
-import DeleteModal from "@/components/common/DeleteModal"; // 1. Import Modal Xóa
-
-// 2. Import Toast System
-import Toast from "@/components/ui/Toast";
-import ToastContainer from "@/components/ui/ToastContainer";
+import ConfirmModal from "@/components/common/ConfirmModal";
 
 export default function CategoryDetailPage() {
 	const { id } = useParams();
+	const { addToast } = useToast();
 
-	// Fetch Data
+	// --- FETCH DATA ---
 	const { data: category, error: catError } = useSWR(
 		id ? `${API_BASE_URL}/categories/${id}` : null,
 		fetcher
@@ -61,7 +59,7 @@ export default function CategoryDetailPage() {
 		goToPage,
 	} = usePagination(filteredCards, ITEMS_PER_PAGE);
 
-	// --- FOCUS MANAGEMENT ---
+	// --- FOCUS MANAGEMENT & ARROW NAVIGATION ---
 	const [tableActive, setTableActive] = useState(false);
 	const [searchFocused, setSearchFocused] = useState(false);
 	const paginationRef = useRef(null);
@@ -71,6 +69,7 @@ export default function CategoryDetailPage() {
 		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
 		[totalPages]);
 
+	// Hook điều hướng bàn phím ổn định
 	useArrowNavigation({
 		items: pagesArray,
 		activeId: currentPage,
@@ -79,18 +78,6 @@ export default function CategoryDetailPage() {
 		enabled: tableActive && !searchFocused && totalPages > 1,
 	});
 
-	// --- 3. TOAST STATE ---
-	const [toasts, setToasts] = useState([]);
-
-	const addToast = (type, message) => {
-		const id = Date.now();
-		setToasts((prev) => [...prev, { id, type, message }]);
-	};
-
-	const removeToast = (id) => {
-		setToasts((prev) => prev.filter((t) => t.id !== id));
-	};
-
 	// --- STATE MODAL ---
 	const [showAddModal, setShowAddModal] = useState(false);
 
@@ -98,10 +85,12 @@ export default function CategoryDetailPage() {
 	const [removeCardId, setRemoveCardId] = useState(null);
 	const [removeStatus, setRemoveStatus] = useState("idle");
 
-	useEffect(() => { goToPage(1); }, [searchText]);
+	// ⚡ QUAN TRỌNG: Reset về trang 1 khi search (Bỏ goToPage khỏi dependency để ổn định ArrowNav)
+	useEffect(() => {
+		goToPage(1);
+	}, [searchText]);
 
 	// --- HANDLERS ---
-
 	const handleAddCard = async (cardId) => {
 		try {
 			const res = await authFetch(
@@ -125,13 +114,11 @@ export default function CategoryDetailPage() {
 		}
 	};
 
-	// Bước 1: Mở modal xác nhận
 	const handleOpenRemove = (cardId) => {
 		setRemoveCardId(cardId);
-		setRemoveStatus("confirming");
+		setRemoveStatus("idle");
 	};
 
-	// Bước 2: Xử lý xóa thật
 	const handleRemoveConfirmed = async () => {
 		if (!removeCardId) return;
 		setRemoveStatus("deleting");
@@ -144,58 +131,42 @@ export default function CategoryDetailPage() {
 
 			if (res.ok) {
 				mutateCards();
-				setRemoveCardId(null);
-				setRemoveStatus("idle");
 				addToast("success", "Đã gỡ thẻ khỏi danh mục!");
+				setRemoveCardId(null); // Đóng modal ngay
 			} else {
-				setRemoveStatus("idle");
-				setRemoveCardId(null);
 				addToast("error", "Gỡ thất bại!");
 			}
 		} catch (error) {
-			setRemoveStatus("idle");
-			setRemoveCardId(null);
 			addToast("error", "Lỗi kết nối server!");
+		} finally {
+			setRemoveStatus("idle");
 		}
 	};
 
 	if (loading) {
 		return (
-			<div className="w-full h-96 flex flex-col items-center justify-center">
+			<div className="w-full h-96 flex flex-col items-center justify-center text-gray-400">
 				<div className="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin mb-4"></div>
-				<p className="text-gray-400 text-sm">Đang tải dữ liệu...</p>
+				<p className="text-sm italic">Đang tải dữ liệu thẻ...</p>
 			</div>
 		);
 	}
 
-	if (catError) return <div className="p-10 text-center text-red-500">❌ Không tìm thấy danh mục</div>;
+	if (catError) return <div className="p-10 text-center text-red-500 font-bold">❌ Không tìm thấy danh mục</div>;
 
 	return (
 		<div className="px-4 pb-10">
-			{/* 4. TOAST CONTAINER */}
-			<ToastContainer>
-				{toasts.map((toast) => (
-					<Toast
-						key={toast.id}
-						id={toast.id}
-						type={toast.type}
-						message={toast.message}
-						onClose={removeToast}
-					/>
-				))}
-			</ToastContainer>
-
 			{/* HEADER */}
 			<div className="flex justify-between items-center">
-				<h1 className="text-2xl font-bold flex items-center gap-2">
-					<i className={"fa-solid fa-tags"} /> Danh mục: {category.title}
+				<h1 className="text-2xl font-bold flex items-center gap-2 text-gray-800">
+					<i className={"fa-solid fa-tags text-amber-500"} /> Danh mục: {category.title}
 				</h1>
 			</div>
 
 			{/* TOOLBAR */}
 			<div className="flex justify-between items-end mb-6">
-				<p className="text-gray-500 text-sm pb-2">
-					Hiển thị {filteredCards.length} thẻ trong danh mục.
+				<p className="text-gray-500 text-sm pb-2 italic">
+					Tìm thấy {filteredCards.length} thẻ trong danh mục.
 				</p>
 
 				<CategoryDetailToolbar
@@ -206,7 +177,7 @@ export default function CategoryDetailPage() {
 				/>
 			</div>
 
-			{/* TABLE AREA */}
+			{/* TABLE AREA WITH FOCUS MANAGEMENT */}
 			<div
 				tabIndex={0}
 				onFocus={() => setTableActive(true)}
@@ -215,15 +186,15 @@ export default function CategoryDetailPage() {
 						setTableActive(false);
 					}
 				}}
-				className="outline-none scroll-mt-4"
+				className="outline-none scroll-mt-4 focus:ring-1 focus:ring-amber-100 rounded-lg p-1 transition-all"
 				ref={paginationRef}
 			>
 				<CategoryCardTable
 					cards={currentCards}
-					onRemove={handleOpenRemove} // Gọi hàm mở modal thay vì confirm
+					onRemove={handleOpenRemove}
 				/>
 
-				<div className="flex justify-center mt-6">
+				<div className="flex justify-center">
 					<Pagination
 						totalItems={filteredCards.length}
 						itemsPerPage={ITEMS_PER_PAGE}
@@ -236,7 +207,7 @@ export default function CategoryDetailPage() {
 				</div>
 			</div>
 
-			{/* ADD CARD MODAL */}
+			{/* MODALS */}
 			<AddCardModal
 				isOpen={showAddModal}
 				onClose={() => setShowAddModal(false)}
@@ -245,13 +216,13 @@ export default function CategoryDetailPage() {
 				onAdd={handleAddCard}
 			/>
 
-			{/* 5. DELETE CONFIRMATION MODAL */}
-			<DeleteModal
+			<ConfirmModal
 				open={!!removeCardId}
 				title="Gỡ thẻ khỏi danh mục?"
 				message="Thẻ này sẽ bị xóa khỏi danh mục hiện tại, nhưng vẫn tồn tại trong hệ thống. Bạn có chắc chắn không?"
 				onCancel={() => setRemoveCardId(null)}
 				onConfirm={handleRemoveConfirmed}
+				isLoading={removeStatus === "deleting"}
 			/>
 		</div>
 	);

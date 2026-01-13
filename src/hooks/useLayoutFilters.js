@@ -7,11 +7,9 @@ export function useLayoutFilters(layouts) {
         if (!layouts) return [];
 
         return layouts.filter(layout => {
-            // Tìm kiếm trong Title hoặc Slug
-            return (
-                layout.title.toLowerCase().includes(searchText.toLowerCase()) ||
-                layout.slug.toLowerCase().includes(searchText.toLowerCase())
-            );
+            const titleMatch = layout.title?.toLowerCase().includes(searchText.toLowerCase()) || false;
+            const slugMatch = layout.slug?.toLowerCase().includes(searchText.toLowerCase()) || false;
+            return titleMatch || slugMatch;
         });
     }, [layouts, searchText]);
 

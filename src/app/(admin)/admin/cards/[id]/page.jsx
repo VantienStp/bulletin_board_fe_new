@@ -14,20 +14,18 @@ import { contentAdapter } from "@/data/adapters/contentAdapter";
 import usePagination from "@/hooks/usePagination";
 import useArrowNavigation from "@/hooks/useArrowNavigation";
 import { useContentFilters } from "@/hooks/useContentFilters";
+import { useToast } from "@/context/ToastContext";
 
 // 3. Components
 import ContentToolbar from "@/components/feature/cards/contents/ContentToolbar";
 import ContentTable from "@/components/feature/cards/contents/ContentTable";
 import ContentFormModal from "@/components/feature/cards/contents/ContentFormModal";
 import Pagination from "@/components/common/Pagination";
-import DeleteModal from "@/components/common/DeleteModal";
-
-// 4. Import Toast System
-import Toast from "@/components/ui/Toast";
-import ToastContainer from "@/components/ui/ToastContainer";
+import ConfirmModal from "@/components/common/ConfirmModal";
 
 export default function CardDetailPage() {
 	const { id } = useParams();
+	const { addToast } = useToast();
 
 	// --- FETCH DATA ---
 	const { data: card, error, isLoading, mutate } = useSWR(
@@ -51,7 +49,7 @@ export default function CardDetailPage() {
 		goToPage,
 	} = usePagination(filteredContents, ITEMS_PER_PAGE);
 
-	// --- FOCUS MANAGEMENT ---
+	// --- FOCUS MANAGEMENT & ARROW NAVIGATION ---
 	const [tableActive, setTableActive] = useState(false);
 	const [searchFocused, setSearchFocused] = useState(false);
 	const paginationRef = useRef(null);
@@ -61,6 +59,7 @@ export default function CardDetailPage() {
 		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
 		[totalPages]);
 
+	// Hook điều hướng bàn phím (Left/Right)
 	useArrowNavigation({
 		items: pagesArray,
 		activeId: currentPage,
@@ -69,20 +68,10 @@ export default function CardDetailPage() {
 		enabled: tableActive && !searchFocused && totalPages > 1,
 	});
 
-	// --- 5. TOAST STATE ---
-	const [toasts, setToasts] = useState([]);
-
-	const addToast = (type, message) => {
-		const id = Date.now();
-		setToasts((prev) => [...prev, { id, type, message }]);
-	};
-
-	const removeToast = (id) => {
-		setToasts((prev) => prev.filter((t) => t.id !== id));
-	};
-
-	// Reset về trang 1 khi search
-	useEffect(() => { goToPage(1); }, [searchText]);
+	// ⚡ QUAN TRỌNG: Reset về trang 1 khi search (Bỏ goToPage khỏi dependencies)
+	useEffect(() => {
+		goToPage(1);
+	}, [searchText]);
 
 	// --- MODAL STATE ---
 	const [showForm, setShowForm] = useState(false);
@@ -105,7 +94,6 @@ export default function CardDetailPage() {
 
 	const handleSubmit = async (formData) => {
 		const method = editingContent ? "PUT" : "POST";
-
 		const url = editingContent
 			? `${API_BASE_URL}/cards/${id}/contents/${editingContent.id}`
 			: `${API_BASE_URL}/cards/${id}/contents`;
@@ -125,7 +113,6 @@ export default function CardDetailPage() {
 				addToast("error", "Có lỗi xảy ra, vui lòng thử lại.");
 			}
 		} catch (err) {
-			console.error(err);
 			addToast("error", "Lỗi kết nối đến server!");
 		}
 	};
@@ -133,12 +120,11 @@ export default function CardDetailPage() {
 	const handleOpenDelete = (contentOrIndex) => {
 		if (typeof contentOrIndex === 'object' && contentOrIndex.id) {
 			setDeleteContentId(contentOrIndex.id);
-			setDeleteStatus("idle");
-		}
-		else if (typeof contentOrIndex === 'number') {
+		} else if (typeof contentOrIndex === 'number') {
 			const content = currentContents[contentOrIndex];
 			if (content) setDeleteContentId(content.id);
 		}
+		setDeleteStatus("idle");
 	};
 
 	const handleDeleteConfirmed = async () => {
@@ -151,60 +137,43 @@ export default function CardDetailPage() {
 			});
 
 			if (res.ok) {
-				setDeleteContentId(null);
-				setDeleteStatus("idle");
 				mutate();
 				addToast("success", "Đã xóa nội dung thành công!");
+				setDeleteContentId(null); // Đóng modal ngay
 			} else {
-				setDeleteStatus("idle");
-				setDeleteContentId(null);
 				addToast("error", "Xóa thất bại, vui lòng thử lại.");
 			}
 		} catch (error) {
-			setDeleteStatus("idle");
-			setDeleteContentId(null);
 			addToast("error", "Lỗi kết nối đến server!");
+		} finally {
+			setDeleteStatus("idle");
 		}
 	};
 
 	if (isLoading) {
 		return (
-			<div className="w-full h-96 flex flex-col items-center justify-center">
-				<div className="w-10 h-10 border-4 border-gray-200 border-t-black rounded-full animate-spin mb-4"></div>
-				<p className="text-gray-400 text-sm">Đang tải dữ liệu...</p>
+			<div className="w-full h-96 flex flex-col items-center justify-center text-gray-400">
+				<i className="fa-solid fa-spinner animate-spin text-2xl mb-4 text-black"></i>
+				<p className="text-sm">Đang tải dữ liệu nội dung...</p>
 			</div>
 		);
 	}
 
-	if (error || !card) return <div className="p-10 text-center text-red-500">❌ Không tìm thấy thẻ</div>;
+	if (error || !card) return <div className="p-10 text-center text-red-500 font-bold">❌ Không tìm thấy thông tin thẻ</div>;
 
 	return (
 		<div className="px-4 pb-20">
-			{/* 6. TOAST CONTAINER */}
-			<ToastContainer>
-				{toasts.map((toast) => (
-					<Toast
-						key={toast.id}
-						id={toast.id}
-						type={toast.type}
-						message={toast.message}
-						onClose={removeToast}
-					/>
-				))}
-			</ToastContainer>
-
-			{/* HEADER */}
-			<div className="flex justify-between items-center mb-1">
-				<h1 className="text-2xl font-bold flex items-center gap-2">
-					<i className="fa-solid fa-layer-group" /> Chi tiết thẻ: {card.title}
-				</h1>
-			</div>
 
 			{/* INFO & TOOLBAR */}
 			<div className="flex justify-between items-end mb-6">
-				<p className="text-gray-500 text-sm pb-2">
-					Quản lý {filteredContents.length} nội dung hiển thị.
-				</p>
+				<div>
+					<h1 className="text-2xl font-bold flex items-center gap-2">
+						<i className="fa-solid fa-layer-group" /> Chi tiết thẻ: {card.title}
+					</h1>
+					<p className="text-sm text-gray-500 mt-1">
+						Đang hiển thị {filteredContents.length} nội dung.
+					</p>
+				</div>
 
 				<ContentToolbar
 					searchText={searchText}
@@ -214,6 +183,7 @@ export default function CardDetailPage() {
 				/>
 			</div>
 
+			{/* TABLE AREA WITH FOCUS MANAGEMENT */}
 			<div
 				tabIndex={0}
 				onFocus={() => setTableActive(true)}
@@ -231,7 +201,7 @@ export default function CardDetailPage() {
 					onDelete={handleOpenDelete}
 				/>
 
-				<div className="flex justify-center mt-6">
+				<div className="flex justify-center">
 					<Pagination
 						totalItems={filteredContents.length}
 						itemsPerPage={ITEMS_PER_PAGE}
@@ -251,10 +221,10 @@ export default function CardDetailPage() {
 				onSubmit={handleSubmit}
 			/>
 
-			<DeleteModal
+			<ConfirmModal
 				open={deleteContentId !== null}
 				title="Xóa nội dung?"
-				message="Bạn có chắc chắn muốn xóa nội dung này không? Hành động này không thể hoàn tác."
+				message="Dữ liệu này sẽ biến mất vĩnh viễn. Bạn có chắc chắn không?"
 				onCancel={() => setDeleteContentId(null)}
 				onConfirm={handleDeleteConfirmed}
 				isLoading={deleteStatus === "deleting"}

@@ -13,19 +13,18 @@ import { categoryAdapter } from "@/data/adapters/categoryAdapter";
 import { useCategoryFilters } from "@/hooks/useCategoryFilters";
 import usePagination from "@/hooks/usePagination";
 import useArrowNavigation from "@/hooks/useArrowNavigation";
+import { useToast } from "@/context/ToastContext";
 
 // Components
 import Pagination from "@/components/common/Pagination";
 import CategoryToolbar from "@/components/feature/categories/CategoryToolbar";
 import CategoryTable from "@/components/feature/categories/CategoryTable";
 import CategoryFormModal from "@/components/feature/categories/CategoryFormModal";
-import DeleteModal from "@/components/common/DeleteModal"; // 1. Import DeleteModal
-
-// 2. Import Toast System
-import Toast from "@/components/ui/Toast";
-import ToastContainer from "@/components/ui/ToastContainer";
+import ConfirmModal from "@/components/common/ConfirmModal";
 
 export default function CategoriesPage() {
+	const { addToast } = useToast();
+
 	// 1. Fetch Data
 	const { data: rawCategories, mutate } = useSWR(`${API_BASE_URL}/categories`, fetcher);
 	const { data: rawLayouts } = useSWR(`${API_BASE_URL}/gridlayouts`, fetcher);
@@ -63,6 +62,7 @@ export default function CategoriesPage() {
 		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
 		[totalPages]);
 
+	// Hook điều hướng bàn phím
 	useArrowNavigation({
 		items: pagesArray,
 		activeId: currentPage,
@@ -71,18 +71,6 @@ export default function CategoriesPage() {
 		enabled: tableActive && !searchFocused && totalPages > 1,
 	});
 
-	// --- 7. TOAST STATE ---
-	const [toasts, setToasts] = useState([]);
-
-	const addToast = (type, message) => {
-		const id = Date.now();
-		setToasts((prev) => [...prev, { id, type, message }]);
-	};
-
-	const removeToast = (id) => {
-		setToasts((prev) => prev.filter((t) => t.id !== id));
-	};
-
 	// State Form & Delete Modal
 	const [editingCategory, setEditingCategory] = useState(null);
 	const [showForm, setShowForm] = useState(false);
@@ -90,7 +78,8 @@ export default function CategoriesPage() {
 	const [deleteCategoryId, setDeleteCategoryId] = useState(null);
 	const [deleteStatus, setDeleteStatus] = useState("idle");
 
-	// Reset về trang 1 khi search hoặc filter thay đổi
+	// ⚡ QUAN TRỌNG: Reset về trang 1 khi search hoặc filter thay đổi
+	// Bỏ goToPage khỏi dependencies để tránh re-render trigger ArrowNav lỗi
 	useEffect(() => {
 		goToPage(1);
 	}, [searchText, filters]);
@@ -131,7 +120,6 @@ export default function CategoriesPage() {
 		}
 	};
 
-	// Thay thế window.confirm bằng DeleteModal
 	const handleDelete = (id) => {
 		setDeleteCategoryId(id);
 		setDeleteStatus("confirming");
@@ -147,44 +135,32 @@ export default function CategoriesPage() {
 			});
 
 			if (res.ok) {
-				setDeleteCategoryId(null);
-				setDeleteStatus("idle");
 				mutate();
 				addToast("success", "Đã xóa danh mục thành công!");
+				setDeleteCategoryId(null); // Đóng modal ngay lập tức
 			} else {
-				setDeleteStatus("idle");
-				setDeleteCategoryId(null);
 				addToast("error", "Xóa thất bại!");
 			}
 		} catch (error) {
-			setDeleteStatus("idle");
-			setDeleteCategoryId(null);
 			addToast("error", "Lỗi kết nối đến server!");
+		} finally {
+			setDeleteStatus("idle");
 		}
 	};
 
-	if (!rawCategories && !rawLayouts) return <div>Đang tải dữ liệu...</div>;
+	if (!rawCategories && !rawLayouts) return (
+		<div className="w-full h-64 flex items-center justify-center text-gray-400">
+			<i className="fa-solid fa-spinner animate-spin mr-2"></i> Đang tải dữ liệu...
+		</div>
+	);
 
 	return (
 		<div className="px-4 pb-20">
-			{/* 8. HIỂN THỊ TOAST CONTAINER */}
-			<ToastContainer>
-				{toasts.map((toast) => (
-					<Toast
-						key={toast.id}
-						id={toast.id}
-						type={toast.type}
-						message={toast.message}
-						onClose={removeToast}
-					/>
-				))}
-			</ToastContainer>
-
 			{/* HEADER */}
 			<div className="flex justify-between items-end mb-6">
 				<div>
 					<h1 className="text-2xl font-bold flex items-center gap-2">
-						<i className={"fa-solid fa-tags"} /> Danh mục
+						<i className={"fa-solid fa-tags text-amber-500"} /> Danh mục
 					</h1>
 					<p className="text-sm text-gray-500 mt-1">
 						Hiển thị {filteredCategories.length} danh mục phù hợp.
@@ -203,7 +179,7 @@ export default function CategoriesPage() {
 				/>
 			</div>
 
-			{/* BỌC VÙNG BẢNG (FOCUS AREA) */}
+			{/* BỌC VÙNG BẢNG (FOCUS AREA CHO BÀN PHÍM) */}
 			<div
 				tabIndex={0}
 				onFocus={() => setTableActive(true)}
@@ -223,7 +199,7 @@ export default function CategoriesPage() {
 				/>
 
 				{/* PAGINATION */}
-				<div className="flex justify-center mt-6">
+				<div className="flex justify-center">
 					<Pagination
 						totalItems={filteredCategories.length}
 						itemsPerPage={ITEMS_PER_PAGE}
@@ -246,12 +222,13 @@ export default function CategoriesPage() {
 			/>
 
 			{/* DELETE MODAL */}
-			<DeleteModal
+			<ConfirmModal
 				open={!!deleteCategoryId}
 				title="Xóa danh mục?"
 				message="Bạn có chắc chắn muốn xóa danh mục này không? Hành động này không thể hoàn tác."
 				onCancel={() => setDeleteCategoryId(null)}
 				onConfirm={handleDeleteConfirmed}
+				isLoading={deleteStatus === "deleting"}
 			/>
 		</div>
 	);

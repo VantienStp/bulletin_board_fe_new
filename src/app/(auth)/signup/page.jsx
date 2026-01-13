@@ -1,13 +1,14 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { API_BASE_URL, BASE_URL } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/api";
 import CryptoJS from "crypto-js";
+import { User, Mail, Lock, CheckCircle, XCircle, ArrowRight, Loader2 } from "lucide-react";
 
 export default function SignUpPage() {
     const router = useRouter();
 
-    // Inputs & states
+    // --- STATE & INPUTS (Giữ nguyên logic cũ) ---
     const [username, setUsername] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -19,43 +20,19 @@ export default function SignUpPage() {
     const [passwordError, setPasswordError] = useState("");
     const [confirmError, setConfirmError] = useState("");
 
-    const [focus, setFocus] = useState({
-        email: false,
-        password: false,
-        confirm: false,
-    });
+    const [focus, setFocus] = useState({ email: false, password: false, confirm: false });
+    const [touched, setTouched] = useState({ username: false, email: false, password: false, confirm: false });
 
-    const [touched, setTouched] = useState({
-        username: false,
-        email: false,
-        password: false,
-        confirm: false,
-    });
-
-    // Email & Password criteria
-    const [emailCriteria, setEmailCriteria] = useState({
-        hasAt: false,
-        hasDot: false,
-        noSpace: true,
-        notUsername: true,
-    });
-
+    const [emailCriteria, setEmailCriteria] = useState({ hasAt: false, hasDot: false, noSpace: true, notUsername: true });
     const [passwordStrength, setPasswordStrength] = useState("weak");
-    const [criteria, setCriteria] = useState({
-        length: false,
-        numberOrSymbol: false,
-        upperCase: false,
-        notEmail: true,
-    });
-
+    const [criteria, setCriteria] = useState({ length: false, numberOrSymbol: false, upperCase: false, notEmail: true });
     const [loading, setLoading] = useState(false);
 
-    // Validation rules
+    // --- VALIDATION LOGIC (Giữ nguyên logic cũ) ---
     const validateUsername = (val) => {
         if (!val.trim()) return "Tên người dùng không được để trống.";
         if (val.length < 3) return "Tên phải có ít nhất 3 ký tự.";
-        if (!/^[a-zA-Z0-9_]+$/.test(val))
-            return "Tên chỉ được chứa chữ, số hoặc dấu gạch dưới.";
+        if (!/^[a-zA-Z0-9_]+$/.test(val)) return "Tên chỉ được chứa chữ, số hoặc gạch dưới.";
         return "";
     };
 
@@ -68,27 +45,20 @@ export default function SignUpPage() {
 
     const validatePassword = (val) => {
         if (!val.trim()) return "Vui lòng nhập mật khẩu.";
-        if (val.length < 8) return "Mật khẩu phải có ít nhất 8 ký tự.";
-        if (!/[A-Z]/.test(val)) return "Cần ít nhất 1 chữ hoa.";
-        if (!/[0-9]/.test(val)) return "Cần ít nhất 1 chữ số.";
-        if (!/[!@#$%^&*(),.?\":{}|<>]/.test(val))
-            return "Cần ít nhất 1 ký tự đặc biệt.";
+        if (val.length < 8) return "Mật khẩu quá ngắn.";
+        if (!/[A-Z]/.test(val)) return "Thiếu chữ hoa.";
+        if (!/[0-9]/.test(val)) return "Thiếu chữ số.";
+        if (!/[!@#$%^&*(),.?\":{}|<>]/.test(val)) return "Thiếu ký tự đặc biệt.";
         return "";
     };
 
     const validateConfirm = (val) => {
-        if (val !== password) return "Mật khẩu nhập lại không khớp.";
+        if (val !== password) return "Mật khẩu không khớp.";
         return "";
     };
 
-    // ====== Criteria checkers ======
     const checkEmailCriteria = (val) => {
-        setEmailCriteria({
-            hasAt: val.includes("@"),
-            hasDot: val.includes("."),
-            noSpace: !val.includes(" "),
-            // notUsername: !val.includes(username),
-        });
+        setEmailCriteria({ hasAt: val.includes("@"), hasDot: val.includes("."), noSpace: !val.includes(" ") });
     };
 
     const checkPasswordStrength = (val) => {
@@ -97,17 +67,17 @@ export default function SignUpPage() {
         const hasUpperCase = /[A-Z]/.test(val);
         const notEmail = !val.includes(email.split("@")[0]);
         setCriteria({ length: hasLength, numberOrSymbol: hasNumberOrSymbol, upperCase: hasUpperCase, notEmail });
+
         const passed = [hasLength, hasNumberOrSymbol, hasUpperCase, notEmail].filter(Boolean).length;
         if (passed <= 1) setPasswordStrength("weak");
         else if (passed === 2 || passed === 3) setPasswordStrength("medium");
         else setPasswordStrength("strong");
     };
 
-    // ====== Submit ======
+    // --- SUBMIT HANDLER ---
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError(null);
-
         const userErr = validateUsername(username);
         const emailErr = validateEmail(email);
         const passErr = validatePassword(password);
@@ -128,10 +98,8 @@ export default function SignUpPage() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ username, email, password: hashedPassword }),
             });
-
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || "Đăng ký thất bại");
-
             alert("✅ Đăng ký thành công! Mời đăng nhập.");
             router.push("/login");
         } catch (err) {
@@ -141,127 +109,194 @@ export default function SignUpPage() {
         }
     };
 
-    // ====== Show dynamic helpers ======
-    const showEmail = touched.email && (focus.email);
-    const showPassword = touched.password && (focus.password);
-    const showConfirm = touched.confirm && (focus.confirm);
+    const CriteriaItem = ({ valid, text }) => (
+        <li className={`flex items-center gap-2 text-xs transition-colors duration-200 ${valid ? "text-green-600 font-medium" : "text-gray-400"}`}>
+            {valid ? <CheckCircle size={14} /> : <div className="w-3.5 h-3.5 rounded-full border border-gray-300" />}
+            {text}
+        </li>
+    );
+
+    const showEmail = touched.email && focus.email;
+    const showPassword = touched.password && focus.password;
+    const showConfirm = touched.confirm && focus.confirm;
 
     return (
-        <div className="auth-wrapper">
-            <img src={'/law_bg.png'} alt="background shape" className="background-shape" />
-            <div className="auth-card">
-                <h1>Tạo tài khoản mới</h1>
-                {error && <div className="error-box">{error}</div>}
+        <div className="auth-wrapper  min-h-[40vh] max-h-[vh] flex items-center justify-center relative overflow-hidden font-sans p-4">
+            <img
+                src={'/law_bg.png'}
+                alt="background shape"
+                className="background-shape"
+            />
 
-                <form onSubmit={handleSubmit}>
-                    {/* USERNAME */}
-                    <label>Tên người dùng</label>
-                    <input
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        onBlur={(e) => {
-                            setTouched({ ...touched, username: true });
-                            setUsernameError(validateUsername(e.target.value));
-                        }}
-                        required
-                    />
-                    {/* {touched.username && usernameError && <span className="input-error">{usernameError}</span>} */}
+            <div className="relative z-10 w-[550px] bg-white px-6 py-6 rounded-2xl shadow-xl border border-white/50 backdrop-blur-sm">
 
-                    {/* EMAIL */}
-                    <label>Email</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onFocus={() => setFocus({ ...focus, email: true })}
-                        onBlur={(e) => {
-                            setFocus({ ...focus, email: false });
-                            setTouched({ ...touched, email: true });
-                            setEmailError(validateEmail(e.target.value));
-                        }}
-                        onChange={(e) => {
-                            const val = e.target.value;
-                            setEmail(val);
-                            checkEmailCriteria(val);
-                        }}
-                        required
-                    />
-                    <div className={`password-strength-wrapper ${showEmail ? "visible" : "hidden"}`}>
-                        <p><strong>Email check:</strong></p>
-                        <ul className="criteria-list">
-                            <li className={emailCriteria.hasAt ? "ok" : "fail"}>{emailCriteria.hasAt ? "✔" : "✖"} Contains "@"</li>
-                            <li className={emailCriteria.hasDot ? "ok" : "fail"}>{emailCriteria.hasDot ? "✔" : "✖"} Contains a dot after @</li>
-                            <li className={emailCriteria.noSpace ? "ok" : "fail"}>{emailCriteria.noSpace ? "✔" : "✖"} No spaces</li>
-                            {/* <li className={emailCriteria.notUsername ? "ok" : "fail"}>{emailCriteria.notUsername ? "✔" : "✖"} Not same as username</li> */}
-                        </ul>
+                <div className="text-center mb-2">
+                    <h1 className="text-2xl font-bold text-gray-800 tracking-tight">Tạo tài khoản</h1>
+                    <p className="text-gray-500 text-xs mt-1 font-medium">Đăng ký để truy cập hệ thống quản trị</p>
+                </div>
+
+                {error && (
+                    <div className="mb-4 p-2.5 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-600 text-xs animate-pulse">
+                        <XCircle size={16} />
+                        <span>{error}</span>
                     </div>
-                    {/* {touched.email && emailError && <span className="input-error">{emailError}</span>} */}
+                )}
 
-                    {/* PASSWORD */}
-                    <label>Mật khẩu</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onFocus={() => setFocus({ ...focus, password: true })}
-                        onBlur={(e) => {
-                            setFocus({ ...focus, password: false });
-                            setTouched({ ...touched, password: true });
-                            setPasswordError(validatePassword(e.target.value));
-                        }}
-                        onChange={(e) => {
-                            const val = e.target.value;
-                            setPassword(val);
-                            checkPasswordStrength(val);
-                        }}
-                        required
-                    />
-                    <div className={`password-strength-wrapper ${showPassword ? "visible" : "hidden"}`}>
-                        <p>
-                            <strong>Password strength:</strong>{" "}
-                            <span className={`strength-${passwordStrength}`}>{passwordStrength}</span>
-                        </p>
-                        <ul className="criteria-list">
-                            <li className={criteria.notEmail ? "ok" : "fail"}> {criteria.notEmail ? "✔" : "✖"} Cannot contain your name or email </li>
-                            <li className={criteria.length ? "ok" : "fail"}> {criteria.length ? "✔" : "✖"} At least 8 characters </li>
-                            <li className={criteria.numberOrSymbol ? "ok" : "fail"}> {criteria.numberOrSymbol ? "✔" : "✖"} Contains a number or symbol </li>
-                            <li className={criteria.upperCase ? "ok" : "fail"}> {criteria.upperCase ? "✔" : "✖"} Contains an uppercase letter </li>
-                        </ul>
+                <form onSubmit={handleSubmit} className="space-y-1.5">
+
+                    {/* Username */}
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-700 ml-1">Tên người dùng</label>
+                        <div className="relative group">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E7D32] transition-colors" size={16} />
+                            <input
+                                className={`w-full pl-9 pr-3 py-2.5 rounded-lg border text-sm bg-gray-50/50 focus:bg-white outline-none transition-all duration-200 text-gray-800 placeholder-gray-400
+                                ${touched.username && usernameError
+                                        ? 'border-red-300 focus:ring-2 focus:ring-red-100'
+                                        : 'border-gray-200 hover:border-gray-300 focus:border-[#2E7D32] focus:ring-2 focus:ring-green-50'}`}
+                                value={username}
+                                onChange={(e) => setUsername(e.target.value)}
+                                onBlur={(e) => {
+                                    setTouched({ ...touched, username: true });
+                                    setUsernameError(validateUsername(e.target.value));
+                                }}
+                                placeholder="Nhập tên tài khoản"
+                                required
+                            />
+                        </div>
+                        {touched.username && usernameError && <p className="text-red-500 text-[10px] ml-1 mt-1 font-medium">{usernameError}</p>}
                     </div>
-                    {/* {touched.password && passwordError && <span className="input-error">{passwordError}</span>} */}
 
-                    {/* CONFIRM PASSWORD */}
-                    <label>Nhập lại mật khẩu</label>
-                    <input
-                        type="password"
-                        value={confirmPassword}
-                        onFocus={() => setFocus({ ...focus, confirm: true })}
-                        onBlur={(e) => {
-                            setFocus({ ...focus, confirm: false });
-                            setTouched({ ...touched, confirm: true });
-                            setConfirmError(validateConfirm(e.target.value));
-                        }}
-                        onChange={(e) => {
-                            setConfirmPassword(e.target.value);
-                        }}
-                        required
-                    />
-                    <div className={`password-strength-wrapper ${showConfirm ? "visible" : "hidden"}`}>
-                        <p><strong>Password match:</strong></p>
-                        <ul className="criteria-list">
-                            <li className={confirmPassword === password ? "ok" : "fail"}>
-                                {confirmPassword === password ? "✔ Matched" : "✖ Not matched"}
-                            </li>
-                        </ul>
+                    {/* Email */}
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-700 ml-1">Email</label>
+                        <div className="relative group">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E7D32] transition-colors" size={16} />
+                            <input
+                                type="email"
+                                className={`w-full pl-9 pr-3 py-2.5 rounded-lg border text-sm bg-gray-50/50 focus:bg-white outline-none transition-all duration-200 text-gray-800 placeholder-gray-400
+                                ${touched.email && emailError ? 'border-red-300 focus:ring-2 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-[#2E7D32] focus:ring-2 focus:ring-green-50'}`}
+                                value={email}
+                                onChange={(e) => {
+                                    setEmail(e.target.value);
+                                    checkEmailCriteria(e.target.value);
+                                }}
+                                onFocus={() => setFocus({ ...focus, email: true })}
+                                onBlur={(e) => {
+                                    setFocus({ ...focus, email: false });
+                                    setTouched({ ...touched, email: true });
+                                    setEmailError(validateEmail(e.target.value));
+                                }}
+                                placeholder="example@gmail.com"
+                                required
+                            />
+                        </div>
+                        {/* Email Criteria nhỏ gọn hơn */}
+                        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showEmail ? "max-h-20 opacity-100 mt-1" : "max-h-0 opacity-0"}`}>
+                            <ul className="grid grid-cols-2 gap-1 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                <CriteriaItem valid={emailCriteria.hasAt} text="Có @" />
+                                <CriteriaItem valid={emailCriteria.hasDot} text="Có dấu chấm" />
+                                <CriteriaItem valid={emailCriteria.noSpace} text="Không khoảng trắng" />
+                            </ul>
+                        </div>
                     </div>
-                    {/* {touched.confirm && confirmError && <span className="input-error">{confirmError}</span>} */}
 
-                    <button type="submit" disabled={loading}>
-                        {loading ? "Đang đăng ký..." : "Đăng ký"}
+                    {/* Password */}
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-700 ml-1">Mật khẩu</label>
+                        <div className="relative group">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E7D32] transition-colors" size={16} />
+                            <input
+                                type="password"
+                                className="w-full pl-9 pr-3 py-2.5 rounded-lg border text-sm border-gray-200 bg-gray-50/50 focus:bg-white focus:border-[#2E7D32] focus:ring-2 focus:ring-green-50 outline-none transition-all duration-200 text-gray-800 placeholder-gray-400"
+                                value={password}
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    checkPasswordStrength(e.target.value);
+                                }}
+                                onFocus={() => setFocus({ ...focus, password: true })}
+                                onBlur={(e) => {
+                                    setFocus({ ...focus, password: false });
+                                    setTouched({ ...touched, password: true });
+                                    setPasswordError(validatePassword(e.target.value));
+                                }}
+                                placeholder="••••••••"
+                                required
+                            />
+                        </div>
+                        {/* Password Strength nhỏ gọn */}
+                        <div className={`overflow-hidden transition-all duration-300 ease-in-out ${showPassword ? "max-h-40 opacity-100 mt-1" : "max-h-0 opacity-0"}`}>
+                            <div className="flex gap-1 h-1 mb-1.5 mt-1 px-1">
+                                <div className={`flex-1 rounded-full transition-colors ${passwordStrength !== "" ? (passwordStrength === "weak" ? "bg-red-400" : passwordStrength === "medium" ? "bg-yellow-400" : "bg-green-500") : "bg-gray-200"}`}></div>
+                                <div className={`flex-1 rounded-full transition-colors ${passwordStrength === "medium" || passwordStrength === "strong" ? (passwordStrength === "medium" ? "bg-yellow-400" : "bg-green-500") : "bg-gray-200"}`}></div>
+                                <div className={`flex-1 rounded-full transition-colors ${passwordStrength === "strong" ? "bg-green-500" : "bg-gray-200"}`}></div>
+                            </div>
+                            <ul className="grid grid-cols-1 gap-1 bg-gray-50 p-2 rounded-lg border border-gray-100">
+                                <CriteriaItem valid={criteria.length} text="Ít nhất 8 ký tự" />
+                                <CriteriaItem valid={criteria.numberOrSymbol} text="Số hoặc ký tự đặc biệt" />
+                                <CriteriaItem valid={criteria.upperCase} text="Chữ in hoa" />
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* Confirm Password */}
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-700 ml-1">Nhập lại mật khẩu</label>
+                        <div className="relative group">
+                            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-[#2E7D32] transition-colors" size={16} />
+                            <input
+                                type="password"
+                                className={`w-full pl-9 pr-3 py-1 rounded-lg border text-sm bg-gray-50/50 focus:bg-white outline-none transition-all duration-200 text-gray-800 placeholder-gray-400
+                                ${confirmPassword && confirmPassword !== password ? 'border-red-300 focus:ring-2 focus:ring-red-100' : 'border-gray-200 hover:border-gray-300 focus:border-[#2E7D32] focus:ring-2 focus:ring-green-50'}`}
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                onFocus={() => setFocus({ ...focus, confirm: true })}
+                                onBlur={(e) => {
+                                    setFocus({ ...focus, confirm: false });
+                                    setTouched({ ...touched, confirm: true });
+                                    setConfirmError(validateConfirm(e.target.value));
+                                }}
+                                placeholder="••••••••"
+                                required
+                            />
+                        </div>
+                        {showConfirm && (
+                            <div className={`text-[10px] mt-1 ml-1 transition-all duration-300 flex items-center gap-1 font-medium ${confirmPassword === password ? "text-green-600" : "text-red-500"}`}>
+                                {confirmPassword === password ? <><CheckCircle size={12} /> Khớp</> : <><XCircle size={12} /> Không khớp</>}
+                            </div>
+                        )}
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full mt-2 bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] hover:from-[#388E3C] hover:to-[#2E7D32] text-white font-bold py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform active:scale-[0.98] flex items-center justify-center gap-2 text-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="animate-spin" size={16} />
+                                <span>Đang xử lý...</span>
+                            </>
+                        ) : (
+                            <>
+                                <span>Đăng ký ngay</span>
+                                <ArrowRight size={16} />
+                            </>
+                        )}
                     </button>
                 </form>
 
-                <p className="redirect-text">
-                    Đã có tài khoản? <a className="highlight-text a-button" onClick={() => router.push(`/login`)}>Đăng nhập</a>
-                </p>
+                <div className=" border-t border-gray-100 text-center">
+                    <p className=" text-gray-600 font-medium">
+                        Bạn đã có tài khoản?{" "}
+                        <button
+                            onClick={() => router.push(`/login`)}
+                            className="font-bold hover:underline transition-colors ml-1 py-2.5 bg-gradient-to-r from-[#2E7D32] to-[#1B5E20] hover:from-[#388E3C] hover:to-[#2E7D32]"
+                        >
+                            Đăng nhập
+                        </button>
+                    </p>
+                </div>
             </div>
         </div>
     );

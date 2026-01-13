@@ -1,36 +1,35 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { API_BASE_URL, BASE_URL } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/api";
+import { useToast } from "@/context/ToastContext";
 
 export default function VerifyPinPage() {
     const [pin, setPin] = useState("");
-    const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
     const [isComposing, setIsComposing] = useState(false);
 
+    const { addToast } = useToast();
     const router = useRouter();
     const params = useSearchParams();
     const email = params.get("email");
 
-    // Khi email bị thiếu → chặn ngay
-    if (!email) {
-        if (typeof window !== "undefined") {
+    useEffect(() => {
+        if (!email) {
+            addToast("error", "Thiếu thông tin email để xác minh!");
             router.replace("/forgot-password");
         }
-    }
+    }, [email, router, addToast]);
 
     const handleVerify = async (e) => {
         e.preventDefault();
-        setLoading(true);
-        setMessage("");
 
         if (pin.length < 6) {
-            setMessage("❌ Mã PIN phải đủ 6 chữ số.");
-            setLoading(false);
+            addToast("error", "Mã PIN phải đủ 6 chữ số.");
             return;
         }
 
+        setLoading(true);
         try {
             const res = await fetch(`${API_BASE_URL}/auth/verify-pin`, {
                 method: "POST",
@@ -42,22 +41,20 @@ export default function VerifyPinPage() {
             const data = await res.json();
             if (!res.ok) throw new Error(data.message || "Mã PIN không hợp lệ");
 
-            // luôn dùng email trả về từ server nếu có
             const verifiedEmail = data.userEmailForDisplay || email;
-
             sessionStorage.setItem("userEmailForDisplay", verifiedEmail);
 
-            setMessage("✅ Mã PIN hợp lệ! Đang chuyển sang bước đặt lại mật khẩu...");
+            addToast("success", "Mã PIN hợp lệ! Đang chuyển sang bước đặt lại mật khẩu...");
+
             setTimeout(() => router.push("/reset-password"), 1500);
 
         } catch (err) {
-            setMessage("❌ " + (err.message || "Đã xảy ra lỗi không xác định."));
+            addToast("error", err.message || "Đã xảy ra lỗi không xác định.");
         } finally {
             setLoading(false);
         }
     };
 
-    // ===== Các hàm nhập PIN =====
     const updatePinAtIndex = (i, value) => {
         const arr = Array.from({ length: 6 }, (_, index) => pin[index] || "");
         arr[i] = value;
@@ -71,12 +68,10 @@ export default function VerifyPinPage() {
 
     const handlePinChange = (e, i) => {
         const val = e.target.value.replace(/\D/g, "");
-
         if (!val) {
             updatePinAtIndex(i, "");
             return;
         }
-
         const oneChar = val.charAt(0);
         updatePinAtIndex(i, oneChar);
 
@@ -93,10 +88,13 @@ export default function VerifyPinPage() {
             } else if (i > 0) {
                 e.preventDefault();
                 updatePinAtIndex(i - 1, "");
-                e.target.previousSibling.focus();
+                const prev = e.target.previousSibling;
+                if (prev) prev.focus();
             }
         }
     };
+
+    if (!email) return null;
 
     return (
         <div className="auth-wrapper">
@@ -111,9 +109,6 @@ export default function VerifyPinPage() {
                 <p className="a-text">
                     Nhập mã 6 chữ số đã được gửi đến email: <b>{email}</b>
                 </p>
-
-                {message && <div className="message-box">{message}</div>}
-
                 <form onSubmit={handleVerify}>
                     <label>Mã PIN</label>
 
@@ -125,6 +120,7 @@ export default function VerifyPinPage() {
                                 className="pin-box"
                                 value={pin[i] || ""}
                                 inputMode="numeric"
+                                disabled={loading}
                                 onChange={(e) => handlePinChange(e, i)}
                                 onKeyDown={(e) => handlePinKeyDown(e, i)}
                                 onCompositionStart={() => setIsComposing(true)}
@@ -140,17 +136,16 @@ export default function VerifyPinPage() {
                         ))}
                     </div>
 
-                    <button type="submit" disabled={loading || pin.length < 6}>
+                    <button type="submit" disabled={loading || pin.length < 6} className="font-bold transition-colors ml-1 py-2.5">
                         {loading ? "Đang xác minh..." : "Xác nhận mã PIN"}
                     </button>
                 </form>
 
-                {/* dùng router.push → không reload trang */}
                 <p className="redirect-text">
                     Chưa nhận được mã?{" "}
                     <span
                         className="highlight-text a-button"
-                        onClick={() => router.push(`/forgot-password?email=${email}`)}
+                        onClick={() => !loading && router.push(`/forgot-password?email=${email}`)}
                     >
                         Gửi lại
                     </span>

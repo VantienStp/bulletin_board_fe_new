@@ -6,15 +6,13 @@ import { FaCheckCircle, FaExclamationCircle, FaTimes } from "react-icons/fa";
 
 export default function Toast({ id, message, type = "success", onClose }) {
     const [isVisible, setIsVisible] = useState(false);
-    const [isLeaving, setIsLeaving] = useState(false); // State để chạy animation biến mất
+    const [isLeaving, setIsLeaving] = useState(false);
 
     useEffect(() => {
-        // 1. Vào màn hình -> Hiện dần
         requestAnimationFrame(() => {
             setIsVisible(true);
         });
 
-        // 2. Hẹn giờ tự tắt (3 giây)
         const timer = setTimeout(() => {
             handleClose();
         }, 3000);
@@ -23,16 +21,14 @@ export default function Toast({ id, message, type = "success", onClose }) {
     }, []);
 
     const handleClose = () => {
-        setIsVisible(false); // Chạy animation ẩn
+        setIsVisible(false);
         setIsLeaving(true);
 
-        // Chờ 300ms cho animation chạy xong mới gọi hàm xóa khỏi mảng
         setTimeout(() => {
             onClose(id);
         }, 300);
     };
 
-    // Cấu hình màu sắc
     const styles = {
         success: "border-l-4 border-green-500 bg-white",
         error: "border-l-4 border-red-500 bg-white",
@@ -50,7 +46,7 @@ export default function Toast({ id, message, type = "success", onClose }) {
             className={`
                 flex items-center gap-3 px-5 py-4 
                 rounded-lg shadow-lg min-w-[320px] max-w-sm mb-3 bg-white
-                transition-all duration-300 ease-in-out transform
+                transition-all duration-150 ease-in-out transform
                 ${styles[type]}
                 ${isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"}
                 ${isLeaving ? "h-0 mb-0 py-0 opacity-0 overflow-hidden" : "h-auto"}

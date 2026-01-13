@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Modal from "@/components/common/Modal";
-import { Select, MenuItem } from "@mui/material";
-import { FaFolderOpen } from "react-icons/fa";
+import { FaImage, FaVideo, FaFilePdf, FaFolderOpen, FaCloudUploadAlt } from "react-icons/fa";
 
 export default function ContentFormModal({ isOpen, onClose, initialData, onSubmit }) {
     const [formData, setFormData] = useState({
@@ -15,81 +14,86 @@ export default function ContentFormModal({ isOpen, onClose, initialData, onSubmi
 
     useEffect(() => {
         if (isOpen) {
-            if (initialData) {
-                setFormData({
-                    type: initialData.type || "image",
-                    url: initialData.url || "",
-                    description: initialData.description || "",
-                    qrCode: initialData.qrCode || "",
-                });
-            } else {
-                setFormData({
-                    type: "image",
-                    url: "",
-                    description: "",
-                    qrCode: "",
-                });
-            }
+            setFormData(initialData ? {
+                type: initialData.type || "image",
+                url: initialData.url || "",
+                description: initialData.description || "",
+                qrCode: initialData.qrCode || "",
+            } : {
+                type: "image",
+                url: "",
+                description: "",
+                qrCode: "",
+            });
         }
     }, [isOpen, initialData]);
+
+    const types = [
+        { id: "image", label: "Hình ảnh", icon: FaImage, color: "text-blue-500", bg: "bg-blue-50" },
+        { id: "video", label: "Video", icon: FaVideo, color: "text-purple-500", bg: "bg-purple-50" },
+        { id: "pdf", label: "Tài liệu PDF", icon: FaFilePdf, color: "text-red-500", bg: "bg-red-50" },
+    ];
 
     const handleSubmit = (e) => {
         e.preventDefault();
         onSubmit(formData);
     };
 
-    const getFileInputAccept = () => {
-        switch (formData.type) {
-            case "video": return "video/*";
-            case "pdf": return "application/pdf";
-            default: return "image/*";
-        }
-    };
-
     if (!isOpen) return null;
 
     return (
         <Modal
-            title={initialData ? "Sửa nội dung" : "Thêm nội dung"}
+            title={initialData ? "Chỉnh sửa nội dung" : "Thêm nội dung mới"}
             onClose={onClose}
         >
-            <form onSubmit={handleSubmit}>
-                <label className="block mb-1 font-medium text-sm">Loại nội dung</label>
-                <Select
-                    variant="standard"
-                    disableUnderline
-                    fullWidth
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    className="mb-4"
-                >
-                    <MenuItem value="image">Image</MenuItem>
-                    <MenuItem value="video">Video</MenuItem>
-                    <MenuItem value="pdf">PDF</MenuItem>
-                </Select>
+            <form onSubmit={handleSubmit} className="space-y-2">
+                <div>
+                    <label className="block mb-3 font-semibold text-gray-700 text-sm uppercase tracking-wider">
+                        Loại nội dung
+                    </label>
+                    <div className="grid grid-cols-3 gap-3">
+                        {types.map((t) => (
+                            <button
+                                key={t.id}
+                                type="button"
+                                onClick={() => setFormData({ ...formData, type: t.id })}
+                                className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${formData.type === t.id
+                                    ? `border-black shadow-md ${t.bg}`
+                                    : "border-gray-100 hover:border-gray-200"
+                                    }`}
+                            >
+                                <t.icon className={`text-2xl mb-2 ${t.color}`} />
+                                <span className="text-xs font-bold text-gray-600">{t.label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
 
-                <label className="block mb-1 font-medium text-sm">File / URL</label>
-                <div className="flex gap-2 items-center mb-4">
-                    <input
-                        className="flex-1 border rounded-lg p-2 text-sm"
-                        value={formData.url instanceof File ? formData.url.name : formData.url}
-                        onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                        placeholder="Nhập URL hoặc chọn file..."
-                    />
-
-                    <button
-                        type="button"
-                        className="px-3 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition"
-                        onClick={() => document.getElementById("fileInput").click()}
-                    >
-                        <FaFolderOpen />
-                    </button>
-
+                <div>
+                    <label className="block mb-2 font-semibold text-gray-700 text-sm uppercase tracking-wider">
+                        Đường dẫn tới File
+                    </label>
+                    <div className="relative group">
+                        <input
+                            className="w-full border-2 border-gray-100 rounded-xl p-4 pr-14 text-sm focus:border-black outline-none transition-all bg-gray-50/50"
+                            value={formData.url instanceof File ? formData.url.name : formData.url}
+                            onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                            placeholder="Dán link hoặc chọn file từ máy tính..."
+                        />
+                        <button
+                            type="button"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-white text-gray-600 rounded-lg hover:bg-black hover:text-white transition shadow-sm border border-gray-100"
+                            onClick={() => document.getElementById("fileInput").click()}
+                            title="Chọn file từ máy tính"
+                        >
+                            <FaFolderOpen />
+                        </button>
+                    </div>
                     <input
                         id="fileInput"
                         type="file"
                         hidden
-                        accept={getFileInputAccept()}
+                        accept={formData.type === "video" ? "video/*" : formData.type === "pdf" ? "application/pdf" : "image/*"}
                         onChange={(e) => {
                             const file = e.target.files[0];
                             if (file) setFormData({ ...formData, url: file });
@@ -97,25 +101,34 @@ export default function ContentFormModal({ isOpen, onClose, initialData, onSubmi
                     />
                 </div>
 
-                <label className="block mb-1 font-medium text-sm">Mô tả</label>
-                <textarea
-                    rows="3"
-                    className="w-full border rounded-lg p-2 text-sm mb-6"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Nhập mô tả cho nội dung này..."
-                />
+                {/* 3. MÔ TẢ */}
+                <div>
+                    <label className="block mb-2 font-semibold text-gray-700 text-sm uppercase tracking-wider">
+                        Mô tả ngắn gọn
+                    </label>
+                    <textarea
+                        rows="3"
+                        className="w-full border-2 border-gray-100 rounded-xl text-sm focus:border-black outline-none transition-all bg-gray-50/50 resize-none"
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        placeholder="Nội dung này nói về điều gì..."
+                    />
+                </div>
 
-                <div className="modal-actions flex justify-end gap-2">
-                    <button type="submit" className="btn-primary px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                        {initialData ? "Cập nhật" : "Lưu"}
-                    </button>
+                {/* 4. ACTIONS */}
+                <div className="flex justify-end gap-3 border-t border-gray-50">
                     <button
                         type="button"
-                        className="btn-cancel px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
+                        className="px-6 py-2.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition font-bold text-sm"
                         onClick={onClose}
                     >
-                        Hủy
+                        Hủy bỏ
+                    </button>
+                    <button
+                        type="submit"
+                        className="px-8 py-2.5 bg-black text-white rounded-xl hover:bg-gray-800 transition font-bold text-sm shadow-lg shadow-gray-200 active:scale-95"
+                    >
+                        {initialData ? "Cập nhật ngay" : "Lưu dữ liệu"}
                     </button>
                 </div>
             </form>

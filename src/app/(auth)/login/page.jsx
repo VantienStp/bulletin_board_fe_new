@@ -88,7 +88,7 @@ export default function LoginPage() {
                         </a>
                     </div>
 
-                    <button type="submit" disabled={loading}>
+                    <button type="submit" disabled={loading} className="font-bold transition-colors ml-1 py-2.5">
                         {loading ? "Đang đăng nhập..." : "ĐĂNG NHẬP"}
                     </button>
                 </form>

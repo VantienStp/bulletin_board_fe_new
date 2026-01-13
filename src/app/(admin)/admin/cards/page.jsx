@@ -1,134 +1,173 @@
 "use client";
 
-import { useState, useMemo, useRef, useEffect } from "react"; // Thêm useRef
+import { useState, useRef, useEffect, useMemo } from "react";
 import useSWR from "swr";
-import { FaDesktop } from "react-icons/fa";
-import { API_BASE_URL } from "@/lib/api";
-import { authFetch } from "@/lib/auth";
-
-// Hooks
-import { useDeviceFilters } from "@/hooks/useDeviceFilters";
-import usePagination from "@/hooks/usePagination";
-import useArrowNavigation from "@/hooks/useArrowNavigation"; // ✅ Import Hook này
+import { fetcher } from "@/lib/fetcher";
 
 // Components
-import DeviceToolbar from "@/components/feature/settings/DeviceToolbar";
-import DeviceTable from "@/components/feature/settings/DeviceTable";
-import DeviceFormModal from "@/components/feature/settings/DeviceFormModal";
+import ConfirmModal from "@/components/common/ConfirmModal";
 import Pagination from "@/components/common/Pagination";
-import Toast from "@/components/ui/Toast";
-import ToastContainer from "@/components/ui/ToastContainer";
+import { API_BASE_URL } from "@/lib/api";
+import { authFetch } from "@/lib/auth";
+import { cardAdapter } from "@/data/adapters/cardAdapter";
 
-const fetcher = (url) => authFetch(url).then((res) => res.json());
+// Hooks
+import { useCardFilters } from "@/hooks/useCardFilters";
+import usePagination from "@/hooks/usePagination";
+import useArrowNavigation from "@/hooks/useArrowNavigation";
+import { useToast } from "@/context/ToastContext";
 
-export default function DevicesTab() {
-	// 1. Data Fetching
-	const { data: devices = [], mutate, isLoading } = useSWR(
-		`${API_BASE_URL}/devices`,
-		fetcher,
-		{ refreshInterval: 30000 }
-	);
+// Feature Components
+import CardToolbar from "@/components/feature/cards/CardToolbar";
+import CardTable from "@/components/feature/cards/CardTable";
+import CardFormModal from "@/components/feature/cards/CardFormModal";
 
-	// 2. Filter Logic
+export default function CardsPage() {
+	// 1. Fetch dữ liệu với SWR
+	const { data: rawCards, mutate } = useSWR(`${API_BASE_URL}/cards`, fetcher);
+	const { addToast } = useToast();
+
+	// 2. Chuẩn hóa dữ liệu (Dùng useMemo để ổn định tham chiếu allCards)
+	const allCards = useMemo(() => {
+		return rawCards ? rawCards.map(item => cardAdapter(item)) : [];
+	}, [rawCards]);
+
+	// 3. Logic Lọc dữ liệu
 	const {
 		searchText, setSearchText,
-		filters, setStatusFilter, clearFilters,
-		filteredDevices
-	} = useDeviceFilters(devices);
+		filters, toggleFilter, clearFilters,
+		filteredCards
+	} = useCardFilters(allCards);
 
-	// 3. Pagination Logic
+	// 4. Logic Phân trang
 	const ITEMS_PER_PAGE = 5;
 	const {
 		currentPage,
-		paginatedData: paginatedDevices,
+		paginatedData: paginatedCards,
 		goToPage
-	} = usePagination(filteredDevices, ITEMS_PER_PAGE);
+	} = usePagination(filteredCards, ITEMS_PER_PAGE);
 
-	// --- 🆕 LOGIC NAVIGATION (MỚI THÊM) ---
-	const [tableActive, setTableActive] = useState(false);   // Đang focus vào vùng bảng?
-	const [searchFocused, setSearchFocused] = useState(false); // Đang gõ tìm kiếm?
-	const paginationRef = useRef(null); // Để scroll lên đầu khi chuyển trang
+	// 5. Quản lý Focus và Điều hướng phím mũi tên
+	const [tableActive, setTableActive] = useState(false);
+	const [searchFocused, setSearchFocused] = useState(false);
+	const paginationRef = useRef(null);
 
-	const totalPages = Math.ceil(filteredDevices.length / ITEMS_PER_PAGE);
-
-	// Tạo mảng page để Hook hiểu: [{id: 1}, {id: 2},...]
+	const totalPages = Math.ceil(filteredCards.length / ITEMS_PER_PAGE);
 	const pagesArray = useMemo(() =>
 		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
-		[totalPages]
-	);
+		[totalPages]);
 
-	// Kích hoạt Hook
+	// Hook điều hướng bằng phím Left/Right
 	useArrowNavigation({
 		items: pagesArray,
 		activeId: currentPage,
 		setActiveId: goToPage,
 		direction: "horizontal",
-		enabled: tableActive && !searchFocused && totalPages > 1, // Chỉ bật khi không search
+		enabled: tableActive && !searchFocused && totalPages > 1,
 	});
-	// ---------------------------------------
 
-	// 4. Modal & Toast
-	const [editingDevice, setEditingDevice] = useState(null);
-	const [showEditModal, setShowEditModal] = useState(false);
-	const [toasts, setToasts] = useState([]);
+	// 6. State Form & Xóa
+	const [editingCard, setEditingCard] = useState(null);
+	const [showForm, setShowForm] = useState(false);
+	const [deleteCardId, setDeleteCardId] = useState(null);
+	const [deleteStatus, setDeleteStatus] = useState("idle");
 
-	const addToast = (type, message) => setToasts((prev) => [...prev, { id: Date.now(), type, message }]);
-	const removeToast = (id) => setToasts((prev) => prev.filter((t) => t.id !== id));
-
-	// Reset về trang 1 khi filter
 	useEffect(() => {
 		goToPage(1);
 	}, [searchText, filters]);
 
-	// Handlers
-	const handleEdit = (device) => {
-		setEditingDevice(device);
-		setShowEditModal(true);
+	const handleOpenCreate = () => {
+		setEditingCard(null);
+		setShowForm(true);
 	};
 
-	const handleUpdateDevice = async (id, formData) => {
-		// ... (Giữ nguyên logic update cũ)
-		// Code update gọi API ở đây...
-		// Sau khi update xong nhớ gọi:
-		// mutate();
-		// setShowEditModal(false);
+	const handleOpenEdit = (card) => {
+		setEditingCard(card);
+		setShowForm(true);
+	};
+
+	const handleSubmitForm = async (formData) => {
+		const method = editingCard ? "PUT" : "POST";
+		const url = editingCard
+			? `${API_BASE_URL}/cards/${editingCard.id}`
+			: `${API_BASE_URL}/cards`;
+
+		try {
+			const res = await authFetch(url, {
+				method,
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(formData),
+			});
+
+			if (!res.ok) throw new Error("Lỗi khi lưu");
+
+			setShowForm(false);
+			setEditingCard(null);
+			mutate();
+			addToast("success", editingCard ? "Cập nhật thẻ thành công!" : "Tạo thẻ mới thành công!");
+		} catch (error) {
+			addToast("error", "Có lỗi xảy ra, vui lòng thử lại.");
+		}
+	};
+
+	const handleOpenDelete = (id) => {
+		setDeleteCardId(id);
+		setDeleteStatus("confirming");
+	};
+
+	const handleDeleteConfirmed = async () => {
+		if (!deleteCardId) return;
+		setDeleteStatus("deleting");
+
+		try {
+			const res = await authFetch(`${API_BASE_URL}/cards/${deleteCardId}`, { method: "DELETE" });
+
+			if (res.ok) {
+				setDeleteCardId(null);
+				setDeleteStatus("idle");
+				mutate();
+				addToast("success", "Đã xóa thẻ nội dung thành công!");
+			} else {
+				setDeleteStatus("idle");
+				setDeleteCardId(null);
+				addToast("error", "Xóa thất bại!");
+			}
+		} catch (error) {
+			setDeleteStatus("idle");
+			setDeleteCardId(null);
+			addToast("error", "Lỗi kết nối đến server!");
+		}
 	};
 
 	return (
-		<div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 px-6 pb-10">
-			<ToastContainer>
-				{toasts.map((t) => <Toast key={t.id} {...t} onClose={removeToast} />)}
-			</ToastContainer>
-
-			<div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6 ml-1">
+		<div className="px-4 pb-10">
+			{/* HEADER & TOOLBAR */}
+			<div className="flex justify-between items-end mb-6">
 				<div>
-					<h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-						<FaDesktop className="text-gray-400" /> Quản lý Kiosk
-					</h3>
+					<h1 className="text-2xl font-bold flex items-center gap-2">
+						<i className={"fa-solid fa-clone"} /> Thẻ nội dung
+					</h1>
 					<p className="text-sm text-gray-500 mt-1">
-						Giám sát trạng thái và cấu hình hiển thị cho {filteredDevices.length} thiết bị.
+						Hiển thị {filteredCards.length} thẻ phù hợp.
 					</p>
 				</div>
 
-				{/* ✅ Truyền prop onSearchFocusChange xuống Toolbar */}
-				<DeviceToolbar
+				<CardToolbar
 					searchText={searchText}
 					setSearchText={setSearchText}
 					filters={filters}
-					toggleStatusFilter={setStatusFilter}
+					toggleFilter={toggleFilter}
 					clearFilters={clearFilters}
-					onRefresh={() => mutate()}
-					loading={isLoading}
-					onSearchFocusChange={setSearchFocused} // 👈 Mới thêm
+					onAdd={handleOpenCreate}
+					onSearchFocusChange={setSearchFocused}
 				/>
 			</div>
 
-			{/* ✅ BỌC VÙNG NÀY ĐỂ BẮT SỰ KIỆN FOCUS */}
+			{/* VÙNG FOCUS CHO ĐIỀU HƯỚNG BÀN PHÍM */}
 			<div
-				tabIndex={0} // Để div này nhận được focus
+				tabIndex={0}
 				onFocus={() => setTableActive(true)}
 				onBlur={(e) => {
-					// Nếu click ra ngoài vùng này thì set false
 					if (!e.currentTarget.contains(e.relatedTarget)) {
 						setTableActive(false);
 					}
@@ -136,30 +175,42 @@ export default function DevicesTab() {
 				className="outline-none scroll-mt-4"
 				ref={paginationRef}
 			>
-				<DeviceTable
-					devices={paginatedDevices}
-					onEdit={handleEdit}
+				<CardTable
+					cards={paginatedCards}
+					onEdit={handleOpenEdit}
+					onDelete={handleOpenDelete}
 				/>
 
-				<div className="mt-6 flex justify-center">
+				<div className="flex justify-center">
 					<Pagination
-						totalItems={filteredDevices.length}
+						totalItems={filteredCards.length}
 						itemsPerPage={ITEMS_PER_PAGE}
 						currentPage={currentPage}
 						onPageChange={(page) => {
 							goToPage(page);
-							// Scroll nhẹ lên đầu bảng khi chuyển trang
 							paginationRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 						}}
 					/>
 				</div>
 			</div>
 
-			<DeviceFormModal
-				isOpen={showEditModal}
-				onClose={() => setShowEditModal(false)}
-				device={editingDevice}
-				onUpdate={handleUpdateDevice}
+			{/* MODALS */}
+			<CardFormModal
+				isOpen={showForm}
+				onClose={() => setShowForm(false)}
+				initialData={editingCard}
+				onSubmit={handleSubmitForm}
+			/>
+
+			<ConfirmModal
+				open={!!deleteCardId}
+				title="Xóa thẻ nội dung"
+				message="Hành động này sẽ xóa thẻ và toàn bộ file đính kèm..."
+				onCancel={() => {
+					if (deleteStatus !== "deleting") setDeleteCardId(null);
+				}}
+				onConfirm={handleDeleteConfirmed}
+				isLoading={deleteStatus === "deleting"}
 			/>
 		</div>
 	);

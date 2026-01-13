@@ -1,4 +1,6 @@
-import { useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
 import { API_BASE_URL } from "@/lib/api";
 import { authFetch } from "@/lib/auth";
 
@@ -7,7 +9,7 @@ export function useLayoutEditor(layoutId, initialConfig) {
     const [cols, setCols] = useState(5);
     const [rows, setRows] = useState(5);
     const [gap, setGap] = useState(16);
-    const [rowHeight] = useState(80); // Cố định hoặc cho phép sửa tùy ý
+    const [rowHeight] = useState(80);
 
     // Data
     const [layout, setLayout] = useState([]);
@@ -34,7 +36,6 @@ export function useLayoutEditor(layoutId, initialConfig) {
 
     // --- ACTIONS ---
     const handleAdd = (x, y) => {
-        // Check trùng đơn giản
         const exists = layout.find((l) => l.x === x && l.y === y);
         if (!exists) {
             const id = Date.now().toString();
@@ -50,14 +51,14 @@ export function useLayoutEditor(layoutId, initialConfig) {
         setLayout(newLayout);
     };
 
+    // 🔥 ĐÃ SỬA: Bỏ confirm, chỉ thực hiện reset logic
     const handleReset = () => {
-        if (confirm("Bạn có muốn reset về trạng thái ban đầu?")) {
-            setCols(initialConfig?.columns?.length || 5);
-            setRows(initialConfig?.rows || 5);
-            setLayout([]);
-        }
+        setCols(initialConfig?.columns?.length || 5);
+        setRows(initialConfig?.rows || 5);
+        setLayout([]);
     };
 
+    // 🔥 ĐÃ SỬA: Bỏ alert, trả về kết quả để Component cha gọi Toast
     const handleSave = async () => {
         setIsSaving(true);
         const updatedConfig = {
@@ -78,11 +79,11 @@ export function useLayoutEditor(layoutId, initialConfig) {
                 body: JSON.stringify({ config: updatedConfig }),
             });
 
-            if (res.ok) alert("✅ Đã lưu bố cục thành công!");
-            else alert("❌ Lưu thất bại");
+            if (!res.ok) throw new Error("Lưu thất bại");
+            return true; // Trả về true để báo thành công
         } catch (err) {
             console.error(err);
-            alert("❌ Lỗi kết nối");
+            throw err; // Quăng lỗi để Component cha bắt được và hiện Toast error
         } finally {
             setIsSaving(false);
         }

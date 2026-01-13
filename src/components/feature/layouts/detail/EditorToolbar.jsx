@@ -1,5 +1,6 @@
 "use client";
 import { FaSave, FaUndo, FaCode } from 'react-icons/fa';
+import NumberInput from "@/components/ui/NumberInput";
 
 export default function EditorToolbar({
     cols, setCols,
@@ -11,10 +12,10 @@ export default function EditorToolbar({
     isSaving
 }) {
     return (
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+        <div className="flex flex-wrap items-center justify-between gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
             <div className="flex items-center gap-6">
-                <NumberInput label="Cols" value={cols} onChange={setCols} />
-                <NumberInput label="Rows" value={rows} onChange={setRows} />
+                <NumberInput label="Cols" value={cols} onChange={setCols} max={12} />
+                <NumberInput label="Rows" value={rows} onChange={setRows} max={20} />
                 <NumberInput label="Gap (px)" value={gap} onChange={setGap} max={50} />
             </div>
 
@@ -29,19 +30,6 @@ export default function EditorToolbar({
                     <FaSave /> {isSaving ? "Đang lưu..." : "Lưu Thay Đổi"}
                 </button>
             </div>
-        </div>
-    );
-}
-
-function NumberInput({ label, value, onChange, min = 1, max = 12 }) {
-    return (
-        <div className="flex items-center gap-2">
-            <label className="text-xs font-bold text-gray-500 uppercase">{label}</label>
-            <input
-                type="number" min={min} max={max}
-                value={value} onChange={(e) => onChange(Number(e.target.value))}
-                className="w-16 p-1.5 border rounded text-center font-medium focus:ring-2 focus:ring-blue-500 outline-none"
-            />
         </div>
     );
 }

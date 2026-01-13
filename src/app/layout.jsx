@@ -1,5 +1,6 @@
 import { Roboto_Condensed } from "next/font/google";
 import { AuthProvider } from '../context/AuthContext';
+import { ToastProvider } from "@/context/ToastContext";
 
 const roboto = Roboto_Condensed({
 	subsets: ["vietnamese", "latin"],
@@ -28,9 +29,11 @@ export default function RootLayout({ children }) {
 			</head>
 
 			<body className={`app-grid ${roboto.className}`}>
-				<AuthProvider>
-					{children}
-				</AuthProvider>
+				<ToastProvider>
+					<AuthProvider>
+						{children}
+					</AuthProvider>
+				</ToastProvider>
 			</body>
 		</html>
 	);
