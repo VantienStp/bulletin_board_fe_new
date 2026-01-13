@@ -26,7 +26,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: var(--padding-large) 0;
+    padding: var(--padding-medium) 0;
     border-bottom: 0.2vw solid #e5e7eb;
     font-size: var(--font-size-xlarge);
     font-weight: 600;
@@ -47,7 +47,7 @@
 
 /* ================== Body ================== */
 .modal-body {
-    margin-top: var(--font-size-large);
+    margin-top: var(--font-size-medium);
     overflow-y: auto;
     max-height: 80vh;
     padding-right: 8px;

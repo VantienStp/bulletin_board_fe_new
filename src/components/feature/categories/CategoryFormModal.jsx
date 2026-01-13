@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Modal from "@/components/common/Modal";
-import { Select, MenuItem } from "@mui/material";
+import { FaCheckCircle, FaSearch } from "react-icons/fa";
 
 const ICON_OPTIONS = [
     "fas fa-folder", "fas fa-folder-open", "fas fa-file", "fas fa-file-alt",
@@ -22,23 +22,12 @@ export default function CategoryFormModal({ isOpen, onClose, initialData, layout
         icon: "",
     });
 
+    // Reset form
     useEffect(() => {
         if (isOpen) {
-            if (initialData) {
-                setFormData({
-                    title: initialData.title,
-                    description: initialData.description,
-                    gridLayoutId: initialData.layoutId,
-                    icon: initialData.icon,
-                });
-            } else {
-                setFormData({
-                    title: "",
-                    description: "",
-                    gridLayoutId: "",
-                    icon: "",
-                });
-            }
+            setFormData(initialData ? { ...initialData, gridLayoutId: initialData.layoutId || "" } : {
+                title: "", description: "", gridLayoutId: "", icon: ""
+            });
         }
     }, [isOpen, initialData]);
 
@@ -51,72 +40,130 @@ export default function CategoryFormModal({ isOpen, onClose, initialData, layout
 
     return (
         <Modal
-            title={initialData ? "Sửa danh mục" : "Thêm danh mục mới"}
+            title={initialData ? "Cập nhật danh mục" : "Tạo danh mục mới"}
             onClose={onClose}
-            width="500px"
+            width="900px"
         >
-            <form onSubmit={handleSubmit}>
-                <label>Tên danh mục</label>
-                <input
-                    value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    required
-                    className="w-full border rounded-lg p-2 text-sm mb-3"
-                />
+            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
 
-                <label>Icon</label>
-                <Select
-                    value={formData.icon}
-                    onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                    fullWidth
-                    className="mb-3"
-                    size="small"
-                >
-                    <MenuItem value="">— Chọn icon —</MenuItem>
-                    {ICON_OPTIONS.map((ic) => (
-                        <MenuItem key={ic} value={ic}>
-                            <i className={`${ic} mr-2`} /> {ic}
-                        </MenuItem>
-                    ))}
-                </Select>
+                <div className="grid grid-cols-12 gap-6">
+                    <div className="col-span-12 md:col-span-7 space-y-3">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                                Tên danh mục <span className="text-red-500">*</span>
+                            </label>
+                            <input
+                                value={formData.title}
+                                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                                required
+                                placeholder="Nhập tên danh mục..."
+                                className="w-full h-11 px-4 border border-gray-200 rounded-lg text-sm font-medium transition-all bg-white"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                                Mô tả ngắn
+                            </label>
+                            <textarea
+                                rows="3"
+                                value={formData.description}
+                                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                placeholder="Mô tả nội dung của danh mục..."
+                                className="w-full p-4 rounded-lg text-sm "
+                            />
+                        </div>
+                    </div>
 
-                <label>Mô tả</label>
-                <textarea
-                    rows="3"
-                    className="w-full border rounded-lg p-2 text-sm mb-3"
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                />
+                    <div className="col-span-12 md:col-span-5">
+                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">
+                            Biểu tượng
+                        </label>
+                        <div className="bg-gray-50 p-3 rounded-lg border border-gray-200 h-[170px]">
+                            <div className="grid grid-cols-5 gap-2 h-full overflow-y-auto pr-1 custom-scrollbar content-start">
+                                {ICON_OPTIONS.map((ic) => (
+                                    <button
+                                        key={ic}
+                                        type="button"
+                                        onClick={() => setFormData({ ...formData, icon: ic })}
+                                        className={`h-9 rounded flex items-center justify-center text-sm transition-all ${formData.icon === ic
+                                            ? "bg-black text-white shadow-md"
+                                            : "bg-white text-gray-400 border border-gray-100 hover:border-gray-300 hover:text-gray-600"
+                                            }`}
+                                    >
+                                        <i className={ic}></i>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                <label>Grid Layout</label>
-                <Select
-                    value={formData.gridLayoutId}
-                    onChange={(e) => setFormData({ ...formData, gridLayoutId: e.target.value })}
-                    fullWidth
-                    size="small"
-                >
-                    <MenuItem value="">— Chọn layout —</MenuItem>
-                    {layouts.map((l) => (
-                        <MenuItem key={l._id} value={l._id}>
-                            {l.title}
-                        </MenuItem>
-                    ))}
-                </Select>
 
-                <div className="flex justify-end gap-3 mt-6">
-                    <button
-                        type="submit"
-                        className="px-5 py-2.5 rounded-lg bg-blue-500 hover:bg-blue-600 text-white text-[16px] font-medium transition"
-                    >
-                        Lưu
-                    </button>
+                <div className="flex flex-col h-full">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">
+                        Chọn bố cục hiển thị <span className="text-gray-400 font-normal normal-case ml-1">(Cuộn để xem thêm)</span>
+                    </label>
 
+                    {/* WRAPPER ĐỂ TẠO THANH CUỘN */}
+                    <div className="flex-1 min-h-0 border border-gray-200 rounded-xl bg-gray-50/50 p-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[160px] overflow-y-auto pr-2 custom-scrollbar">
+                            {layouts.map((l) => (
+                                <div
+                                    key={l._id}
+                                    onClick={() => setFormData({ ...formData, gridLayoutId: l._id })}
+                                    className={`relative group cursor-pointer border rounded-xl p-3 flex items-center gap-4 transition-all duration-200 hover:shadow-md ${formData.gridLayoutId === l._id
+                                        ? "border-black ring-1 ring-black bg-white"
+                                        : "border-gray-200 bg-white hover:border-gray-300"
+                                        }`}
+                                >
+                                    {/* Mini Preview (Bên trái) */}
+                                    <div
+                                        className="w-16 h-12 flex-shrink-0 bg-white border border-gray-200 rounded grid gap-0.5 p-0.5 pointer-events-none"
+                                        style={{
+                                            gridTemplateColumns: `repeat(${l.config?.columns?.length || 5}, 1fr)`,
+                                            gridTemplateRows: `repeat(${l.config?.rows || 5}, 1fr)`,
+                                        }}
+                                    >
+                                        {l.config?.positions?.map((pos, idx) => (
+                                            <div
+                                                key={idx}
+                                                className={`rounded-[1px] ${formData.gridLayoutId === l._id ? "bg-gray-800" : "bg-gray-300"}`}
+                                                style={{
+                                                    gridColumn: `${pos.x + 1} / span ${pos.w}`,
+                                                    gridRow: `${pos.y + 1} / span ${pos.h}`,
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+
+                                    {/* Info (Bên phải) */}
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex justify-between items-center">
+                                            <p className="text-sm font-bold text-gray-800 truncate">{l.title}</p>
+                                            {formData.gridLayoutId === l._id && <FaCheckCircle className="text-black text-sm" />}
+                                        </div>
+                                        <p className="text-xs text-gray-500 truncate mt-0.5">{l.description || "Chuẩn"}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* FOOTER ACTIONS */}
+                <div className="flex justify-end gap-3">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-5 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-[16px] font-medium transition"
+                        className="px-5 py-2.5 rounded-lg border border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition text-sm"
                     >
-                        Hủy
+                        Hủy bỏ
+                    </button>
+                    <button
+                        type="submit"
+                        className="px-6 py-2.5 rounded-lg bg-black text-white font-semibold hover:bg-gray-800 transition text-sm shadow-lg shadow-gray-200 active:scale-95"
+                    >
+                        {initialData ? "Lưu thay đổi" : "Tạo mới"}
                     </button>
                 </div>
             </form>

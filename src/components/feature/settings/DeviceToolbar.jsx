@@ -60,14 +60,13 @@ export default function DeviceToolbar({
                 )}
             </FilterDropdown>
 
-            {/* Refresh Button */}
-            <button
+            {/* <button
                 onClick={onRefresh}
                 className="p-2.5 bg-white border border-gray-200 text-gray-500 hover:text-black hover:border-gray-300 rounded-full transition-all active:rotate-180 shadow-sm"
                 title="Làm mới dữ liệu"
             >
                 <FaSyncAlt className={loading ? "animate-spin" : ""} />
-            </button>
+            </button> */}
         </div>
     );
 }

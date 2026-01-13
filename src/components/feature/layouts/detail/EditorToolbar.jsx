@@ -12,7 +12,7 @@ export default function EditorToolbar({
     isSaving
 }) {
     return (
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+        <div className="flex flex-wrap items-center justify-between gap-4 bg-gray-100 p-4 rounded-xl border border-gray-200">
             <div className="flex items-center gap-6">
                 <NumberInput label="Cols" value={cols} onChange={setCols} max={12} />
                 <NumberInput label="Rows" value={rows} onChange={setRows} max={20} />

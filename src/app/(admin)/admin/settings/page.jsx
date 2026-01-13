@@ -37,7 +37,7 @@ export default function DevicesTab() {
     } = useDeviceFilters(devices);
 
     // 3. Pagination Logic
-    const ITEMS_PER_PAGE = 5;
+    const ITEMS_PER_PAGE = 4;
     const {
         currentPage,
         paginatedData: paginatedDevices,

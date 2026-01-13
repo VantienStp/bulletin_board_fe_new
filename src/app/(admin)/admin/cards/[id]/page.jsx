@@ -162,7 +162,7 @@ export default function CardDetailPage() {
 	if (error || !card) return <div className="p-10 text-center text-red-500 font-bold">❌ Không tìm thấy thông tin thẻ</div>;
 
 	return (
-		<div className="px-4 pb-20">
+		<div className="">
 
 			{/* INFO & TOOLBAR */}
 			<div className="flex justify-between items-end mb-6">

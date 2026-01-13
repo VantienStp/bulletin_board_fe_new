@@ -40,7 +40,7 @@ export default function GridWorkspace({
     }, [rows, cols]);
 
     return (
-        <div className="layout-editor-wrapper bg-gray-50/50 rounded-xl border border-gray-200 p-8 min-h-[500px]" ref={wrapperRef}>
+        <div className="layout-editor-wrapper bg-gray-100  rounded-xl border border-gray-200 p-8 min-h-[500px]" ref={wrapperRef}>
             <p className="text-center text-gray-400 text-sm mb-4 italic">
                 * Kéo thả các ô màu xanh để sắp xếp. Click vào ô trống (nét đứt) để thêm mới.
             </p>

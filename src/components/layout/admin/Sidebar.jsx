@@ -184,12 +184,12 @@ export default function Sidebar({ onLogout }) {
         >
             <div className="text-center px-2 mb-2">
                 <Link href="/admin">
-                    <img src="/logo.png" className="w-20 mx-auto rounded-lg object-contain" alt="CloudFinz" />
+                    <img src="/logo.png" className="w-14 mx-auto rounded-lg object-contain" alt="CloudFinz" />
                 </Link>
             </div>
 
             <div className="flex-1 overflow-y-auto px-4 pr-1 scrollbar-hide"> {/* Thêm class ẩn scrollbar nếu cần */}
-                <div ref={containerRef} className="relative w-full pb-10"> {/* Thêm padding bottom để không bị che nút logout */}
+                <div ref={containerRef} className="relative w-full"> {/* Thêm padding bottom để không bị che nút logout */}
                     <div
                         className={`absolute left-0 right-0 rounded-xl bg-black transition-all ease-out duration-300 z-0 mr-2
                             ${highlight.visible ? "opacity-100" : "opacity-0"}

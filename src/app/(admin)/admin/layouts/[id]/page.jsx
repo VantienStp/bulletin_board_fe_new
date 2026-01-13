@@ -1,34 +1,86 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 
-import { FaArrowLeft, FaLayerGroup, FaSpinner } from "react-icons/fa";
+// Icons
+import { FaArrowLeft, FaLayerGroup, FaSpinner, FaPen, FaCheck, FaTimes } from "react-icons/fa";
+
+// Components & Libs
 import LayoutEditor from "@/components/feature/layouts/LayoutEditor";
 import { API_BASE_URL } from "@/lib/api";
-import { useToast } from "@/context/ToastContext"; // ✅ Chuẩn bị sẵn Toast
+import { authFetch } from "@/lib/auth";
+import { useToast } from "@/context/ToastContext";
 
 export default function LayoutDetailPage() {
 	const { id } = useParams();
 	const { addToast } = useToast();
 
-	// ✅ Fetch dữ liệu với SWR
-	const { data: layout, error, isLoading } = useSWR(
+	// --- STATE QUẢN LÝ INLINE EDIT ---
+	const [isEditingTitle, setIsEditingTitle] = useState(false);
+	const [tempTitle, setTempTitle] = useState("");
+	const inputRef = useRef(null);
+
+	// Fetch dữ liệu
+	const { data: layout, error, isLoading, mutate } = useSWR(
 		id ? `${API_BASE_URL}/gridlayouts/${id}` : null,
 		fetcher
 	);
 
-	// Xử lý thông báo lỗi nếu fetch thất bại (tùy chọn)
-	React.useEffect(() => {
-		if (error) {
-			addToast("error", "Không thể tải dữ liệu bố cục!");
+	useEffect(() => {
+		if (layout) setTempTitle(layout.title);
+	}, [layout]);
+
+	useEffect(() => {
+		if (isEditingTitle && inputRef.current) {
+			inputRef.current.focus();
 		}
+	}, [isEditingTitle]);
+
+	useEffect(() => {
+		if (error) addToast("error", "Không thể tải dữ liệu bố cục!");
 	}, [error, addToast]);
 
-	// Trạng thái Loading chuyên nghiệp hơn
+	const handleSaveTitle = async () => {
+		if (!tempTitle.trim() || tempTitle === layout.title) {
+			setIsEditingTitle(false);
+			setTempTitle(layout.title);
+			return;
+		}
+
+		try {
+			const res = await authFetch(`${API_BASE_URL}/gridlayouts/${id}`, {
+				method: "PUT",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ title: tempTitle }),
+			});
+
+			if (!res.ok) throw new Error("Cập nhật thất bại");
+
+			await mutate();
+			addToast("success", "Đã đổi tên bố cục thành công!");
+			setIsEditingTitle(false);
+		} catch (error) {
+			addToast("error", "Lỗi khi đổi tên. Vui lòng thử lại.");
+			setTempTitle(layout.title);
+		}
+	};
+
+	// Hủy bỏ sửa
+	const handleCancelEdit = () => {
+		setIsEditingTitle(false);
+		setTempTitle(layout.title);
+	};
+
+	// Bắt sự kiện bàn phím
+	const handleKeyDown = (e) => {
+		if (e.key === "Enter") handleSaveTitle();
+		if (e.key === "Escape") handleCancelEdit();
+	};
+
 	if (isLoading) {
 		return (
 			<div className="w-full h-96 flex flex-col items-center justify-center text-gray-400">
@@ -43,7 +95,6 @@ export default function LayoutDetailPage() {
 			<div className="p-10 text-center flex flex-col items-center gap-4">
 				<div className="text-4xl text-gray-300">❌</div>
 				<h2 className="text-xl font-bold text-gray-800">Không tìm thấy bố cục</h2>
-				<p className="text-gray-500">Bố cục bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.</p>
 				<Link href="/admin/layouts" className="text-indigo-600 hover:underline flex items-center gap-2">
 					<FaArrowLeft size={12} /> Quay lại danh sách
 				</Link>
@@ -52,25 +103,70 @@ export default function LayoutDetailPage() {
 	}
 
 	return (
-		<div className="px-4 pb-20 animate-reveal"> {/* Thêm animation nhẹ cho trang */}
-			{/* ===== HEADER ===== */}
-			<div className="flex justify-between items-start mb-6">
+		<div className="animate-reveal pb-10">
+
+			{/* ===== HEADER BAR ===== */}
+			<div className="flex justify-between items-center mb-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
 				<div>
-					<div className="flex items-center gap-3">
-						<div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl shadow-sm border border-indigo-100">
-							<FaLayerGroup size={20} />
+					<div className="flex items-center gap-4">
+						<div className="p-4 bg-indigo-50 rounded-xl shadow-sm border border-indigo-100 flex items-center justify-center flex-shrink-0">
+							<FaLayerGroup size={24} className="text-indigo-600" />
 						</div>
-						<div>
-							<h1 className="text-2xl font-bold text-gray-900 leading-tight">
-								{layout.title}
-							</h1>
-							<div className="flex items-center gap-3 mt-1.5 text-sm">
+
+						<div className="flex flex-col justify-center">
+							<div className="flex items-center gap-2 h-9 min-w-[200px]">
+								{isEditingTitle ? (
+									<div className="flex items-center gap-2 animate-fadeIn">
+										<input
+											ref={inputRef}
+											value={tempTitle}
+											onChange={(e) => setTempTitle(e.target.value)}
+											onKeyDown={handleKeyDown}
+											className="text-2xl font-bold text-gray-900 border-b-2 border-indigo-500 outline-none bg-transparent px-1 min-w-[250px]"
+											placeholder="Nhập tên bố cục..."
+										/>
+										<div className="flex items-center gap-1">
+											<button
+												onMouseDown={handleSaveTitle}
+												className="w-8 h-8 flex items-center justify-center bg-green-50 text-green-600 hover:bg-green-100 rounded-lg transition-colors"
+												title="Lưu (Enter)"
+											>
+												<FaCheck size={14} />
+											</button>
+											<button
+												onMouseDown={handleCancelEdit}
+												className="w-8 h-8 flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 rounded-lg transition-colors"
+												title="Hủy (Esc)"
+											>
+												<FaTimes size={14} />
+											</button>
+										</div>
+									</div>
+								) : (
+									<div
+										className="flex items-center gap-3 group cursor-pointer py-1"
+										onClick={() => setIsEditingTitle(true)}
+									>
+										<h1 className="text-2xl font-bold text-gray-900 leading-none group-hover:text-indigo-700 transition-colors select-none">
+											{layout.title}
+										</h1>
+										<button
+											className="opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 p-1.5 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all duration-200"
+											title="Bấm để đổi tên"
+										>
+											<FaPen size={14} />
+										</button>
+									</div>
+								)}
+							</div>
+
+							<div className="flex items-center gap-3 mt-1 text-sm">
 								<span className="bg-gray-100 text-gray-600 px-2 py-0.5 rounded border border-gray-200 font-mono text-xs">
 									{layout.slug || layout.code}
 								</span>
 								<span className="text-gray-300">|</span>
-								<span className="text-gray-500">
-									Thiết lập: <span className="font-bold text-gray-800">{layout.config?.positions?.length || 0}</span> vị trí
+								<span className="text-gray-500 flex items-center">
+									Thiết lập: <span className="font-bold text-gray-800 ml-1">{layout.config?.positions?.length || 0}</span>  vị trí
 								</span>
 							</div>
 						</div>
@@ -79,19 +175,21 @@ export default function LayoutDetailPage() {
 
 				<Link
 					href="/admin/layouts"
-					className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-50 hover:text-indigo-600 flex items-center gap-2 transition-all shadow-sm active:scale-95"
+					className="px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg
+                     text-sm hover:bg-gray-50 flex items-center gap-2 transition-all shadow-sm active:scale-95 h-fit font-medium"
 				>
 					<FaArrowLeft /> Quay lại
 				</Link>
 			</div>
 
-			{/* ===== EDITOR AREA ===== */}
-			<div className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden min-h-[600px]">
+			{/* ===== EDITOR WORKSPACE ===== */}
+			<div className="rounded-2xl overflow-hidden min-h-[600px] ">
 				<LayoutEditor
 					layoutId={layout._id}
 					initialConfig={layout.config}
 				/>
 			</div>
+
 		</div>
 	);
 }

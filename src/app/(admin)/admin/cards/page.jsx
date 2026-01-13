@@ -140,7 +140,7 @@ export default function CardsPage() {
 	};
 
 	return (
-		<div className="px-4 pb-10">
+		<div className="">
 			{/* HEADER & TOOLBAR */}
 			<div className="flex justify-between items-end mb-6">
 				<div>

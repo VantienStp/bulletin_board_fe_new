@@ -78,8 +78,6 @@ export default function CategoriesPage() {
 	const [deleteCategoryId, setDeleteCategoryId] = useState(null);
 	const [deleteStatus, setDeleteStatus] = useState("idle");
 
-	// ⚡ QUAN TRỌNG: Reset về trang 1 khi search hoặc filter thay đổi
-	// Bỏ goToPage khỏi dependencies để tránh re-render trigger ArrowNav lỗi
 	useEffect(() => {
 		goToPage(1);
 	}, [searchText, filters]);
@@ -137,7 +135,7 @@ export default function CategoriesPage() {
 			if (res.ok) {
 				mutate();
 				addToast("success", "Đã xóa danh mục thành công!");
-				setDeleteCategoryId(null); // Đóng modal ngay lập tức
+				setDeleteCategoryId(null);
 			} else {
 				addToast("error", "Xóa thất bại!");
 			}
@@ -155,12 +153,11 @@ export default function CategoriesPage() {
 	);
 
 	return (
-		<div className="px-4 pb-20">
-			{/* HEADER */}
+		<div className="">
 			<div className="flex justify-between items-end mb-6">
 				<div>
 					<h1 className="text-2xl font-bold flex items-center gap-2">
-						<i className={"fa-solid fa-tags text-amber-500"} /> Danh mục
+						<i className={"fa-solid fa-tags"} /> Danh mục
 					</h1>
 					<p className="text-sm text-gray-500 mt-1">
 						Hiển thị {filteredCategories.length} danh mục phù hợp.

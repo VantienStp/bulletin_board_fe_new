@@ -85,7 +85,6 @@ export default function CategoryDetailPage() {
 	const [removeCardId, setRemoveCardId] = useState(null);
 	const [removeStatus, setRemoveStatus] = useState("idle");
 
-	// ⚡ QUAN TRỌNG: Reset về trang 1 khi search (Bỏ goToPage khỏi dependency để ổn định ArrowNav)
 	useEffect(() => {
 		goToPage(1);
 	}, [searchText]);
@@ -132,7 +131,7 @@ export default function CategoryDetailPage() {
 			if (res.ok) {
 				mutateCards();
 				addToast("success", "Đã gỡ thẻ khỏi danh mục!");
-				setRemoveCardId(null); // Đóng modal ngay
+				setRemoveCardId(null);
 			} else {
 				addToast("error", "Gỡ thất bại!");
 			}
@@ -155,19 +154,17 @@ export default function CategoryDetailPage() {
 	if (catError) return <div className="p-10 text-center text-red-500 font-bold">❌ Không tìm thấy danh mục</div>;
 
 	return (
-		<div className="px-4 pb-10">
-			{/* HEADER */}
-			<div className="flex justify-between items-center">
-				<h1 className="text-2xl font-bold flex items-center gap-2 text-gray-800">
-					<i className={"fa-solid fa-tags text-amber-500"} /> Danh mục: {category.title}
-				</h1>
-			</div>
+		<div className="">
+			<div className="flex justify-between items-end mb-4">
+				<div>
+					<h1 className="text-2xl font-bold flex items-center gap-2 text-gray-800">
+						<i className={"fa-solid fa-tags "} /> Danh mục: {category.title}
+					</h1>
+					<p className="text-gray-500 text-sm pb-2 italic">
+						Tìm thấy {filteredCards.length} thẻ trong danh mục.
+					</p>
+				</div>
 
-			{/* TOOLBAR */}
-			<div className="flex justify-between items-end mb-6">
-				<p className="text-gray-500 text-sm pb-2 italic">
-					Tìm thấy {filteredCards.length} thẻ trong danh mục.
-				</p>
 
 				<CategoryDetailToolbar
 					searchText={searchText}
