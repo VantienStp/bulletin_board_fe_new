@@ -2,7 +2,7 @@ export const userAdapter = (data) => {
     if (!data) return null;
 
     return {
-        id: data._id,
+        id: data.id || data._id,
         username: data.username || "Unknown",
         email: data.email || "",
         role: data.role || "user",
