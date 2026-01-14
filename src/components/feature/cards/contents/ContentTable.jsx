@@ -13,6 +13,20 @@ function ContentTable({ contents, onEdit, onDelete }) {
             return <video src={c.fullUrl} className="w-full h-full object-cover" controls preload="none" />;
         }
         if (c.isPdf) {
+            if (c.images && c.images.length > 0) {
+                return (
+                    <div className="relative w-full h-full">
+                        <img
+                            src={c.images[0]}
+                            className="w-full h-full object-cover object-top"
+                            alt="pdf-page-1"
+                        />
+                        <div className="absolute top-1 right-1 bg-red-600 text-white text-[8px] px-1 rounded shadow-sm font-bold">
+                            PDF
+                        </div>
+                    </div>
+                );
+            }
             return (
                 <div className="w-full h-full flex flex-col items-center justify-center bg-red-50 text-red-500">
                     <i className="fa-solid fa-file-pdf text-3xl mb-1"></i>

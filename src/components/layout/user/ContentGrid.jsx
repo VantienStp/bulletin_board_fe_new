@@ -49,5 +49,4 @@ function ContentGrid({ categories, selectedCategory, layoutConfig }) {
     );
 }
 
-// 4. Xuất component với memo (Quan trọng nhất)
 export default memo(ContentGrid);

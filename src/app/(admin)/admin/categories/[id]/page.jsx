@@ -183,7 +183,7 @@ export default function CategoryDetailPage() {
 						setTableActive(false);
 					}
 				}}
-				className="outline-none scroll-mt-4 focus:ring-1 focus:ring-amber-100 rounded-lg p-1 transition-all"
+				className="outline-none scroll-mt-4 transition-all"
 				ref={paginationRef}
 			>
 				<CategoryCardTable

@@ -408,3 +408,27 @@ body {
   font-size: clamp(12px, calc(var(--larger) * 0.029), 32px);
   -webkit-line-clamp: var(--max-lines);
 }
+
+video::-webkit-media-controls {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+video::-webkit-media-controls-enclosure {
+  display: none !important;
+}
+
+video::-internal-media-controls-cast-button {
+  display: none !important;
+}
+
+video::-webkit-media-controls-picture-in-picture-button {
+  display: none !important;
+}
+video::-webkit-media-controls-overlay-enclosure {
+  display: none !important;
+}
+

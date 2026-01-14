@@ -153,7 +153,7 @@ export default function UsersPage() {
 			<div className="flex justify-between items-end mb-6">
 				<div>
 					<h1 className="text-2xl font-bold flex items-center gap-2">
-						<FaUsers className="text-blue-500" /> Quản lý người dùng
+						<FaUsers className="" /> Quản lý người dùng
 					</h1>
 					<p className="text-sm text-gray-500 mt-1 italic">
 						Tìm thấy {filteredUsers.length} người dùng phù hợp.

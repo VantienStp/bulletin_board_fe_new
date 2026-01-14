@@ -2,31 +2,51 @@
 
 import { useState, useEffect } from "react";
 import Modal from "@/components/common/Modal";
-import { FaImage, FaVideo, FaFilePdf, FaFolderOpen, FaCloudUploadAlt } from "react-icons/fa";
+import { FaImage, FaVideo, FaFilePdf, FaFolderOpen } from "react-icons/fa";
 
 export default function ContentFormModal({ isOpen, onClose, initialData, onSubmit }) {
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
     const [formData, setFormData] = useState({
         type: "image",
         url: "",
         description: "",
         qrCode: "",
+        externalLink: "",
     });
 
     useEffect(() => {
         if (isOpen) {
-            setFormData(initialData ? {
-                type: initialData.type || "image",
-                url: initialData.url || "",
-                description: initialData.description || "",
-                qrCode: initialData.qrCode || "",
-            } : {
+            setIsSubmitting(false);
+            setFormData(initialData ? { ...initialData } : {
                 type: "image",
                 url: "",
                 description: "",
                 qrCode: "",
+                externalLink: "",
             });
         }
     }, [isOpen, initialData]);
+
+    // 🔥 LOGIC KIỂM TRA ĐIỀU KIỆN (VALIDATION)
+    // Nút Lưu chỉ sáng lên khi (Có File) HOẶC (Có Link ngoài)
+    const isValid = Boolean(formData.url || formData.externalLink);
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (isSubmitting || !isValid) return; // Chặn nếu chưa hợp lệ
+
+        setIsSubmitting(true);
+        try {
+            await onSubmit(formData);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (!isOpen) return null;
 
     const types = [
         { id: "image", label: "Hình ảnh", icon: FaImage, color: "text-blue-500", bg: "bg-blue-50" },
@@ -34,21 +54,16 @@ export default function ContentFormModal({ isOpen, onClose, initialData, onSubmi
         { id: "pdf", label: "Tài liệu PDF", icon: FaFilePdf, color: "text-red-500", bg: "bg-red-50" },
     ];
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSubmit(formData);
-    };
-
-    if (!isOpen) return null;
-
     return (
         <Modal
             title={initialData ? "Chỉnh sửa nội dung" : "Thêm nội dung mới"}
             onClose={onClose}
         >
-            <form onSubmit={handleSubmit} className="space-y-2">
+            <form onSubmit={handleSubmit} className="">
+
+                {/* A. LOẠI NỘI DUNG */}
                 <div>
-                    <label className="block mb-3 font-semibold text-gray-700 text-sm uppercase tracking-wider">
+                    <label className="block mb-2 font-semibold text-gray-700 text-sm uppercase tracking-wider">
                         Loại nội dung
                     </label>
                     <div className="grid grid-cols-3 gap-3">
@@ -69,13 +84,14 @@ export default function ContentFormModal({ isOpen, onClose, initialData, onSubmi
                     </div>
                 </div>
 
+                {/* B. FILE UPLOAD */}
                 <div>
                     <label className="block mb-2 font-semibold text-gray-700 text-sm uppercase tracking-wider">
-                        Đường dẫn tới File
+                        Chọn file <span className="text-red-500 font-bold text-lg">*</span>
                     </label>
                     <div className="relative group">
                         <input
-                            className="w-full border-2 border-gray-100 rounded-xl p-4 pr-14 text-sm focus:border-black outline-none transition-all bg-gray-50/50"
+                            className="w-full border-2 border-gray-100 rounded-xl p-4 pr-14 text-sm transition-all bg-gray-50/50 focus:border-black focus:bg-white outline-none"
                             value={formData.url instanceof File ? formData.url.name : formData.url}
                             onChange={(e) => setFormData({ ...formData, url: e.target.value })}
                             placeholder="Dán link hoặc chọn file từ máy tính..."
@@ -84,7 +100,6 @@ export default function ContentFormModal({ isOpen, onClose, initialData, onSubmi
                             type="button"
                             className="absolute right-2 top-1/2 -translate-y-1/2 p-3 bg-white text-gray-600 rounded-lg hover:bg-black hover:text-white transition shadow-sm border border-gray-100"
                             onClick={() => document.getElementById("fileInput").click()}
-                            title="Chọn file từ máy tính"
                         >
                             <FaFolderOpen />
                         </button>
@@ -101,34 +116,63 @@ export default function ContentFormModal({ isOpen, onClose, initialData, onSubmi
                     />
                 </div>
 
-                {/* 3. MÔ TẢ */}
+                {/* C. LINK NGOÀI */}
+                <div className="space-y-2">
+                    <label className="font-bold text-gray-700 text-sm uppercase tracking-wider">
+                        Link bài báo / Link ngoài (Nếu có)
+                    </label>
+                    <input
+                        type="url"
+                        className="w-full px-4 py-2.5 border-2 border-gray-100 rounded-xl text-sm transition-all bg-gray-50/50 focus:border-black focus:bg-white outline-none"
+                        value={formData.externalLink}
+                        onChange={(e) => setFormData({ ...formData, externalLink: e.target.value })}
+                        placeholder="https://tuoitre.vn/bai-bao-xyz..."
+                    />
+                    <p className="text-[10px] text-gray-400 italic">
+                        * Nếu nhập link này, mã QR sẽ dẫn tới đây thay vì file upload.
+                    </p>
+                </div>
+
+                {/* D. MÔ TẢ */}
                 <div>
                     <label className="block mb-2 font-semibold text-gray-700 text-sm uppercase tracking-wider">
                         Mô tả ngắn gọn
                     </label>
                     <textarea
                         rows="3"
-                        className="w-full border-2 border-gray-100 rounded-xl text-sm focus:border-black outline-none transition-all bg-gray-50/50 resize-none"
+                        className="w-full border-2 border-gray-100 rounded-xl text-sm transition-all bg-gray-50/50 resize-none p-3 focus:border-black focus:bg-white outline-none"
                         value={formData.description}
                         onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                         placeholder="Nội dung này nói về điều gì..."
                     />
                 </div>
 
-                {/* 4. ACTIONS */}
-                <div className="flex justify-end gap-3 border-t border-gray-50">
+                {/* E. ACTIONS */}
+                <div className="flex justify-end gap-3 border-t border-gray-50 ">
                     <button
                         type="button"
                         className="px-6 py-2.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition font-bold text-sm"
                         onClick={onClose}
+                        disabled={isSubmitting}
                     >
                         Hủy bỏ
                     </button>
+
                     <button
                         type="submit"
-                        className="px-8 py-2.5 bg-black text-white rounded-xl hover:bg-gray-800 transition font-bold text-sm shadow-lg shadow-gray-200 active:scale-95"
+                        disabled={isSubmitting || !isValid}
+                        className={`px-8 py-2.5 rounded-xl transition font-bold text-sm shadow-lg flex items-center gap-2
+                            ${isSubmitting || !isValid
+                                ? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
+                                : "bg-black text-white hover:bg-gray-800 active:scale-95"}`}
                     >
-                        {initialData ? "Cập nhật ngay" : "Lưu dữ liệu"}
+                        {isSubmitting ? (
+                            <>
+                                <i className="fa-solid fa-spinner animate-spin"></i> Đang lưu...
+                            </>
+                        ) : (
+                            initialData ? "Cập nhật ngay" : "Lưu dữ liệu"
+                        )}
                     </button>
                 </div>
             </form>

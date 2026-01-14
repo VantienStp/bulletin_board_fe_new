@@ -74,7 +74,7 @@
 │   ├── 📁 components
 │   │   ├── 📁 common
 │   │   │   ├── 📄 CircularProgress.jsx
-│   │   │   ├── 📄 DeleteModal.jsx
+│   │   │   ├── 📄 ConfirmModal.jsx
 │   │   │   ├── 📄 FilterDropdown.jsx
 │   │   │   ├── 📄 Modal.jsx
 │   │   │   ├── 📄 Pagination.jsx
@@ -108,7 +108,8 @@
 │   │   │   ├── 📁 layouts
 │   │   │   │   ├── 📁 detail
 │   │   │   │   │   ├── 📄 EditorToolbar.jsx
-│   │   │   │   │   └── 📄 GridWorkspace.jsx
+│   │   │   │   │   ├── 📄 GridWorkspace.jsx
+│   │   │   │   │   └── 📄 LayoutDetailHeader.jsx
 │   │   │   │   ├── 📄 LayoutEditor.jsx
 │   │   │   │   ├── 📄 LayoutFormModal.jsx
 │   │   │   │   ├── 📄 LayoutTable.jsx
@@ -138,6 +139,7 @@
 │   │   │   ├── 📄 BackToTop.jsx
 │   │   │   ├── 📄 FilterOption.jsx
 │   │   │   ├── 📄 FormInput.jsx
+│   │   │   ├── 📄 NumberInput.jsx
 │   │   │   ├── 📄 RandomDropText.jsx
 │   │   │   ├── 📄 Reveal.jsx
 │   │   │   ├── 📄 Toast.jsx
@@ -146,7 +148,8 @@
 │   │   └── 📁 user
 │   │       └── 📄 Card.jsx
 │   ├── 📁 context
-│   │   └── 📄 AuthContext.js
+│   │   ├── 📄 AuthContext.js
+│   │   └── 📄 ToastContext.js
 │   ├── 📁 data
 │   │   └── 📁 adapters
 │   │       ├── 📄 cardAdapter.js

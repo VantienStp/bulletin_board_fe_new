@@ -33,19 +33,11 @@ export function useKioskData() {
     // Sắp xếp Categories
     const categories = useMemo(() => {
         if (!rawCategories || !Array.isArray(rawCategories)) return [];
-        const order = ["Nổi Bật", "Tin Tức Mới", "Niêm Yết", "Lịch Xét Xử", "Ảnh Hoạt Động"];
-        return [...rawCategories].sort((a, b) => {
-            let indexA = order.indexOf(a.title);
-            let indexB = order.indexOf(b.title);
-            if (indexA === -1) indexA = 99;
-            if (indexB === -1) indexB = 99;
-            return indexA - indexB;
-        });
+        return [...rawCategories].sort((a, b) => (a.order || 0) - (b.order || 0));
+
     }, [rawCategories]);
 
-    // ==========================================
-    // 2. LOGIC HEARTBEAT (ĐÃ TỐI ƯU)
-    // ==========================================
+    // 2. HEARTBEAT
     useEffect(() => {
         const syncDevice = async () => {
             const currentData = latestStateRef.current;
@@ -63,8 +55,8 @@ export function useKioskData() {
                     body: JSON.stringify({
                         deviceId,
                         name: `Máy Kiosk ${window.location.hostname}`,
-                        currentCategoryId: currentData.selectedCategory, // Đọc từ Ref
-                        isAutoSwitch: currentData.config.autoSwitch      // Đọc từ Ref
+                        currentCategoryId: currentData.selectedCategory,
+                        isAutoSwitch: currentData.config.autoSwitch
                     }),
                 });
 
@@ -109,7 +101,7 @@ export function useKioskData() {
     }, []);
 
     // ==========================================
-    // 3. LOGIC AUTO SWITCH
+    // 3. AUTO SWITCH
     // ==========================================
     useEffect(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);

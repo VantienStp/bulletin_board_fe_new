@@ -99,21 +99,48 @@ export default function CardDetailPage() {
 			: `${API_BASE_URL}/cards/${id}/contents`;
 
 		try {
+			let finalData = { ...formData };
+
+			if (formData.url instanceof File) {
+				const fileUploadFormData = new FormData();
+
+				fileUploadFormData.append("file", formData.url);
+
+				if (formData.externalLink) {
+					fileUploadFormData.append("externalLink", formData.externalLink);
+				}
+
+				const uploadRes = await authFetch(`${API_BASE_URL}/files/upload`, {
+					method: "POST",
+					body: fileUploadFormData,
+				});
+
+				const uploadData = await uploadRes.json();
+				if (!uploadRes.ok) throw new Error("Upload file thất bại");
+
+				finalData.url = uploadData.url;
+				finalData.images = uploadData.images || [];
+				finalData.qrCode = uploadData.qrImage;
+				finalData.qrLink = uploadData.qrLink;
+			}
+
 			const res = await authFetch(url, {
 				method,
 				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify(formData),
+				body: JSON.stringify(finalData),
 			});
 
 			if (res.ok) {
 				setShowForm(false);
 				mutate();
-				addToast("success", editingContent ? "Cập nhật nội dung thành công!" : "Thêm nội dung mới thành công!");
+				addToast("success", "Lưu nội dung thành công!");
 			} else {
-				addToast("error", "Có lỗi xảy ra, vui lòng thử lại.");
+				const errorData = await res.json();
+				addToast("error", errorData.message || "Có lỗi xảy ra khi lưu nội dung.");
 			}
 		} catch (err) {
-			addToast("error", "Lỗi kết nối đến server!");
+			console.error("Lỗi khi submit:", err);
+			addToast("error", err.message || "Lỗi kết nối đến server!");
 		}
 	};
 

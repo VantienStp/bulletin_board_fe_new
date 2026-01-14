@@ -13,7 +13,7 @@ export default function Modal({
   height = "auto",
   maxWidth = "80%",
   maxHeight = "90%",
-  minHeight = "50%",
+  minHeight = "40%",
   minWidth = "50%",
 }) {
   useEffect(() => {

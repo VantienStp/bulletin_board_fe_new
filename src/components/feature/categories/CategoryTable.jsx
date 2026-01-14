@@ -6,11 +6,12 @@ export default function CategoryTable({ categories, onEdit, onDelete }) {
     return (
         <div className="bg-white rounded-xl shadow overflow-hidden">
             <div className="
-          grid grid-cols-[1.2fr_120px_2fr_1.2fr_260px]
-          px-6 py-4 font-semibold text-gray-600
-          border-b text-sm
-        ">
+                grid grid-cols-[1fr_60px_100px_2fr_1.2fr_200px] 
+                px-6 py-4 font-semibold text-gray-600
+                border-b text-sm
+            ">
                 <div>Tên danh mục</div>
+                <div className="text-center">Thứ tự</div>
                 <div className="text-center">Icon</div>
                 <div>Mô tả</div>
                 <div>Layout</div>
@@ -22,13 +23,17 @@ export default function CategoryTable({ categories, onEdit, onDelete }) {
                     <div
                         key={cat.id}
                         className="
-                grid grid-cols-[1.2fr_120px_2fr_1.2fr_260px]
-                px-6 py-2 items-center
-                hover:bg-gray-50 transition
-                text-sm
-              "
+                            grid grid-cols-[1fr_60px_100px_2fr_1.2fr_200px] 
+                            px-6 py-2 items-center
+                            hover:bg-gray-50 transition
+                            text-sm
+                        "
                     >
                         <div className="font-medium">{cat.title}</div>
+
+                        <div className="text-center font-bold text-blue-600 bg-blue-50 py-1 rounded">
+                            {cat.order}
+                        </div>
 
                         <div className="text-center text-xl">
                             {cat.icon ? <i className={cat.icon} /> : "—"}

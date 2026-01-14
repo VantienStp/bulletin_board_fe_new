@@ -149,7 +149,7 @@ export default function LayoutsPage() {
 			<div className="flex justify-between items-end mb-6">
 				<div>
 					<h1 className="text-2xl font-bold flex items-center gap-2 text-gray-800">
-						<FaLayerGroup className="text-indigo-500" /> Bố cục hiển thị
+						<FaLayerGroup className="" /> Bố cục hiển thị
 					</h1>
 					<p className="text-sm text-gray-500 mt-1">
 						Hiển thị {filteredLayouts.length} bố cục phù hợp.

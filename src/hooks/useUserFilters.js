@@ -3,7 +3,7 @@ import { useState, useMemo } from "react";
 export function useUserFilters(users) {
     const [searchText, setSearchText] = useState("");
     const [filters, setFilters] = useState({
-        role: [] // Lọc theo quyền (admin, editor...)
+        role: []
     });
 
     const toggleFilter = (key, value) => {
@@ -24,13 +24,11 @@ export function useUserFilters(users) {
         if (!users) return [];
 
         return users.filter(user => {
-            // 1. Search (Tìm trong Username hoặc Email)
             const lowerSearch = searchText.toLowerCase();
             const matchesSearch =
                 user.username.toLowerCase().includes(lowerSearch) ||
                 user.email.toLowerCase().includes(lowerSearch);
 
-            // 2. Filter by Role
             const matchesRole = filters.role.length === 0 || filters.role.includes(user.role);
 
             return matchesSearch && matchesRole;
