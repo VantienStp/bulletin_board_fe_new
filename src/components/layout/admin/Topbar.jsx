@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useRef } from "react";
-import { FaBell, FaEnvelope, FaChevronDown, FaUser, FaCog, FaSignOutAlt, FaSearch } from "react-icons/fa";
+import { FaBell, FaEnvelope, FaChevronDown, FaUser, FaCog, FaSignOutAlt } from "react-icons/fa";
 import useOutsideClick from "@/hooks/useOutsideClick";
-
+import { API_BASE_URL } from "@/lib/api";
 
 function formatSegment(seg) {
 	return seg.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
@@ -21,7 +21,7 @@ export default function Topbar() {
 		username: "Admin",
 		email: "admin@system.com",
 		avatar: "/avatar1.png",
-		role: "Administrator"
+		role: "viewer" // Mặc định là quyền thấp nhất để an toàn
 	});
 
 	const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -39,7 +39,7 @@ export default function Topbar() {
 						username: parsedUser.username || "User",
 						email: parsedUser.email || "",
 						avatar: parsedUser.avatar || "/avatar1.png",
-						role: parsedUser.role || "Admin"
+						role: parsedUser.role || "viewer"
 					});
 				} catch (error) {
 					console.error("Lỗi đọc dữ liệu user:", error);
@@ -52,16 +52,27 @@ export default function Topbar() {
 		return "/" + segments.slice(0, idx + 2).join("/");
 	};
 
-	const handleLogout = () => {
-		localStorage.removeItem("currentUser");
-		localStorage.removeItem("token");
-		router.push("/login");
+	const handleLogout = async () => {
+		try {
+			await fetch(`${API_BASE_URL}/auth/logout`, {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				credentials: "include",
+			});
+		} catch (error) {
+			console.error("Lỗi khi gọi API logout:", error);
+		} finally {
+			localStorage.removeItem("currentUser");
+			localStorage.removeItem("token");
+			window.location.href = "/login";
+		}
 	};
 
 	return (
-		<div className="sticky top-0 z-40 w-full">
+		<div className="sticky top-0 z-40 w-full ">
 			<div className="flex justify-between items-center h-full gap-4">
 
+				{/* LEFT: BREADCRUMBS */}
 				<div className="flex flex-col justify-center">
 					<div className="flex items-center gap-2 text-lg font-bold text-gray-800">
 						{segments.length === 1 && segments[0] === "admin" ? (
@@ -94,16 +105,9 @@ export default function Topbar() {
 
 				<div className="flex-1"></div>
 
+				{/* RIGHT: ACTIONS & PROFILE */}
 				<div className="flex items-center gap-3 sm:gap-4">
-					{/* <div className="hidden md:flex items-center bg-gray-100 rounded-full px-4 py-2 w-64 border border-transparent focus-within:border-indigo-300 focus-within:bg-white transition-all">
-						<FaSearch className="text-gray-400 mr-2 text-sm" />
-						<input
-							type="text"
-							placeholder="Tìm kiếm..."
-							className="bg-transparent border-none outline-none text-sm w-full text-gray-700 placeholder-gray-400"
-						/>
-					</div> */}
-
+					{/* Icons */}
 					<div className="flex items-center gap-1 text-gray-500">
 						<button
 							className="p-2.5 hover:bg-indigo-50 hover:text-indigo-600 rounded-full transition relative group"
@@ -124,10 +128,11 @@ export default function Topbar() {
 
 					<div className="h-8 w-[1px] bg-gray-200 mx-1 hidden sm:block"></div>
 
+					{/* Profile Dropdown */}
 					<div className="relative" ref={profileRef}>
 						<button
 							onClick={() => setIsProfileOpen(!isProfileOpen)}
-							className={`flex items-center gap-3 cursor-pointer p-1.5 pr-3 rounded-full border transition-all duration-200 group
+							className={`flex items-center gap-3 cursor-pointer p-1.5 pr-3 rounded-full border transition-all duration-200 group bg-white    
                                 ${isProfileOpen ? 'bg-green-50 border-green-200 shadow-sm' : 'bg-transparent border-transparent hover:bg-gray-50 hover:border-gray-200'}
                             `}
 						>
@@ -165,18 +170,21 @@ export default function Topbar() {
 									>
 										<FaUser className="text-gray-400" /> Hồ sơ cá nhân
 									</Link>
-									<Link
-										href="/admin/settings"
-										onClick={() => setIsProfileOpen(false)}
-										className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-600 hover:bg-indigo-50 hover:text-green-400 rounded-lg transition-colors"
-									>
-										<FaCog className="text-gray-400" /> Cài đặt hệ thống
-									</Link>
+
+									{/* 🔥 CHỈ HIỆN SETTINGS NẾU LÀ ADMIN */}
+									{user.role === 'admin' && (
+										<Link
+											href="/admin/settings"
+											onClick={() => setIsProfileOpen(false)}
+											className="flex items-center gap-3 px-3 py-2.5 text-sm text-gray-600 hover:bg-indigo-50 hover:text-green-400 rounded-lg transition-colors"
+										>
+											<FaCog className="text-gray-400" /> Cài đặt hệ thống
+										</Link>
+									)}
 								</div>
 
 								<div className="h-[1px] bg-gray-100 my-1 mx-2"></div>
 
-								{/* Logout */}
 								<div className="p-1">
 									<button
 										onClick={handleLogout}

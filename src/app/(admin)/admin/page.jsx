@@ -1,27 +1,24 @@
 "use client";
 
-import dynamic from "next/dynamic"; // Import dynamic loading
+import dynamic from "next/dynamic";
 import StatCard from "@/components/feature/dashboard/StatCard";
-// import AnalyticsCard from "@/components/feature/dashboard/AnalyticsCard"; // ❌ Bỏ import thường
 import TeamList from "@/components/feature/dashboard/TeamList";
 import ProjectList from "@/components/feature/dashboard/ProjectList";
 import ReminderCard from "@/components/feature/dashboard/ReminderCard";
 import TimeTracker from "@/components/feature/dashboard/TimeTracker";
 
-// ✅ Import động cho AnalyticsCard (cái này thường nặng nhất vì chứa thư viện Chart)
 const AnalyticsCard = dynamic(
     () => import("@/components/feature/dashboard/AnalyticsCard"),
     {
-        ssr: false, // Tắt render phía server cho biểu đồ (tránh lỗi hydrat hóa)
-        loading: () => <div className="h-64 bg-gray-100 rounded-xl animate-pulse"></div> // Skeleton loading
+        ssr: false,
+        loading: () => <div className="h-64 bg-gray-100 rounded-xl animate-pulse"></div>
     }
 );
 
 export default function AdminHomePage() {
     return (
-        <div className="mx-auto w-full animate-fadeIn"> {/* Thêm hiệu ứng fade nhẹ */}
+        <div className="mx-auto w-full animate-fadeIn">
 
-            {/* TITLE + ACTIONS */}
             <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
                 <div>
                     <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
@@ -51,7 +48,6 @@ export default function AdminHomePage() {
             {/* SECTION 2 — ANALYTICS + REMINDERS */}
             <section className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
                 <div className="xl:col-span-2">
-                    {/* Component này sẽ load sau cùng, giúp trang hiện lên ngay lập tức */}
                     <AnalyticsCard />
                 </div>
                 <ReminderCard />

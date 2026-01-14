@@ -1,13 +1,27 @@
 "use client";
 import { useState, useEffect } from "react";
+import { API_BASE_URL } from "@/lib/api";
 
 export default function useWeather() {
 	const [data, setData] = useState(null);
 
 	useEffect(() => {
-		const fetchWeather = () => {
+		const fetchWeather = async () => {
+			const fetchFromServer = async () => {
+				try {
+					const res = await fetch(`${API_BASE_URL}/weather/default`);
+					if (res.ok) {
+						const result = await res.json();
+						setData(result);
+					}
+				} catch (err) {
+					console.error("Server weather fetch error", err);
+					setData(null);
+				}
+			};
+
 			if (!navigator.geolocation) {
-				setData(null);
+				await fetchFromServer();
 				return;
 			}
 
@@ -15,7 +29,8 @@ export default function useWeather() {
 				async (pos) => {
 					try {
 						const { latitude, longitude } = pos.coords;
-						const apiKey = "b405235d32a7ca53648989fc7b145c87";
+
+						const apiKey = process.env.NEXT_PUBLIC_OPENWEATHER_API_KEY;
 
 						const res = await fetch(
 							`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&lang=vi&appid=${apiKey}`
@@ -35,11 +50,14 @@ export default function useWeather() {
 							desc: result.weather[0].description.charAt(0).toUpperCase() + result.weather[0].description.slice(1),
 							icon: result.weather[0].icon
 						});
+
 					} catch (err) {
-						console.error("Weather fetch error", err);
+						await fetchFromServer();
 					}
 				},
-				() => setData(null)
+				async () => {
+					await fetchFromServer();
+				}
 			);
 		};
 

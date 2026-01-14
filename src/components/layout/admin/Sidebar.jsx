@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import useArrowNavigation from "@/hooks/useArrowNavigation";
+import { API_BASE_URL } from "@/lib/api";
 
 const MENU_CONFIG = {
     MAIN: [
@@ -11,16 +12,16 @@ const MENU_CONFIG = {
         { id: "categories", href: "/admin/categories", label: "Category", icon: "fa-tags" },
         { id: "cards", href: "/admin/cards", label: "Card", icon: "fa-clone" },
         { id: "layouts", href: "/admin/layouts", label: "Layout", icon: "fa-layer-group" },
-        { id: "users", href: "/admin/users", label: "User", icon: "fa-users" },
+        { id: "users", href: "/admin/users", label: "User", icon: "fa-users" },   // 🔒 Admin Only
     ],
     GENERAL: [
-        { id: "settings", href: "/admin/settings", label: "Settings", icon: "fa-gear" },
+        { id: "settings", href: "/admin/settings", label: "Settings", icon: "fa-gear" }, // 🔒 Admin Only (Tùy chọn)
         { id: "profile", href: "/admin/profile", label: "Profile", icon: "fa-user" },
     ],
 };
 
-const findSectionById = (id) => {
-    for (const [section, items] of Object.entries(MENU_CONFIG)) {
+const findSectionById = (id, config) => {
+    for (const [section, items] of Object.entries(config)) {
         if (items.some(item => item.id === id)) {
             return section;
         }
@@ -28,7 +29,7 @@ const findSectionById = (id) => {
     return null;
 };
 
-export default function Sidebar({ onLogout }) {
+export default function Sidebar() {
     const router = useRouter();
     const itemRefs = useRef({});
     const pathname = usePathname();
@@ -49,24 +50,58 @@ export default function Sidebar({ onLogout }) {
         visible: false,
     });
 
+    // 🆕 STATE: Lưu role người dùng
+    const [userRole, setUserRole] = useState("viewer");
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const storedUser = localStorage.getItem("currentUser");
+            if (storedUser) {
+                try {
+                    const u = JSON.parse(storedUser);
+                    setUserRole(u.role || "viewer");
+                } catch (e) {
+                    console.error("Parse user error", e);
+                }
+            }
+        }
+    }, []);
+
+    // 🆕 LOGIC: Lọc Menu dựa trên Role
+    const filteredMenu = useMemo(() => {
+        // Danh sách các ID chỉ dành cho Admin
+        const adminOnlyIds = ["users", "devices", "settings"];
+
+        // Nếu là Admin, trả về toàn bộ menu gốc
+        if (userRole === "admin") {
+            return MENU_CONFIG;
+        }
+
+        // Nếu không phải Admin, lọc bỏ các mục cấm
+        return {
+            MAIN: MENU_CONFIG.MAIN.filter(item => !adminOnlyIds.includes(item.id)),
+            GENERAL: MENU_CONFIG.GENERAL.filter(item => !adminOnlyIds.includes(item.id)),
+        };
+    }, [userRole]);
+
     // ================= SYNC ACTIVE BY URL =================
     useEffect(() => {
-        const allItems = Object.values(MENU_CONFIG).flat();
+        const allItems = Object.values(filteredMenu).flat();
         const current = allItems.find(item =>
             item.href === "/admin"
                 ? pathname === "/admin"
                 : pathname.startsWith(item.href)
         );
         setActiveId(current?.id ?? null);
-    }, [pathname]);
+    }, [pathname, filteredMenu]);
 
     // ================= KEYBOARD NAV (MAIN) =================
     useArrowNavigation({
-        items: MENU_CONFIG,
+        items: filteredMenu, // 🔥 Truyền menu đã lọc vào đây
         activeId,
         setActiveId: (newId) => {
             setActiveId(newId);
-            const allItems = Object.values(MENU_CONFIG).flat();
+            const allItems = Object.values(filteredMenu).flat();
             const target = allItems.find(i => i.id === newId);
             if (target && pathname !== target.href) {
                 router.push(target.href);
@@ -83,7 +118,8 @@ export default function Sidebar({ onLogout }) {
             return;
         }
 
-        const section = findSectionById(activeId);
+        // Tìm section trong menu đã lọc
+        const section = findSectionById(activeId, filteredMenu);
         if (!section) return;
 
         const isOpen = openSection[section];
@@ -95,7 +131,7 @@ export default function Sidebar({ onLogout }) {
             return;
         }
 
-        const itemsInSection = MENU_CONFIG[section] || [];
+        const itemsInSection = filteredMenu[section] || [];
         const activeIndex = itemsInSection.findIndex(item => item.id === activeId);
 
         const dynamicDelay = wasJustOpened
@@ -120,14 +156,33 @@ export default function Sidebar({ onLogout }) {
         }, dynamicDelay);
 
         return () => clearTimeout(timer);
-    }, [activeId, openSection]);
+    }, [activeId, openSection, filteredMenu]); // Thêm filteredMenu vào deps
+
+    // ================= LOGOUT =================
+    const handleLogout = async () => {
+        try {
+            await fetch(`${API_BASE_URL}/auth/logout`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+            });
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            localStorage.removeItem("currentUser");
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+        }
+    };
 
     // ================= RENDER SECTION =================
     const renderSection = (title, items) => {
+        if (!items || items.length === 0) return null; // Không render nếu section trống
+
         const isOpen = openSection[title];
         return (
             <div className="mt-6 pr-2">
-                <p className="text-xs text-gray-400 mb-2 cursor-pointer flex justify-between select-none" // Thêm select-none cho đỡ bị bôi đen khi click
+                <p className="text-xs text-gray-400 mb-2 cursor-pointer flex justify-between select-none"
                     onClick={() => setOpenSection(s => ({ ...s, [title]: !s[title] }))}
                 >
                     {title}
@@ -156,13 +211,13 @@ export default function Sidebar({ onLogout }) {
                                         ${isActive ? "text-white" : "hover:bg-gray-100 text-gray-700"}
                                     `}
                                     style={{
-                                        transitionDelay: isOpen ? `${index * 50}ms` : "0ms", // Giảm delay xuống 50ms cho mượt hơn
+                                        transitionDelay: isOpen ? `${index * 50}ms` : "0ms",
                                     }}
                                 >
                                     {item.icon && (
                                         <i
                                             style={{ transitionDelay: isOpen ? `${index * 50 + 100}ms` : "0ms" }}
-                                            className={`fa-solid ${item.icon} ${isActive ? "text-yellow-300" : "text-black"} w-5 text-center`} // Cố định width cho icon để text thẳng hàng
+                                            className={`fa-solid ${item.icon} ${isActive ? "text-yellow-300" : "text-black"} w-5 text-center`}
                                         />
                                     )}
                                     {item.label}
@@ -188,8 +243,8 @@ export default function Sidebar({ onLogout }) {
                 </Link>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-4 pr-1 scrollbar-hide"> {/* Thêm class ẩn scrollbar nếu cần */}
-                <div ref={containerRef} className="relative w-full"> {/* Thêm padding bottom để không bị che nút logout */}
+            <div className="flex-1 overflow-y-auto px-4 pr-1 scrollbar-hide">
+                <div ref={containerRef} className="relative w-full">
                     <div
                         className={`absolute left-0 right-0 rounded-xl bg-black transition-all ease-out duration-300 z-0 mr-2
                             ${highlight.visible ? "opacity-100" : "opacity-0"}
@@ -200,14 +255,15 @@ export default function Sidebar({ onLogout }) {
                         }}
                     />
 
-                    {renderSection("MAIN", MENU_CONFIG.MAIN)}
-                    {renderSection("GENERAL", MENU_CONFIG.GENERAL)}
+                    {/* 🔥 Render menu đã lọc */}
+                    {renderSection("MAIN", filteredMenu.MAIN)}
+                    {renderSection("GENERAL", filteredMenu.GENERAL)}
                 </div>
             </div>
 
             <div className="px-4 pb-2 mt-auto">
                 <button
-                    onClick={onLogout}
+                    onClick={handleLogout}
                     className="w-full text-left px-2 py-2 text-red-500 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium flex items-center gap-3"
                 >
                     <i className="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i>

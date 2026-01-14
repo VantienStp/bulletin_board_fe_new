@@ -9,7 +9,7 @@ import { authFetch } from "@/lib/auth";
 // Hooks
 import { useDeviceFilters } from "@/hooks/useDeviceFilters";
 import usePagination from "@/hooks/usePagination";
-import useArrowNavigation from "@/hooks/useArrowNavigation"; // ✅ Đừng quên import
+import useArrowNavigation from "@/hooks/useArrowNavigation";
 
 // Components
 import DeviceToolbar from "@/components/feature/settings/DeviceToolbar";
@@ -18,6 +18,7 @@ import DeviceFormModal from "@/components/feature/settings/DeviceFormModal";
 import Pagination from "@/components/common/Pagination";
 import Toast from "@/components/ui/Toast";
 import ToastContainer from "@/components/ui/ToastContainer";
+
 
 const fetcher = (url) => authFetch(url).then((res) => res.json());
 

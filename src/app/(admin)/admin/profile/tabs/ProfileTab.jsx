@@ -6,11 +6,11 @@ import { authFetch } from "@/lib/auth";
 import { API_BASE_URL } from "@/lib/api";
 import FormInput from "@/components/ui/FormInput";
 import { FaUser, FaEnvelope, FaIdBadge, FaPhone, FaPen, FaSpinner } from "react-icons/fa";
-import { useToast } from "@/context/ToastContext"; // ✅ Dùng Toast toàn cục
+import { useToast } from "@/context/ToastContext";
 
 export default function ProfileTab() {
     const { user, mutate } = useAuth();
-    const { addToast } = useToast(); // ✅ Lấy hàm thông báo
+    const { addToast } = useToast();
     const [loading, setLoading] = useState(false);
 
     const fileInputRef = useRef(null);
@@ -24,7 +24,6 @@ export default function ProfileTab() {
         bio: "",
     });
 
-    // Đồng bộ dữ liệu từ AuthContext vào Form
     useEffect(() => {
         if (user) {
             setFormData({
@@ -70,15 +69,13 @@ export default function ProfileTab() {
             });
 
             if (res.ok) {
-                // Cập nhật lại dữ liệu người dùng trong toàn hệ thống
                 if (mutate) await mutate();
 
-                // Đồng bộ LocalStorage để đảm bảo dữ liệu mới nhất
                 const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
                 localStorage.setItem("currentUser", JSON.stringify({ ...currentUser, ...payload }));
 
                 addToast("success", "Cập nhật hồ sơ thành công!");
-                setAvatarFile(null); // Reset trạng thái file sau khi lưu
+                setAvatarFile(null);
             } else {
                 const errorData = await res.json();
                 addToast("error", errorData.message || "Lỗi cập nhật hồ sơ.");

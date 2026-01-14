@@ -42,7 +42,7 @@ export default function AdminLayout({ children }) {
 					<Sidebar onLogout={handleLogout} />
 				</aside>
 				<div className="flex flex-col h-full overflow-hidden">
-					<div className="shadow sticky top-0 z-50 px-11 py-3 bg-white/80 backdrop-blur-md">
+					<div className="shadow sticky top-0 z-50 px-11 py-3 bg-gray-100 backdrop-blur-md ">
 						<Topbar />
 					</div>
 					<main className="admin-scroll flex-1 overflow-y-auto bg-gray-50">

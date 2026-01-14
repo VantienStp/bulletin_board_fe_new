@@ -5,7 +5,8 @@ function Sidebar({ categories, selectedCategory, onSelect }) {
     useEffect(() => {
         if (!categories.length || !selectedCategory) return;
 
-        const index = categories.findIndex((cat) => cat._id === selectedCategory);
+        // Sửa _id thành id
+        const index = categories.findIndex((cat) => cat.id === selectedCategory);
         if (index < 0) return;
 
         const highlight = document.getElementById("sidebar-highlight");
@@ -30,10 +31,12 @@ function Sidebar({ categories, selectedCategory, onSelect }) {
             </div>
             <ul>
                 {categories.map((cat) => (
-                    <li key={cat._id}>
+                    // Sửa _id thành id ở key
+                    <li key={cat.id}>
                         <a
                             onClick={() => onSelect(cat)}
-                            className={selectedCategory === cat._id ? "active" : ""}
+                            // Sửa _id thành id ở điều kiện so sánh
+                            className={selectedCategory === cat.id ? "active" : ""}
                         >
                             <i className={cat.icon || "fas fa-folder"}></i>
                             <span className="nav-text">{cat.title}</span>

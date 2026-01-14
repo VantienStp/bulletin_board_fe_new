@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import useSWR from "swr";
 import { fetcher } from "@/lib/fetcher";
 import { API_BASE_URL } from "@/lib/api";
+import { categoryAdapter } from "@/data/adapters/categoryAdapter";
 
 export function useKioskData() {
     // ==========================================
@@ -16,7 +17,7 @@ export function useKioskData() {
 
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [layoutConfig, setLayoutConfig] = useState(null);
-    const [config, setConfig] = useState({ autoSwitch: true, switchInterval: 15 });
+    const [config, setConfig] = useState({ autoSwitch: true, switchInterval: 12 });
     const [avoidIds, setAvoidIds] = useState([]);
     const [timeLeft, setTimeLeft] = useState(0);
     const [totalTime, setTotalTime] = useState(0);
@@ -30,18 +31,21 @@ export function useKioskData() {
         latestStateRef.current = { selectedCategory, config };
     }, [selectedCategory, config]);
 
-    // Sắp xếp Categories
+    // 🔥 2. MAP QUA ADAPTER & SẮP XẾP
     const categories = useMemo(() => {
         if (!rawCategories || !Array.isArray(rawCategories)) return [];
-        return [...rawCategories].sort((a, b) => (a.order || 0) - (b.order || 0));
 
+        const adapted = rawCategories.map(cat => categoryAdapter(cat));
+
+        return adapted.sort((a, b) => (a.order || 0) - (b.order || 0));
     }, [rawCategories]);
 
+    // ==========================================
     // 2. HEARTBEAT
+    // ==========================================
     useEffect(() => {
         const syncDevice = async () => {
             const currentData = latestStateRef.current;
-
             let deviceId = localStorage.getItem("kiosk_id");
             if (!deviceId) {
                 deviceId = `ks-${Math.random().toString(36).substr(2, 9)}`;
@@ -49,6 +53,7 @@ export function useKioskData() {
             }
 
             try {
+                // Gửi về server
                 const res = await fetch(`${API_BASE_URL}/devices/heartbeat`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -70,19 +75,18 @@ export function useKioskData() {
                         if (prev.autoSwitch === newAutoSwitch && prev.switchInterval === newInterval) {
                             return prev;
                         }
-
-                        return {
-                            ...prev,
-                            autoSwitch: newAutoSwitch,
-                            switchInterval: newInterval
-                        };
+                        return { ...prev, autoSwitch: newAutoSwitch, switchInterval: newInterval };
                     });
+
+                    // 🔥 3. LOGIC TỰ ĐỘNG CHỌN DANH MỤC MẶC ĐỊNH
                     if (!hasBooted.current && data.config.defaultCategoryId) {
                         const defaultId = typeof data.config.defaultCategoryId === 'object'
                             ? data.config.defaultCategoryId._id
                             : data.config.defaultCategoryId;
 
+                        const found = categories.find(c => c.id === defaultId || c._id === defaultId);
 
+                        if (found) handleSelectCategory(found);
                     }
                 }
 
@@ -95,18 +99,20 @@ export function useKioskData() {
             }
         };
 
-        syncDevice();
+        if (categories.length > 0) syncDevice();
+
         const timer = setInterval(syncDevice, 60 * 1000);
         return () => clearInterval(timer);
-    }, []);
+
+    }, [categories]);
 
     // ==========================================
-    // 3. AUTO SWITCH
+    // 3. AUTO SWITCH (TÍNH THEO PHÚT)
     // ==========================================
     useEffect(() => {
         if (intervalRef.current) clearInterval(intervalRef.current);
-
         const intervalMs = config.switchInterval * 60 * 1000;
+
         setTotalTime(intervalMs);
         setTimeLeft(intervalMs);
 
@@ -131,8 +137,8 @@ export function useKioskData() {
     // 4. ACTIONS
     // ==========================================
     const doAutoSwitch = () => {
-        let candidates = categories.filter((cat) => cat._id !== selectedCategory);
-        const safeCandidates = candidates.filter(cat => !avoidIds.includes(cat._id));
+        let candidates = categories.filter((cat) => cat.id !== selectedCategory);
+        const safeCandidates = candidates.filter(cat => !avoidIds.includes(cat.id));
         const finalPool = safeCandidates.length > 0 ? safeCandidates : candidates;
 
         if (finalPool.length > 0) {
@@ -145,17 +151,22 @@ export function useKioskData() {
         if (!cat) return;
         if (!hasBooted.current) hasBooted.current = true;
 
-        setSelectedCategory(cat._id);
-        const cfg = typeof cat.gridLayoutId === 'object' ? cat.gridLayoutId?.config : null;
-        setLayoutConfig(cfg);
-        localStorage.setItem("selectedCategory", cat._id);
-    };
+        const catId = cat.id || cat._id;
+        setSelectedCategory(catId);
 
-    // Fallback khởi tạo & Xử lý Default Category từ Server
+        // 🔴 CŨ (Sai vì cat giờ là dữ liệu đã qua adapter, không còn gridLayoutId nested nữa)
+        // const cfg = typeof cat.gridLayoutId === 'object' ? cat.gridLayoutId?.config : null;
+
+        // 🟢 MỚI (Đúng: Lấy trực tiếp từ trường ta vừa thêm vào adapter)
+        const cfg = cat.layoutConfig;
+
+        setLayoutConfig(cfg);
+        localStorage.setItem("selectedCategory", catId);
+    };
     useEffect(() => {
         if (categories.length > 0 && !selectedCategory && !hasBooted.current) {
             const savedId = localStorage.getItem("selectedCategory");
-            const found = categories.find(c => c._id === savedId) || categories[0];
+            const found = categories.find(c => (c.id || c._id) === savedId) || categories[0];
             handleSelectCategory(found);
         }
     }, [categories]);

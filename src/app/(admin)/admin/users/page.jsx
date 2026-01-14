@@ -52,7 +52,6 @@ export default function UsersPage() {
 	const [searchFocused, setSearchFocused] = useState(false);
 	const paginationRef = useRef(null);
 
-	// Cấu hình Arrow Navigation
 	const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
 	const pagesArray = useMemo(() =>
 		Array.from({ length: totalPages }, (_, i) => ({ id: i + 1 })),
@@ -66,18 +65,15 @@ export default function UsersPage() {
 		enabled: tableActive && !searchFocused && totalPages > 1,
 	});
 
-	// State Form & Delete
 	const [editingUser, setEditingUser] = useState(null);
 	const [showForm, setShowForm] = useState(false);
 	const [deleteUserId, setDeleteUserId] = useState(null);
 	const [deleteStatus, setDeleteStatus] = useState("idle");
 
-	// Reset trang khi search (Bỏ goToPage khỏi dependency để ổn định ArrowNav)
 	useEffect(() => {
 		goToPage(1);
 	}, [searchText, filters]);
 
-	// --- HANDLERS ---
 	const handleOpenCreate = () => {
 		setEditingUser(null);
 		setShowForm(true);
@@ -135,7 +131,6 @@ export default function UsersPage() {
 		} catch (err) {
 			addToast("error", "Lỗi kết nối server!");
 		} finally {
-			// ✅ Đảm bảo luôn dọn dẹp state và đóng Modal
 			setDeleteUserId(null);
 			setDeleteStatus("idle");
 		}
