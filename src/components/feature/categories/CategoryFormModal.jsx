@@ -107,7 +107,7 @@ export default function CategoryFormModal({ isOpen, onClose, initialData, layout
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 placeholder="Mô tả nội dung của danh mục..."
-                                className="w-full p-4 border border-gray-200 rounded-lg text-sm bg-white focus:border-black outline-none resize-none"
+                                className="w-full p-3 border border-gray-200 rounded-lg text-sm bg-white focus:border-black outline-none resize-none"
                             />
                         </div>
                     </div>

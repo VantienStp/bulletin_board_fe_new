@@ -111,7 +111,7 @@ export default function DevicesTab() {
     };
 
     return (
-        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 px-6 pb-10">
+        <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500 ">
             <ToastContainer>
                 {toasts.map((t) => <Toast key={t.id} {...t} onClose={removeToast} />)}
             </ToastContainer>

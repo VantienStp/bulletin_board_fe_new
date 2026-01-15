@@ -175,7 +175,7 @@ export default function UsersPage() {
 						setTableActive(false);
 					}
 				}}
-				className="outline-none scroll-mt-4 focus:ring-1 focus:ring-blue-100 rounded-lg p-1 transition-all"
+				className="outline-none scroll-mt-4rounded-lg p-1 transition-all"
 				ref={paginationRef}
 			>
 				<UserTable

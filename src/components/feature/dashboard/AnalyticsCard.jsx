@@ -1,37 +1,48 @@
 "use client";
 
-import { FaLink } from "react-icons/fa6"; // 🔥 Import icon mắt xích
+import { FaLink } from "react-icons/fa6";
 import TrendChart from "./TrendChart";
 import DistributionChart from "./DistributionChart";
 
-export default function AnalyticsCard({ data, filter, onFilterChange }) {
+export default function AnalyticsCard({ data, label, onFilterChange }) {
     const trendData = data?.trend || [];
     const distributionData = data?.distribution || [];
 
     return (
-        // Thêm relative để làm điểm neo cho icon 'link'
         <div className="relative h-full group">
+            {/* Bố cục Grid: 1 cột cho mobile, 3 cột cho desktop */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
+                {/* Chiếm 2 phần bên trái trên desktop */}
+                <div className="lg:col-span-2">
+                    <TrendChart
+                        data={trendData}
+                        label={label}
+                        onFilterChange={onFilterChange}
+                    />
+                </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-                <TrendChart
-                    data={trendData}
-                    filter={filter}
-                    onFilterChange={onFilterChange}
-                />
-                <DistributionChart
-                    data={distributionData}
-                    filter={filter}
-                />
+                {/* Chiếm 1 phần bên phải */}
+                <div className="lg:col-span-1">
+                    <DistributionChart
+                        data={distributionData}
+                        filter="custom"
+                    />
+                </div>
             </div>
 
-            <div className="hidden lg:flex absolute top-2 left-[67%] -translate-x-1/2 z-10 
-                            items-center justify-center w-16 h-16 
-                            text-purple-500 rotate-12"
-                title="Dữ liệu được đồng bộ theo bộ lọc thời gian"
+            {/* Icon cầu nối: Thông minh theo breakpoint */}
+            <div
+                className="absolute z-10 flex items-center justify-center text-purple-500 transition-all duration-300
+                    top-[53.25%] left-10 -translate-x-1/2 -translate-y-1/2 rotate-90 lg:rotate-45
+
+                    lg:top-10 lg:left-[67%] 
+                    w-16 h-16 lg:w-16 lg:h-16"
+                title="Dữ liệu đồng bộ"
             >
-                <FaLink className="text-4xl" />
+                <div className="">
+                    <FaLink className="text-3xl" />
+                </div>
             </div>
-
         </div>
     );
 }

@@ -56,7 +56,6 @@
 .modal-body form {
     display: flex;
     flex-direction: column;
-    gap: var(--gap-medium);
 }
 
 .modal-fixbug {

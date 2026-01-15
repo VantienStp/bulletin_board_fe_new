@@ -1,48 +1,21 @@
 "use client";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import TimeFilter from "./TimeFilter"; // 🔥 Import cái mới
 
-import {
-    AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
-} from "recharts";
-import FilterDropdown from "@/components/common/FilterDropdown";
-import FilterOption from "@/components/ui/FilterOption";
-
-const FILTER_LABELS = {
-    week: "7 ngày qua",
-    month: "Tháng này",
-    quarter: "Quý này",
-    year: "Năm nay"
-};
-
-export default function TrendChart({ data = [], filter, onFilterChange }) {
-    const options = [
-        { value: "week", label: "7 ngày qua" },
-        { value: "month", label: "Tháng này" },
-        { value: "quarter", label: "Quý này" },
-        { value: "year", label: "Năm nay" },
-    ];
-
+export default function TrendChart({ data = [], label, onFilterChange }) {
     return (
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col h-full">
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h3 className="font-bold text-gray-800">Xu hướng đăng bài</h3>
-                    <p className="text-xs text-gray-400 mt-1">Số lượng thẻ nội dung được tạo mới</p>
+                    {/* Hiển thị Label động */}
+                    <p className="text-xs text-gray-500 mt-1 font-medium bg-gray-100 inline-block px-2 py-0.5 rounded">
+                        {label || "Đang tải..."}
+                    </p>
                 </div>
 
                 <div className="z-10">
-                    <FilterDropdown label={FILTER_LABELS[filter] || "Lọc thời gian"}>
-                        <div className="flex flex-col gap-1">
-                            {options.map((opt) => (
-                                <FilterOption
-                                    key={opt.value}
-                                    type="radio"
-                                    label={opt.label}
-                                    checked={filter === opt.value}
-                                    onChange={() => onFilterChange(opt.value)}
-                                />
-                            ))}
-                        </div>
-                    </FilterDropdown>
+                    <TimeFilter onFilterChange={onFilterChange} />
                 </div>
             </div>
 
@@ -58,15 +31,12 @@ export default function TrendChart({ data = [], filter, onFilterChange }) {
                         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
                         <XAxis
                             dataKey="name"
-                            axisLine={false}
-                            tickLine={false}
+                            axisLine={false} tickLine={false}
                             tick={{ fontSize: 11, fill: '#9CA3AF' }}
                             dy={10}
-                            interval={filter === 'year' ? 0 : 'preserveStartEnd'}
                         />
                         <YAxis
-                            axisLine={false}
-                            tickLine={false}
+                            axisLine={false} tickLine={false}
                             tick={{ fontSize: 11, fill: '#9CA3AF' }}
                             allowDecimals={false}
                         />
@@ -80,13 +50,8 @@ export default function TrendChart({ data = [], filter, onFilterChange }) {
                             }}
                         />
                         <Area
-                            type="monotone"
-                            dataKey="value"
-                            stroke="#6366f1"
-                            strokeWidth={3}
-                            fillOpacity={1}
-                            fill="url(#colorCards)"
-                            activeDot={{ r: 6, strokeWidth: 0, fill: '#4f46e5' }}
+                            type="monotone" dataKey="value" stroke="#6366f1" strokeWidth={3}
+                            fillOpacity={1} fill="url(#colorCards)" activeDot={{ r: 6, strokeWidth: 0, fill: '#4f46e5' }}
                         />
                     </AreaChart>
                 </ResponsiveContainer>

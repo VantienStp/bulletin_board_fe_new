@@ -72,12 +72,12 @@ export default function ContentFormModal({ isOpen, onClose, initialData, onSubmi
                                 key={t.id}
                                 type="button"
                                 onClick={() => setFormData({ ...formData, type: t.id })}
-                                className={`flex flex-col items-center justify-center p-4 rounded-xl border-2 transition-all ${formData.type === t.id
+                                className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all ${formData.type === t.id
                                     ? `border-black shadow-md ${t.bg}`
                                     : "border-gray-100 hover:border-gray-200"
                                     }`}
                             >
-                                <t.icon className={`text-2xl mb-2 ${t.color}`} />
+                                <t.icon className={`text-2xl ${t.color}`} />
                                 <span className="text-xs font-bold text-gray-600">{t.label}</span>
                             </button>
                         ))}
@@ -86,7 +86,7 @@ export default function ContentFormModal({ isOpen, onClose, initialData, onSubmi
 
                 {/* B. FILE UPLOAD */}
                 <div>
-                    <label className="block mb-2 font-semibold text-gray-700 text-sm uppercase tracking-wider">
+                    <label className="block font-semibold text-gray-700 text-sm uppercase tracking-wider">
                         Chọn file <span className="text-red-500 font-bold text-lg">*</span>
                     </label>
                     <div className="relative group">
