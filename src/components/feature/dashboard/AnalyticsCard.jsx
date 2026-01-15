@@ -1,26 +1,37 @@
-// src/app/(admin)/admin/components/AnalyticsCard.jsx
-export default function AnalyticsCard() {
-    const bars = [40, 65, 90, 70, 50, 30, 20];
-    const days = ["S", "M", "T", "W", "T", "F", "S"];
+"use client";
+
+import { FaLink } from "react-icons/fa6"; // 🔥 Import icon mắt xích
+import TrendChart from "./TrendChart";
+import DistributionChart from "./DistributionChart";
+
+export default function AnalyticsCard({ data, filter, onFilterChange }) {
+    const trendData = data?.trend || [];
+    const distributionData = data?.distribution || [];
 
     return (
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-            <div className="flex justify-between items-center mb-4">
-                <p className="font-semibold text-gray-800 text-sm">Project Analytics</p>
-                <span className="text-xs text-gray-400">This week</span>
+        // Thêm relative để làm điểm neo cho icon 'link'
+        <div className="relative h-full group">
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
+                <TrendChart
+                    data={trendData}
+                    filter={filter}
+                    onFilterChange={onFilterChange}
+                />
+                <DistributionChart
+                    data={distributionData}
+                    filter={filter}
+                />
             </div>
 
-            <div className="flex items-end justify-between h-32 mb-4">
-                {bars.map((h, idx) => (
-                    <div key={idx} className="flex flex-col items-center gap-2">
-                        <div
-                            className="w-6 rounded-full bg-gradient-to-t from-green-600 to-green-400"
-                            style={{ height: `${h}%` }}
-                        />
-                        <span className="text-[11px] text-gray-500">{days[idx]}</span>
-                    </div>
-                ))}
+            <div className="hidden lg:flex absolute top-2 left-[67%] -translate-x-1/2 z-10 
+                            items-center justify-center w-16 h-16 
+                            text-purple-500 rotate-12"
+                title="Dữ liệu được đồng bộ theo bộ lọc thời gian"
+            >
+                <FaLink className="text-4xl" />
             </div>
+
         </div>
     );
 }

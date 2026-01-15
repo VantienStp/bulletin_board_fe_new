@@ -169,7 +169,6 @@
 │   │   ├── 📄 useLayoutFilters.js
 │   │   ├── 📄 useOutsideClick.js
 │   │   ├── 📄 usePagination.js
-│   │   ├── 📄 useSlideshow.js
 │   │   ├── 📄 useUserFilters.js
 │   │   └── 📄 useWeather.js
 │   ├── 📁 lib

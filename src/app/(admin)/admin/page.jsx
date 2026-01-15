@@ -1,68 +1,83 @@
 "use client";
 
+import { useState } from "react";
 import dynamic from "next/dynamic";
-import StatCard from "@/components/feature/dashboard/StatCard";
-import TeamList from "@/components/feature/dashboard/TeamList";
-import ProjectList from "@/components/feature/dashboard/ProjectList";
-import ReminderCard from "@/components/feature/dashboard/ReminderCard";
-import TimeTracker from "@/components/feature/dashboard/TimeTracker";
+import useSWR from "swr";
+import { authFetch } from "@/lib/auth";
+import { API_BASE_URL } from "@/lib/api";
+import { dashboardAdapter, defaultStats } from "@/data/adapters/dashboardAdapter";
 
+// Icons (Chỉ giữ lại những icon dùng cho StatCard)
+import { FaDesktop, FaNewspaper, FaPhotoFilm, FaUsers } from "react-icons/fa6";
+
+// Components (Import các file vừa tách)
+import StatCard from "@/components/feature/dashboard/StatCard";
+import DeviceActivityTable from "@/components/feature/dashboard/DeviceActivityTable"; // 🔥 Mới
+import SystemStatus from "@/components/feature/dashboard/SystemStatus";           // 🔥 Mới
+
+// Chart load động
 const AnalyticsCard = dynamic(
     () => import("@/components/feature/dashboard/AnalyticsCard"),
-    {
-        ssr: false,
-        loading: () => <div className="h-64 bg-gray-100 rounded-xl animate-pulse"></div>
-    }
+    { ssr: false, loading: () => <div className="h-64 bg-gray-100 rounded-xl animate-pulse"></div> }
 );
 
+const fetcher = (url) => authFetch(url).then((res) => res.json());
+
 export default function AdminHomePage() {
+    const [filter, setFilter] = useState("week");
+
+    const { data: rawData, isLoading } = useSWR(
+        `${API_BASE_URL}/dashboard/stats?range=${filter}`,
+        fetcher,
+        { refreshInterval: 30000 }
+    );
+
+    const stats = rawData ? dashboardAdapter(rawData, filter) : defaultStats;
+    const { overview, charts, topDevices } = stats;
+
     return (
-        <div className="mx-auto w-full animate-fadeIn">
+        <div className="mx-auto w-full animate-fadeIn pb-10">
 
-            <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+            {/* --- HEADER --- */}
+            <section className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                    <p className="text-sm text-gray-500 mt-1">
-                        Plan, prioritize, and accomplish your tasks with ease.
-                    </p>
+                    <h1 className="text-2xl font-bold text-gray-900">Trung tâm điều khiển</h1>
+                    <p className="text-sm text-gray-500 mt-1">Xin chào, chúc bạn một ngày làm việc hiệu quả!</p>
                 </div>
-
-                <div className="flex gap-3">
-                    <button className="px-4 py-2 rounded-full border border-gray-200 bg-white hover:bg-gray-50 text-sm transition-colors">
-                        Import Data
-                    </button>
-                    <button className="px-6 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white text-sm font-medium transition-colors shadow-lg shadow-green-600/30">
-                        + Add Project
-                    </button>
+                <div>
+                    <span className="px-3 py-1 bg-white border border-gray-200 rounded-full text-xs font-medium text-gray-600 shadow-sm">
+                        {new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                    </span>
                 </div>
             </section>
 
-            {/* SECTION 1 — STATS */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
-                <StatCard title="Total Projects" value="24" note="Increased from last month" accent="green" />
-                <StatCard title="Ended Projects" value="10" note="Increased from last month" accent="green" />
-                <StatCard title="Running Projects" value="12" note="Increased from last month" accent="green" />
-                <StatCard title="Pending Projects" value="2" note="On Discuss" accent="orange" />
+            {/* --- SECTION 1: STATS CARDS --- */}
+            <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+                <StatCard title="Thiết bị Kiosk" value={isLoading ? "..." : overview.devices} note="Đang hoạt động" accent="green" icon={<FaDesktop />} />
+                <StatCard title="Bản tin hoạt động" value={isLoading ? "..." : overview.cards} note="Đang hiển thị" accent="blue" icon={<FaNewspaper />} />
+                <StatCard title="Tài nguyên Media" value={isLoading ? "..." : overview.files} note={`${overview.totalDownloads} lượt tải`} accent="orange" icon={<FaPhotoFilm />} />
+                <StatCard title="Người dùng" value={isLoading ? "..." : overview.users} note="Quản trị viên" accent="purple" icon={<FaUsers />} />
             </section>
 
-            {/* SECTION 2 — ANALYTICS + REMINDERS */}
-            <section className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-10">
-                <div className="xl:col-span-2">
-                    <AnalyticsCard />
+            {/* --- SECTION 2: CHARTS --- */}
+            <section className="mb-8">
+                <AnalyticsCard
+                    data={charts}
+                    filter={filter}
+                    onFilterChange={setFilter}
+                />
+            </section>
+
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 h-full">
+                    <DeviceActivityTable devices={topDevices} />
                 </div>
-                <ReminderCard />
-            </section>
 
-            {/* SECTION 3 — TEAM + PROJECTS + TIME TRACK */}
-            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-                <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <TeamList />
-                    <ProjectList />
+                <div className="h-full">
+                    <SystemStatus />
                 </div>
 
-                <TimeTracker />
             </section>
-
         </div>
     );
 }
